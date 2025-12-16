@@ -89,3 +89,6 @@ IDEAS FUTURAS/
 # =========================
 .env
 .env.*
+
+# Local venv dirs
+.venv*/
