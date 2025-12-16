@@ -1,0 +1,49 @@
+{
+  "name": "unknown_family_2_unknown_003",
+  "category": "unknown",
+  "results": {
+    "R_statistics": {
+      "mean": -1.0331858396530151,
+      "std": 4.943365573883057,
+      "min": -41.185455322265625,
+      "max": 3.4104950428009033,
+      "coefficient_of_variation": 4.784585099486823
+    },
+    "pysr_available": true,
+    "R_is_constant": false,
+    "R_equation": {
+      "equation": "(x4 / (x1 / 0.13925181)) - (0.24220636 - (x3 / -0.09932638))",
+      "complexity": 11,
+      "r2": 0.9987756826177746,
+      "variables": [
+        "A",
+        "f",
+        "dA",
+        "d2A",
+        "df",
+        "d2f"
+      ]
+    },
+    "einstein_check": {
+      "consistent_with_einstein_vacuum": false,
+      "note": "R not constant, may indicate non-Einstein or matter sources"
+    },
+    "A_equation": {
+      "equation": "exp(0.55235666 - exp(x0)) + -1.0888914",
+      "complexity": 7,
+      "r2": 0.9928529726551297
+    },
+    "f_equation": {
+      "equation": "exp((-0.22893421 - x0) / square(square(0.18106775 / x0))) * 0.9890586",
+      "complexity": 12,
+      "r2": 0.9998985807787756
+    }
+  },
+  "validation": {
+    "R_constant": false,
+    "einstein_vacuum_compatible": false,
+    "A_is_logarithmic": false,
+    "einstein_score": 0.0,
+    "verdict": "NON_EINSTEIN_OR_DEFORMED"
+  }
+}

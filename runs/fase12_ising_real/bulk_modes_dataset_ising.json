@@ -1,0 +1,22 @@
+{
+  "source": "fase11_bulk_scalar_solver_v2",
+  "solver_module": "bulk_scalar_solver",
+  "solver_version_note": "lambda_sl (v2), alias m2L2_legacy solo para lectura",
+  "geometry_dir": "runs/fase12_ising_real/fase11_geometry_from_real/geometry_emergent",
+  "n_geometries": 0,
+  "nomenclature_version": "v2_lambda_sl",
+  "compat_used_keys": [
+    "lambda_sl"
+  ],
+  "all_v2_clean": true,
+  "systems": [],
+  "by_family_d": {},
+  "notes": [
+    "Dataset para XII.c construido a partir de modos escalares bulk (eigenmodes).",
+    "NOMENCLATURA v2: Los valores son \u03bb_SL (autovalores Sturm\u2013Liouville),",
+    "NO deben interpretarse autom\u00e1ticamente como m\u00b2 hologr\u00e1fico de Maldacena.",
+    "No se ha usado m^2L^2 = Delta(Delta-d) en el camino de datos.",
+    "Delta_bulk_uv es el exponente UV estimado num\u00e9ricamente desde el modo escalar.",
+    "La relaci\u00f3n \u03bb_SL \u2194 \u0394 es algo a DESCUBRIR, no a asumir."
+  ]
+}

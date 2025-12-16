@@ -1,0 +1,130 @@
+{
+  "metadata": {
+    "system": "ising3d_bootstrap",
+    "phase": "XII",
+    "version": "XII.ising3d_v1",
+    "timestamp": "2025-12-09T08:50:19.158054",
+    "source": "arXiv:1603.04436v1"
+  },
+  "input": {
+    "d": 3,
+    "n_operators": 2,
+    "operators": [
+      {
+        "name": "sigma",
+        "Delta": 0.5181489,
+        "spin": 0,
+        "Z2_parity": -1
+      },
+      {
+        "name": "epsilon",
+        "Delta": 1.412625,
+        "spin": 0,
+        "Z2_parity": 1
+      }
+    ],
+    "ope_coefficients": {
+      "lambda_sigma_sigma_epsilon": 1.0518537,
+      "lambda_epsilon_epsilon_epsilon": 1.532435
+    }
+  },
+  "dictionary_results": [
+    {
+      "name": "sigma",
+      "Delta": 0.5181489,
+      "Delta_error": 0.0,
+      "spin": 0,
+      "m2L2_emergent": -1.2859684174287902,
+      "bf_bound_satisfied": true,
+      "bf_margin": 0.9640315825712098,
+      "unitarity_satisfied": true,
+      "unitarity_bound": 0.5,
+      "relevance": "relevant",
+      "bulk_interpretation": "Scalar tachyonic (m\u00b2L\u00b2 = -1.2860 < 0, but above BF bound)"
+    },
+    {
+      "name": "epsilon",
+      "Delta": 1.412625,
+      "Delta_error": 0.0,
+      "spin": 0,
+      "m2L2_emergent": -2.242365609375,
+      "bf_bound_satisfied": true,
+      "bf_margin": 0.007634390624999821,
+      "unitarity_satisfied": true,
+      "unitarity_bound": 0.5,
+      "relevance": "relevant",
+      "bulk_interpretation": "Scalar tachyonic (m\u00b2L\u00b2 = -2.2424 < 0, but above BF bound)"
+    }
+  ],
+  "validation": {
+    "passed": true,
+    "checks": [
+      {
+        "name": "m2L2_sigma",
+        "expected": -1.285676,
+        "computed": -1.2859684174287902,
+        "difference": 0.0002924174287901593,
+        "relative_difference": 0.0002274425506816331,
+        "passed": true
+      },
+      {
+        "name": "m2L2_epsilon",
+        "expected": -2.2419,
+        "computed": -2.242365609375,
+        "difference": 0.00046560937500039756,
+        "relative_difference": 0.0002076851665999365,
+        "passed": true
+      }
+    ],
+    "warnings": [],
+    "summary": {
+      "n_operators": 2,
+      "n_bf_satisfied": 2,
+      "n_unitary": 2,
+      "n_relevant": 2,
+      "n_checks_passed": 2,
+      "n_checks_total": 2
+    }
+  },
+  "new_predictions": [
+    {
+      "type": "stress_tensor_dimension",
+      "description": "El tensor de energ\u00eda-momento tiene \u0394 = d",
+      "predicted_value": 3,
+      "known_value": 3,
+      "status": "confirmed",
+      "confidence": "high"
+    },
+    {
+      "type": "minimal_twist",
+      "description": "Twist m\u00ednimo en el espectro de large spin",
+      "predicted_value": 1.0362978,
+      "formula": "\u03c4_min = 2\u0394_\u03c3",
+      "confidence": "high",
+      "how_to_verify": "Analytic bootstrap at large spin"
+    },
+    {
+      "type": "ope_asymptotic",
+      "description": "Comportamiento asint\u00f3tico de OPE coefficients",
+      "predicted_scaling": "\u03bb\u00b2 ~ exp(-2\u03c0\u221a(\u0394/0.8944761))",
+      "confidence": "medium",
+      "how_to_verify": "Numerical bootstrap spectrum extraction"
+    },
+    {
+      "type": "fusion_rule",
+      "description": "Regla de fusi\u00f3n \u03c3 \u00d7 \u03c3",
+      "content": "\u03c3 \u00d7 \u03c3 \u2192 1 + \u03b5 (\u0394=1.4126) + T (\u0394=3) + ...",
+      "confidence": "high"
+    },
+    {
+      "type": "critical_exponents",
+      "description": "Exponentes cr\u00edticos derivados",
+      "eta": 0.03629780000000005,
+      "nu": 0.6299708638475471,
+      "gamma": 1.2370751712733286,
+      "formula": "\u03b3 = \u03bd(2-\u03b7)",
+      "confidence": "high"
+    }
+  ],
+  "overall_status": "validated"
+}

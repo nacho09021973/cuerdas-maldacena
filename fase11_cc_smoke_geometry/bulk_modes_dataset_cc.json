@@ -1,0 +1,2324 @@
+{
+  "source": "fase11_bulk_scalar_solver_v2",
+  "solver_module": "bulk_scalar_solver",
+  "solver_version_note": "lambda_sl (v2), alias m2L2_legacy solo para lectura",
+  "geometry_dir": "fase11_cc_smoke_geometry",
+  "n_geometries": 90,
+  "nomenclature_version": "v2_lambda_sl",
+  "compat_used_keys": [
+    "lambda_sl"
+  ],
+  "all_v2_clean": true,
+  "systems": [
+    {
+      "geometry_name": "ads_d3_Tfinite_known_000",
+      "family": "ads",
+      "d": 5,
+      "n_modes": 3,
+      "Delta_bulk_uv": [
+        2.878063861853526,
+        2.5517495098552025,
+        2.295414974307499
+      ],
+      "lambda_sl_bulk": [
+        0.8527226141972455,
+        51.6979793936715,
+        121.54390782330212
+      ],
+      "lambda_source": "bulk_eigenmode"
+    },
+    {
+      "geometry_name": "ads_d3_Tfinite_known_001",
+      "family": "ads",
+      "d": 3,
+      "n_modes": 3,
+      "Delta_bulk_uv": [
+        1.6331069815548813,
+        0.6367868899446645,
+        -6.881001609390978
+      ],
+      "lambda_sl_bulk": [
+        35.55039408011202,
+        134.39937952129557,
+        26885.51188750804
+      ],
+      "lambda_source": "bulk_eigenmode"
+    },
+    {
+      "geometry_name": "ads_d3_Tfinite_known_002",
+      "family": "ads",
+      "d": 3,
+      "n_modes": 3,
+      "Delta_bulk_uv": [
+        1.6651904312166856,
+        1.488709429082089,
+        0.4020655413999311
+      ],
+      "lambda_sl_bulk": [
+        14.977839179816897,
+        55.06759383035434,
+        141.31433632926183
+      ],
+      "lambda_source": "bulk_eigenmode"
+    },
+    {
+      "geometry_name": "ads_d3_Tfinite_known_003",
+      "family": "ads",
+      "d": 3,
+      "n_modes": 3,
+      "Delta_bulk_uv": [
+        1.5564253966116681,
+        0.49247498405145823,
+        -6.8726841800234935
+      ],
+      "lambda_sl_bulk": [
+        40.0705617947668,
+        136.1591348984783,
+        26885.52659659229
+      ],
+      "lambda_source": "bulk_eigenmode"
+    },
+    {
+      "geometry_name": "ads_d3_Tfinite_known_004",
+      "family": "ads",
+      "d": 3,
+      "n_modes": 3,
+      "Delta_bulk_uv": [
+        1.6350532347506261,
+        1.4979816202402148,
+        0.42281136779828593
+      ],
+      "lambda_sl_bulk": [
+        16.96071892156369,
+        56.29319769454346,
+        141.6863753028165
+      ],
+      "lambda_source": "bulk_eigenmode"
+    },
+    {
+      "geometry_name": "ads_d3_Tfinite_known_005",
+      "family": "ads",
+      "d": 3,
+      "n_modes": 3,
+      "Delta_bulk_uv": [
+        1.5350095171118598,
+        0.44119788314128594,
+        -6.875282251774129
+      ],
+      "lambda_sl_bulk": [
+        38.59065119456204,
+        135.6028467730425,
+        26885.521983386887
+      ],
+      "lambda_source": "bulk_eigenmode"
+    },
+    {
+      "geometry_name": "ads_d3_Tfinite_known_006",
+      "family": "ads",
+      "d": 3,
+      "n_modes": 3,
+      "Delta_bulk_uv": [
+        1.492890283354388,
+        0.35837691749655576,
+        -6.878096184984768
+      ],
+      "lambda_sl_bulk": [
+        37.06613669924815,
+        135.0071945887738,
+        26885.517005971284
+      ],
+      "lambda_source": "bulk_eigenmode"
+    },
+    {
+      "geometry_name": "ads_d3_Tfinite_known_007",
+      "family": "ads",
+      "d": 3,
+      "n_modes": 3,
+      "Delta_bulk_uv": [
+        1.734860258188634,
+        1.4584617990785163,
+        0.3321855550320143
+      ],
+      "lambda_sl_bulk": [
+        9.514799239501782,
+        51.48475179313193,
+        140.1831803329469
+      ],
+      "lambda_source": "bulk_eigenmode"
+    },
+    {
+      "geometry_name": "ads_d3_Tfinite_known_008",
+      "family": "ads",
+      "d": 3,
+      "n_modes": 3,
+      "Delta_bulk_uv": [
+        1.5218763312400163,
+        0.4129172417875151,
+        -6.876427887685724
+      ],
+      "lambda_sl_bulk": [
+        37.95937065812199,
+        135.35948988030842,
+        26885.51995454014
+      ],
+      "lambda_source": "bulk_eigenmode"
+    },
+    {
+      "geometry_name": "ads_d3_Tfinite_known_009",
+      "family": "ads",
+      "d": 3,
+      "n_modes": 3,
+      "Delta_bulk_uv": [
+        1.8003315951561838,
+        1.4283792657342087,
+        0.26094232777005094
+      ],
+      "lambda_sl_bulk": [
+        5.625075679722827,
+        48.646648749137675,
+        139.24215720526243
+      ],
+      "lambda_source": "bulk_eigenmode"
+    },
+    {
+      "geometry_name": "ads_d3_Tfinite_known_010",
+      "family": "ads",
+      "d": 3,
+      "n_modes": 3,
+      "Delta_bulk_uv": [
+        1.8159220148678705,
+        1.4200888494565989,
+        0.24253587319365744
+      ],
+      "lambda_sl_bulk": [
+        4.806258177537659,
+        48.062338526548245,
+        139.04421094408306
+      ],
+      "lambda_source": "bulk_eigenmode"
+    },
+    {
+      "geometry_name": "ads_d3_Tfinite_known_011",
+      "family": "ads",
+      "d": 3,
+      "n_modes": 3,
+      "Delta_bulk_uv": [
+        1.6330911735637441,
+        0.6367374971760532,
+        -6.881005106833939
+      ],
+      "lambda_sl_bulk": [
+        35.548519687764724,
+        134.3986520804687,
+        26885.511881359344
+      ],
+      "lambda_source": "bulk_eigenmode"
+    },
+    {
+      "geometry_name": "ads_d3_Tfinite_known_012",
+      "family": "ads",
+      "d": 3,
+      "n_modes": 3,
+      "Delta_bulk_uv": [
+        1.835489528550706,
+        1.4076504598222812,
+        0.2141642930691142
+      ],
+      "lambda_sl_bulk": [
+        3.6741247910249673,
+        47.26732751828755,
+        138.77109330913385
+      ],
+      "lambda_source": "bulk_eigenmode"
+    },
+    {
+      "geometry_name": "ads_d3_Tfinite_known_013",
+      "family": "ads",
+      "d": 3,
+      "n_modes": 3,
+      "Delta_bulk_uv": [
+        1.6222378345993498,
+        1.501018598485997,
+        0.4295372806376428
+      ],
+      "lambda_sl_bulk": [
+        17.642580116333246,
+        56.707538273227826,
+        141.81042427244594
+      ],
+      "lambda_source": "bulk_eigenmode"
+    },
+    {
+      "geometry_name": "ads_d3_Tfinite_known_014",
+      "family": "ads",
+      "d": 3,
+      "n_modes": 3,
+      "Delta_bulk_uv": [
+        1.6229492308862237,
+        1.5008665411983946,
+        0.4292018496375387
+      ],
+      "lambda_sl_bulk": [
+        17.607467646523684,
+        56.68666942999427,
+        141.80419844571844
+      ],
+      "lambda_source": "bulk_eigenmode"
+    },
+    {
+      "geometry_name": "ads_d3_Tfinite_known_015",
+      "family": "ads",
+      "d": 3,
+      "n_modes": 3,
+      "Delta_bulk_uv": [
+        1.5018296591573623,
+        0.37410225303983263,
+        -6.877685101587137
+      ],
+      "lambda_sl_bulk": [
+        37.2831883400504,
+        135.0937755510655,
+        26885.517731878313
+      ],
+      "lambda_source": "bulk_eigenmode"
+    },
+    {
+      "geometry_name": "ads_d3_Tfinite_known_016",
+      "family": "ads",
+      "d": 4,
+      "n_modes": 3,
+      "Delta_bulk_uv": [
+        2.0511420470264285,
+        1.8660103765512084,
+        0.725430163772671
+      ],
+      "lambda_sl_bulk": [
+        31.925261539832483,
+        87.9615027830846,
+        200.32676908115639
+      ],
+      "lambda_source": "bulk_eigenmode"
+    },
+    {
+      "geometry_name": "ads_d3_Tfinite_known_017",
+      "family": "ads",
+      "d": 5,
+      "n_modes": 3,
+      "Delta_bulk_uv": [
+        2.486765215347559,
+        2.4840313129985727,
+        2.3355604637544443
+      ],
+      "lambda_sl_bulk": [
+        12.259226648419691,
+        59.860211476156124,
+        124.43902991270599
+      ],
+      "lambda_source": "bulk_eigenmode"
+    },
+    {
+      "geometry_name": "ads_d3_Tfinite_known_018",
+      "family": "ads",
+      "d": 4,
+      "n_modes": 3,
+      "Delta_bulk_uv": [
+        2.1352985002349976,
+        1.8018174048912994,
+        0.6254812163112776
+      ],
+      "lambda_sl_bulk": [
+        22.210255919274562,
+        83.00650084388867,
+        199.3802629848563
+      ],
+      "lambda_source": "bulk_eigenmode"
+    },
+    {
+      "geometry_name": "ads_d3_Tfinite_known_019",
+      "family": "ads",
+      "d": 3,
+      "n_modes": 3,
+      "Delta_bulk_uv": [
+        1.5283934986663061,
+        0.4266599625809606,
+        -6.87589605318844
+      ],
+      "lambda_sl_bulk": [
+        38.25070877293138,
+        135.47231645476685,
+        26885.520895975613
+      ],
+      "lambda_source": "bulk_eigenmode"
+    },
+    {
+      "geometry_name": "ads_deformed_d3_test_000",
+      "family": "deformed",
+      "d": 3,
+      "n_modes": 3,
+      "Delta_bulk_uv": [
+        1.4807499987604038,
+        0.3444583226943408,
+        -6.8586404169811
+      ],
+      "lambda_sl_bulk": [
+        38.30308569430788,
+        133.51591000279538,
+        26827.33855753483
+      ],
+      "lambda_source": "bulk_eigenmode"
+    },
+    {
+      "geometry_name": "ads_deformed_d3_test_001",
+      "family": "deformed",
+      "d": 3,
+      "n_modes": 3,
+      "Delta_bulk_uv": [
+        1.79928265443783,
+        1.4529104346762751,
+        0.345192850992142
+      ],
+      "lambda_sl_bulk": [
+        4.504754438186936,
+        48.87884576557607,
+        138.6047166949414
+      ],
+      "lambda_source": "bulk_eigenmode"
+    },
+    {
+      "geometry_name": "ads_deformed_d3_test_002",
+      "family": "deformed",
+      "d": 5,
+      "n_modes": 3,
+      "Delta_bulk_uv": [
+        2.8736814412340905,
+        2.2334808240736153,
+        1.044509446332562
+      ],
+      "lambda_sl_bulk": [
+        4.396313855459845,
+        88.36149338699624,
+        247.134518194762
+      ],
+      "lambda_source": "bulk_eigenmode"
+    },
+    {
+      "geometry_name": "ads_deformed_d3_test_003",
+      "family": "deformed",
+      "d": 5,
+      "n_modes": 3,
+      "Delta_bulk_uv": [
+        2.715034780946423,
+        2.042459994276266,
+        0.6021945603029224
+      ],
+      "lambda_sl_bulk": [
+        7.797748851412927,
+        79.16682528605062,
+        233.05336300044758
+      ],
+      "lambda_source": "bulk_eigenmode"
+    },
+    {
+      "geometry_name": "ads_deformed_d3_test_004",
+      "family": "deformed",
+      "d": 3,
+      "n_modes": 3,
+      "Delta_bulk_uv": [
+        1.7377561934305044,
+        0.8308545152002171,
+        -6.874168750183804
+      ],
+      "lambda_sl_bulk": [
+        25.658174150599475,
+        128.09267690972644,
+        26805.514791512967
+      ],
+      "lambda_source": "bulk_eigenmode"
+    },
+    {
+      "geometry_name": "ads_deformed_d3_test_005",
+      "family": "deformed",
+      "d": 3,
+      "n_modes": 3,
+      "Delta_bulk_uv": [
+        1.3886517002170715,
+        0.1839956315243828,
+        -6.854455892853025
+      ],
+      "lambda_sl_bulk": [
+        42.3463547139242,
+        135.4622426254731,
+        26837.8041441786
+      ],
+      "lambda_source": "bulk_eigenmode"
+    },
+    {
+      "geometry_name": "ads_deformed_d3_test_006",
+      "family": "deformed",
+      "d": 5,
+      "n_modes": 3,
+      "Delta_bulk_uv": [
+        2.840450870644275,
+        2.078180085314169,
+        -7.16626509242237
+      ],
+      "lambda_sl_bulk": [
+        58.20342316724621,
+        237.25270340259377,
+        976705.7143067416
+      ],
+      "lambda_source": "bulk_eigenmode"
+    },
+    {
+      "geometry_name": "ads_deformed_d3_test_007",
+      "family": "deformed",
+      "d": 3,
+      "n_modes": 3,
+      "Delta_bulk_uv": [
+        1.7720142847784628,
+        0.9504957066344715,
+        -6.87404844441622
+      ],
+      "lambda_sl_bulk": [
+        24.093609405727978,
+        132.24893402827172,
+        26854.867856030654
+      ],
+      "lambda_source": "bulk_eigenmode"
+    },
+    {
+      "geometry_name": "ads_deformed_d3_test_008",
+      "family": "deformed",
+      "d": 3,
+      "n_modes": 3,
+      "Delta_bulk_uv": [
+        1.7114378736883138,
+        0.8625509227666835,
+        -6.8643222812881
+      ],
+      "lambda_sl_bulk": [
+        32.153307576819884,
+        133.9893022664317,
+        26849.139883263677
+      ],
+      "lambda_source": "bulk_eigenmode"
+    },
+    {
+      "geometry_name": "ads_deformed_d3_test_009",
+      "family": "deformed",
+      "d": 5,
+      "n_modes": 3,
+      "Delta_bulk_uv": [
+        2.867029139712913,
+        2.02546991198741,
+        -7.176878902904321
+      ],
+      "lambda_sl_bulk": [
+        42.61617044790445,
+        221.11439647813185,
+        972999.6359887604
+      ],
+      "lambda_source": "bulk_eigenmode"
+    },
+    {
+      "geometry_name": "hvlf_d3_theta1_known_000",
+      "family": "hyperscaling",
+      "d": 3,
+      "n_modes": 3,
+      "Delta_bulk_uv": [
+        1.1849276332283987,
+        -0.06146830356034636,
+        -6.170191049884519
+      ],
+      "lambda_sl_bulk": [
+        21.19800185286541,
+        88.39385496855958,
+        6462.974340381699
+      ],
+      "lambda_source": "bulk_eigenmode"
+    },
+    {
+      "geometry_name": "hvlf_d3_theta1_known_001",
+      "family": "hyperscaling",
+      "d": 4,
+      "n_modes": 3,
+      "Delta_bulk_uv": [
+        1.8173666080766826,
+        1.4779264282751603,
+        0.3123376044845326
+      ],
+      "lambda_sl_bulk": [
+        7.883055568325688,
+        53.58189814223884,
+        147.92093309061582
+      ],
+      "lambda_source": "bulk_eigenmode"
+    },
+    {
+      "geometry_name": "hvlf_d3_theta1_known_002",
+      "family": "hyperscaling",
+      "d": 3,
+      "n_modes": 3,
+      "Delta_bulk_uv": [
+        1.0902334486165284,
+        0.2152464409402066,
+        -6.3254876188868066
+      ],
+      "lambda_sl_bulk": [
+        9.91778830197625,
+        46.06132669363043,
+        1670.0641321489568
+      ],
+      "lambda_source": "bulk_eigenmode"
+    },
+    {
+      "geometry_name": "hvlf_d3_theta1_known_003",
+      "family": "hyperscaling",
+      "d": 3,
+      "n_modes": 3,
+      "Delta_bulk_uv": [
+        1.1603439907968076,
+        0.07877092476514828,
+        -6.62639551461651
+      ],
+      "lambda_sl_bulk": [
+        13.77823940018991,
+        64.05249968340539,
+        3056.043379503029
+      ],
+      "lambda_source": "bulk_eigenmode"
+    },
+    {
+      "geometry_name": "hvlf_d3_theta1_known_004",
+      "family": "hyperscaling",
+      "d": 3,
+      "n_modes": 3,
+      "Delta_bulk_uv": [
+        1.3877529373329982,
+        1.319762819116223,
+        0.3073713814047637
+      ],
+      "lambda_sl_bulk": [
+        10.332828752562353,
+        39.6784847633047,
+        108.67352942744868
+      ],
+      "lambda_source": "bulk_eigenmode"
+    },
+    {
+      "geometry_name": "hvlf_d3_theta1_known_005",
+      "family": "hyperscaling",
+      "d": 4,
+      "n_modes": 3,
+      "Delta_bulk_uv": [
+        1.3068188325840289,
+        0.059557866084915624,
+        -6.3595911546920565
+      ],
+      "lambda_sl_bulk": [
+        39.191451600242395,
+        126.49718676669039,
+        19221.011280095972
+      ],
+      "lambda_source": "bulk_eigenmode"
+    },
+    {
+      "geometry_name": "hvlf_d3_theta1_known_006",
+      "family": "hyperscaling",
+      "d": 3,
+      "n_modes": 3,
+      "Delta_bulk_uv": [
+        1.1509207406567141,
+        0.07688478133134787,
+        -6.527173851123038
+      ],
+      "lambda_sl_bulk": [
+        8.973189277338196,
+        51.65280138103558,
+        2169.7728920771674
+      ],
+      "lambda_source": "bulk_eigenmode"
+    },
+    {
+      "geometry_name": "hvlf_d3_theta1_known_007",
+      "family": "hyperscaling",
+      "d": 4,
+      "n_modes": 3,
+      "Delta_bulk_uv": [
+        1.1951702866233112,
+        0.04375634997688474,
+        -6.430586925164492
+      ],
+      "lambda_sl_bulk": [
+        20.038154565927762,
+        81.84690344958919,
+        5180.983908221958
+      ],
+      "lambda_source": "bulk_eigenmode"
+    },
+    {
+      "geometry_name": "hvlf_d3_theta1_known_008",
+      "family": "hyperscaling",
+      "d": 3,
+      "n_modes": 3,
+      "Delta_bulk_uv": [
+        1.483466004695689,
+        1.4038217503651618,
+        0.3760187548921473
+      ],
+      "lambda_sl_bulk": [
+        15.441357829752807,
+        48.366164810082104,
+        123.68229449389779
+      ],
+      "lambda_source": "bulk_eigenmode"
+    },
+    {
+      "geometry_name": "hvlf_d3_theta1_known_009",
+      "family": "hyperscaling",
+      "d": 3,
+      "n_modes": 3,
+      "Delta_bulk_uv": [
+        1.74176042217343,
+        1.3087785283362494,
+        0.16455576434178243
+      ],
+      "lambda_sl_bulk": [
+        1.4521798535564183,
+        35.36938338606036,
+        112.71694715621913
+      ],
+      "lambda_source": "bulk_eigenmode"
+    },
+    {
+      "geometry_name": "hvlf_d3_theta1_known_010",
+      "family": "hyperscaling",
+      "d": 5,
+      "n_modes": 3,
+      "Delta_bulk_uv": [
+        2.140664255581642,
+        2.2422365118072283,
+        2.105184030804255
+      ],
+      "lambda_sl_bulk": [
+        20.058136586128434,
+        55.824577862258984,
+        107.45680389974646
+      ],
+      "lambda_source": "bulk_eigenmode"
+    },
+    {
+      "geometry_name": "hvlf_d3_theta1_known_011",
+      "family": "hyperscaling",
+      "d": 3,
+      "n_modes": 3,
+      "Delta_bulk_uv": [
+        1.1073747033040344,
+        1.1765087941445411,
+        0.2410205302008389
+      ],
+      "lambda_sl_bulk": [
+        4.451055682183469,
+        24.49932037308198,
+        77.19554497757497
+      ],
+      "lambda_source": "bulk_eigenmode"
+    },
+    {
+      "geometry_name": "hvlf_d3_theta1_known_012",
+      "family": "hyperscaling",
+      "d": 3,
+      "n_modes": 3,
+      "Delta_bulk_uv": [
+        1.109966367696152,
+        -0.16055660689788634,
+        -6.604984222480002
+      ],
+      "lambda_sl_bulk": [
+        15.108810443209752,
+        80.19502000307871,
+        5460.308595913665
+      ],
+      "lambda_source": "bulk_eigenmode"
+    },
+    {
+      "geometry_name": "hvlf_d3_theta1_known_013",
+      "family": "hyperscaling",
+      "d": 3,
+      "n_modes": 3,
+      "Delta_bulk_uv": [
+        1.0479585912769342,
+        1.113475183565382,
+        0.2080818838838921
+      ],
+      "lambda_sl_bulk": [
+        0.11270281672518741,
+        14.255562740078338,
+        56.41485771876943
+      ],
+      "lambda_source": "bulk_eigenmode"
+    },
+    {
+      "geometry_name": "hvlf_d3_theta1_known_014",
+      "family": "hyperscaling",
+      "d": 5,
+      "n_modes": 3,
+      "Delta_bulk_uv": [
+        1.6718063287418723,
+        1.6349334279815688,
+        1.5815899799493538
+      ],
+      "lambda_sl_bulk": [
+        5.271594990521117,
+        28.246506548769716,
+        65.55342454016858
+      ],
+      "lambda_source": "bulk_eigenmode"
+    },
+    {
+      "geometry_name": "hvlf_d3_theta1_known_015",
+      "family": "hyperscaling",
+      "d": 3,
+      "n_modes": 3,
+      "Delta_bulk_uv": [
+        1.0315147250918517,
+        0.3166754636449902,
+        -6.251100632289668
+      ],
+      "lambda_sl_bulk": [
+        6.975787453851135,
+        33.46778245309773,
+        1087.451013504936
+      ],
+      "lambda_source": "bulk_eigenmode"
+    },
+    {
+      "geometry_name": "hvlf_d3_theta1_known_016",
+      "family": "hyperscaling",
+      "d": 5,
+      "n_modes": 3,
+      "Delta_bulk_uv": [
+        1.8613655098394934,
+        1.5917155516524624,
+        0.44247680673158607
+      ],
+      "lambda_sl_bulk": [
+        14.409400201793641,
+        64.23637386059097,
+        164.50622682262838
+      ],
+      "lambda_source": "bulk_eigenmode"
+    },
+    {
+      "geometry_name": "hvlf_d3_theta1_known_017",
+      "family": "hyperscaling",
+      "d": 3,
+      "n_modes": 3,
+      "Delta_bulk_uv": [
+        1.2787398254586013,
+        0.11359206068637473,
+        -6.470970845369921
+      ],
+      "lambda_sl_bulk": [
+        21.63911570951473,
+        92.9862610498213,
+        7596.807738596799
+      ],
+      "lambda_source": "bulk_eigenmode"
+    },
+    {
+      "geometry_name": "hvlf_d3_theta1_known_018",
+      "family": "hyperscaling",
+      "d": 3,
+      "n_modes": 3,
+      "Delta_bulk_uv": [
+        1.1333495505046833,
+        0.1444605028311638,
+        -6.475670850055252
+      ],
+      "lambda_sl_bulk": [
+        11.409987277406021,
+        54.159570739205535,
+        2214.9310016891427
+      ],
+      "lambda_source": "bulk_eigenmode"
+    },
+    {
+      "geometry_name": "hvlf_d3_theta1_known_019",
+      "family": "hyperscaling",
+      "d": 4,
+      "n_modes": 3,
+      "Delta_bulk_uv": [
+        1.6383886061144848,
+        1.4566960218852851,
+        0.3688808931149109
+      ],
+      "lambda_sl_bulk": [
+        12.855859881491114,
+        51.8463020109706,
+        136.3164476206409
+      ],
+      "lambda_source": "bulk_eigenmode"
+    },
+    {
+      "geometry_name": "lifshitz_d3_z2_known_000",
+      "family": "lifshitz",
+      "d": 4,
+      "n_modes": 3,
+      "Delta_bulk_uv": [
+        2.0228328685210184,
+        1.0854828981782163,
+        -6.917182633077364
+      ],
+      "lambda_sl_bulk": [
+        69.76501843766972,
+        197.61214416581967,
+        161998.68235460654
+      ],
+      "lambda_source": "bulk_eigenmode"
+    },
+    {
+      "geometry_name": "lifshitz_d3_z2_known_001",
+      "family": "lifshitz",
+      "d": 5,
+      "n_modes": 3,
+      "Delta_bulk_uv": [
+        2.477947086923878,
+        1.5878370239898878,
+        -7.158816836864293
+      ],
+      "lambda_sl_bulk": [
+        89.82472889103731,
+        255.5588267536973,
+        978166.7935769489
+      ],
+      "lambda_source": "bulk_eigenmode"
+    },
+    {
+      "geometry_name": "lifshitz_d3_z2_known_002",
+      "family": "lifshitz",
+      "d": 4,
+      "n_modes": 3,
+      "Delta_bulk_uv": [
+        2.3147030578332113,
+        1.937284887094292,
+        0.9492443819822365
+      ],
+      "lambda_sl_bulk": [
+        5.312260408322248,
+        77.84042808578593,
+        199.76198303775644
+      ],
+      "lambda_source": "bulk_eigenmode"
+    },
+    {
+      "geometry_name": "lifshitz_d3_z2_known_003",
+      "family": "lifshitz",
+      "d": 4,
+      "n_modes": 3,
+      "Delta_bulk_uv": [
+        2.0794985135542676,
+        1.8523188241626083,
+        0.74277974706496
+      ],
+      "lambda_sl_bulk": [
+        29.466141081297142,
+        90.17819447539321,
+        201.4131803529302
+      ],
+      "lambda_source": "bulk_eigenmode"
+    },
+    {
+      "geometry_name": "lifshitz_d3_z2_known_004",
+      "family": "lifshitz",
+      "d": 3,
+      "n_modes": 3,
+      "Delta_bulk_uv": [
+        1.5408954865946316,
+        0.5904540402063079,
+        -6.845992743895941
+      ],
+      "lambda_sl_bulk": [
+        46.830610819908536,
+        141.57978070502148,
+        26885.592980847963
+      ],
+      "lambda_source": "bulk_eigenmode"
+    },
+    {
+      "geometry_name": "lifshitz_d3_z2_known_005",
+      "family": "lifshitz",
+      "d": 3,
+      "n_modes": 3,
+      "Delta_bulk_uv": [
+        1.630655166652809,
+        1.4925635202441032,
+        0.46529146543466576
+      ],
+      "lambda_sl_bulk": [
+        16.846876705463306,
+        59.528856820771026,
+        143.73521500963855
+      ],
+      "lambda_source": "bulk_eigenmode"
+    },
+    {
+      "geometry_name": "lifshitz_d3_z2_known_006",
+      "family": "lifshitz",
+      "d": 5,
+      "n_modes": 3,
+      "Delta_bulk_uv": [
+        2.5364027999877417,
+        2.1502337485498333,
+        0.9538677602442666
+      ],
+      "lambda_sl_bulk": [
+        35.57692949722974,
+        118.05345592137142,
+        259.3173975025792
+      ],
+      "lambda_source": "bulk_eigenmode"
+    },
+    {
+      "geometry_name": "lifshitz_d3_z2_known_007",
+      "family": "lifshitz",
+      "d": 3,
+      "n_modes": 3,
+      "Delta_bulk_uv": [
+        1.686673955787225,
+        1.467670311281044,
+        0.42271007624840173
+      ],
+      "lambda_sl_bulk": [
+        12.09707579460272,
+        57.1909226564013,
+        143.36493482447517
+      ],
+      "lambda_source": "bulk_eigenmode"
+    },
+    {
+      "geometry_name": "lifshitz_d3_z2_known_008",
+      "family": "lifshitz",
+      "d": 3,
+      "n_modes": 3,
+      "Delta_bulk_uv": [
+        1.7643682496734157,
+        1.424216364270728,
+        0.3412429695212967
+      ],
+      "lambda_sl_bulk": [
+        6.166134222042962,
+        53.83312761232337,
+        142.7486041862515
+      ],
+      "lambda_source": "bulk_eigenmode"
+    },
+    {
+      "geometry_name": "lifshitz_d3_z2_known_009",
+      "family": "lifshitz",
+      "d": 5,
+      "n_modes": 3,
+      "Delta_bulk_uv": [
+        2.542064607363774,
+        2.2928827252304016,
+        1.1291331818738617
+      ],
+      "lambda_sl_bulk": [
+        50.81226834391508,
+        123.5674759945273,
+        259.73539106385374
+      ],
+      "lambda_source": "bulk_eigenmode"
+    },
+    {
+      "geometry_name": "lifshitz_d3_z2_known_010",
+      "family": "lifshitz",
+      "d": 4,
+      "n_modes": 3,
+      "Delta_bulk_uv": [
+        2.068057101478968,
+        1.8879714650663275,
+        0.7777212660850775
+      ],
+      "lambda_sl_bulk": [
+        35.99648264737694,
+        91.8080939401386,
+        201.42331782981185
+      ],
+      "lambda_source": "bulk_eigenmode"
+    },
+    {
+      "geometry_name": "lifshitz_d3_z2_known_011",
+      "family": "lifshitz",
+      "d": 3,
+      "n_modes": 3,
+      "Delta_bulk_uv": [
+        1.769474774133629,
+        0.9714461675035264,
+        -6.876596693918682
+      ],
+      "lambda_sl_bulk": [
+        27.510787029098204,
+        134.55316886567363,
+        26885.57903706876
+      ],
+      "lambda_source": "bulk_eigenmode"
+    },
+    {
+      "geometry_name": "lifshitz_d3_z2_known_012",
+      "family": "lifshitz",
+      "d": 3,
+      "n_modes": 3,
+      "Delta_bulk_uv": [
+        1.728691407744513,
+        1.4366645327542416,
+        0.39870035550089294
+      ],
+      "lambda_sl_bulk": [
+        7.626113721919475,
+        56.876359406590765,
+        143.80181868278353
+      ],
+      "lambda_source": "bulk_eigenmode"
+    },
+    {
+      "geometry_name": "lifshitz_d3_z2_known_013",
+      "family": "lifshitz",
+      "d": 3,
+      "n_modes": 3,
+      "Delta_bulk_uv": [
+        1.4396984940012745,
+        0.3728657592048036,
+        -6.847059757838966
+      ],
+      "lambda_sl_bulk": [
+        47.87057739388606,
+        141.41400731816475,
+        26885.592182065317
+      ],
+      "lambda_source": "bulk_eigenmode"
+    },
+    {
+      "geometry_name": "lifshitz_d3_z2_known_014",
+      "family": "lifshitz",
+      "d": 3,
+      "n_modes": 3,
+      "Delta_bulk_uv": [
+        1.586161205847073,
+        1.5039899381339086,
+        0.49157851018346316
+      ],
+      "lambda_sl_bulk": [
+        19.23707809148723,
+        61.24964938121967,
+        144.12815412961518
+      ],
+      "lambda_source": "bulk_eigenmode"
+    },
+    {
+      "geometry_name": "lifshitz_d3_z2_known_015",
+      "family": "lifshitz",
+      "d": 5,
+      "n_modes": 3,
+      "Delta_bulk_uv": [
+        2.7036710750281396,
+        2.359668258600165,
+        1.3450503711681525
+      ],
+      "lambda_sl_bulk": [
+        16.332736579592957,
+        109.7040312224269,
+        258.5520722714334
+      ],
+      "lambda_source": "bulk_eigenmode"
+    },
+    {
+      "geometry_name": "lifshitz_d3_z2_known_016",
+      "family": "lifshitz",
+      "d": 3,
+      "n_modes": 3,
+      "Delta_bulk_uv": [
+        1.5961983550370031,
+        0.6495418597885747,
+        -6.858632365213642
+      ],
+      "lambda_sl_bulk": [
+        38.487862782440565,
+        138.55046847468844,
+        26885.588045554807
+      ],
+      "lambda_source": "bulk_eigenmode"
+    },
+    {
+      "geometry_name": "lifshitz_d3_z2_known_017",
+      "family": "lifshitz",
+      "d": 3,
+      "n_modes": 3,
+      "Delta_bulk_uv": [
+        1.5781197761717218,
+        0.6643668802627717,
+        -6.859863921926286
+      ],
+      "lambda_sl_bulk": [
+        32.188257791431575,
+        137.91851750314547,
+        26885.591377417022
+      ],
+      "lambda_source": "bulk_eigenmode"
+    },
+    {
+      "geometry_name": "lifshitz_d3_z2_known_018",
+      "family": "lifshitz",
+      "d": 5,
+      "n_modes": 3,
+      "Delta_bulk_uv": [
+        2.4164047756783877,
+        2.5125246123848473,
+        2.359425175681529
+      ],
+      "lambda_sl_bulk": [
+        14.344948594556802,
+        64.55120215247521,
+        127.26222345620262
+      ],
+      "lambda_source": "bulk_eigenmode"
+    },
+    {
+      "geometry_name": "lifshitz_d3_z2_known_019",
+      "family": "lifshitz",
+      "d": 4,
+      "n_modes": 3,
+      "Delta_bulk_uv": [
+        2.0320904449898873,
+        2.056446149359292,
+        1.9266399825581322
+      ],
+      "lambda_sl_bulk": [
+        5.252720631836477,
+        44.115551095406445,
+        95.19110553007226
+      ],
+      "lambda_source": "bulk_eigenmode"
+    },
+    {
+      "geometry_name": "lifshitz_deformed_d3_test_000",
+      "family": "lifshitz",
+      "d": 5,
+      "n_modes": 3,
+      "Delta_bulk_uv": [
+        2.554230770713318,
+        2.2604454559744926,
+        1.0881517915737255
+      ],
+      "lambda_sl_bulk": [
+        45.799796949832,
+        121.3120105351072,
+        259.50899516577465
+      ],
+      "lambda_source": "bulk_eigenmode"
+    },
+    {
+      "geometry_name": "lifshitz_deformed_d3_test_001",
+      "family": "lifshitz",
+      "d": 3,
+      "n_modes": 3,
+      "Delta_bulk_uv": [
+        1.7211764918624581,
+        1.4443163568375392,
+        0.3994037723892111
+      ],
+      "lambda_sl_bulk": [
+        8.601298874532207,
+        56.53358818199095,
+        143.58071365848465
+      ],
+      "lambda_source": "bulk_eigenmode"
+    },
+    {
+      "geometry_name": "lifshitz_deformed_d3_test_002",
+      "family": "lifshitz",
+      "d": 3,
+      "n_modes": 3,
+      "Delta_bulk_uv": [
+        1.7792285633995342,
+        1.4150049987287283,
+        0.3258481104757145
+      ],
+      "lambda_sl_bulk": [
+        5.186879218396454,
+        53.477263829184274,
+        142.73312606355228
+      ],
+      "lambda_source": "bulk_eigenmode"
+    },
+    {
+      "geometry_name": "lifshitz_deformed_d3_test_003",
+      "family": "lifshitz",
+      "d": 5,
+      "n_modes": 3,
+      "Delta_bulk_uv": [
+        2.4172651130668186,
+        2.5282977260727852,
+        2.375059389310665
+      ],
+      "lambda_sl_bulk": [
+        26.11838336875841,
+        69.33798461421719,
+        127.75738776888085
+      ],
+      "lambda_source": "bulk_eigenmode"
+    },
+    {
+      "geometry_name": "lifshitz_deformed_d3_test_004",
+      "family": "lifshitz",
+      "d": 3,
+      "n_modes": 3,
+      "Delta_bulk_uv": [
+        1.5536715654492457,
+        1.5128828835476789,
+        0.4981160486413789
+      ],
+      "lambda_sl_bulk": [
+        21.344709318092338,
+        61.650802067608005,
+        144.06395584751334
+      ],
+      "lambda_source": "bulk_eigenmode"
+    },
+    {
+      "geometry_name": "lifshitz_deformed_d3_test_005",
+      "family": "lifshitz",
+      "d": 5,
+      "n_modes": 3,
+      "Delta_bulk_uv": [
+        2.397854319299649,
+        2.52729313743391,
+        2.3834418968718394
+      ],
+      "lambda_sl_bulk": [
+        28.78702638239637,
+        71.44797031355394,
+        128.4985109997605
+      ],
+      "lambda_source": "bulk_eigenmode"
+    },
+    {
+      "geometry_name": "lifshitz_deformed_d3_test_006",
+      "family": "lifshitz",
+      "d": 3,
+      "n_modes": 3,
+      "Delta_bulk_uv": [
+        1.6882132926330964,
+        1.4623402928354399,
+        0.44113613975732613
+      ],
+      "lambda_sl_bulk": [
+        11.078918055854336,
+        58.599508604893,
+        144.0112154391377
+      ],
+      "lambda_source": "bulk_eigenmode"
+    },
+    {
+      "geometry_name": "lifshitz_deformed_d3_test_007",
+      "family": "lifshitz",
+      "d": 3,
+      "n_modes": 3,
+      "Delta_bulk_uv": [
+        1.6541883045309909,
+        1.4822241027674505,
+        0.4574199796463921
+      ],
+      "lambda_sl_bulk": [
+        14.797206915475021,
+        59.179977336695906,
+        143.84612350554914
+      ],
+      "lambda_source": "bulk_eigenmode"
+    },
+    {
+      "geometry_name": "lifshitz_deformed_d3_test_008",
+      "family": "lifshitz",
+      "d": 3,
+      "n_modes": 3,
+      "Delta_bulk_uv": [
+        1.5753934958418698,
+        1.527670305811599,
+        0.5217145548605213
+      ],
+      "lambda_sl_bulk": [
+        25.04438032734446,
+        63.37013970277994,
+        144.33437554986185
+      ],
+      "lambda_source": "bulk_eigenmode"
+    },
+    {
+      "geometry_name": "lifshitz_deformed_d3_test_009",
+      "family": "lifshitz",
+      "d": 3,
+      "n_modes": 3,
+      "Delta_bulk_uv": [
+        1.5740312662718496,
+        1.526398108579594,
+        0.5246944189283458
+      ],
+      "lambda_sl_bulk": [
+        24.601207970578674,
+        63.590970704246686,
+        144.43522780408557
+      ],
+      "lambda_source": "bulk_eigenmode"
+    },
+    {
+      "geometry_name": "unknown_family_1_unknown_000",
+      "family": "unknown",
+      "d": 5,
+      "n_modes": 3,
+      "Delta_bulk_uv": [
+        2.521137508418991,
+        2.5581857291603236,
+        2.366867271392596
+      ],
+      "lambda_sl_bulk": [
+        7.4527068914781065,
+        44.00209795091103,
+        99.38513524660708
+      ],
+      "lambda_source": "bulk_eigenmode"
+    },
+    {
+      "geometry_name": "unknown_family_1_unknown_001",
+      "family": "unknown",
+      "d": 3,
+      "n_modes": 3,
+      "Delta_bulk_uv": [
+        1.6493600664048051,
+        0.7074536801694892,
+        -6.830169050558676
+      ],
+      "lambda_sl_bulk": [
+        30.080578995561194,
+        123.29556444483215,
+        25697.66558206663
+      ],
+      "lambda_source": "bulk_eigenmode"
+    },
+    {
+      "geometry_name": "unknown_family_1_unknown_002",
+      "family": "unknown",
+      "d": 3,
+      "n_modes": 3,
+      "Delta_bulk_uv": [
+        1.454143494122539,
+        0.31135205510933534,
+        -6.82035189706037
+      ],
+      "lambda_sl_bulk": [
+        40.49807020260342,
+        125.65159485064311,
+        25697.66684507641
+      ],
+      "lambda_source": "bulk_eigenmode"
+    },
+    {
+      "geometry_name": "unknown_family_1_unknown_003",
+      "family": "unknown",
+      "d": 4,
+      "n_modes": 3,
+      "Delta_bulk_uv": [
+        1.6874753673580167,
+        0.46374272607415645,
+        -6.9004620251538205
+      ],
+      "lambda_sl_bulk": [
+        57.72749418162909,
+        174.05701433718644,
+        152510.0421086376
+      ],
+      "lambda_source": "bulk_eigenmode"
+    },
+    {
+      "geometry_name": "unknown_family_1_unknown_004",
+      "family": "unknown",
+      "d": 4,
+      "n_modes": 3,
+      "Delta_bulk_uv": [
+        2.120679185325967,
+        1.9135814969532414,
+        0.7578940724340504
+      ],
+      "lambda_sl_bulk": [
+        22.57215903403847,
+        71.27661094661207,
+        176.8896834500506
+      ],
+      "lambda_source": "bulk_eigenmode"
+    },
+    {
+      "geometry_name": "unknown_family_2_unknown_000",
+      "family": "unknown",
+      "d": 4,
+      "n_modes": 3,
+      "Delta_bulk_uv": [
+        2.0652980011764996,
+        2.0343025255262064,
+        1.9880379981897032
+      ],
+      "lambda_sl_bulk": [
+        9.685471056731362,
+        33.800321880708566,
+        71.32045464022514
+      ],
+      "lambda_source": "bulk_eigenmode"
+    },
+    {
+      "geometry_name": "unknown_family_2_unknown_001",
+      "family": "unknown",
+      "d": 4,
+      "n_modes": 3,
+      "Delta_bulk_uv": [
+        2.117808192660088,
+        1.9384755345263354,
+        0.7805703682655243
+      ],
+      "lambda_sl_bulk": [
+        21.17353476868449,
+        66.50455681010173,
+        169.34625802359866
+      ],
+      "lambda_source": "bulk_eigenmode"
+    },
+    {
+      "geometry_name": "unknown_family_2_unknown_002",
+      "family": "unknown",
+      "d": 4,
+      "n_modes": 3,
+      "Delta_bulk_uv": [
+        2.165762263204395,
+        1.8945078423679869,
+        0.7075131901816747
+      ],
+      "lambda_sl_bulk": [
+        13.288638177480985,
+        62.68756663263105,
+        168.64115375104672
+      ],
+      "lambda_source": "bulk_eigenmode"
+    },
+    {
+      "geometry_name": "unknown_family_2_unknown_003",
+      "family": "unknown",
+      "d": 4,
+      "n_modes": 3,
+      "Delta_bulk_uv": [
+        2.1172998458062726,
+        2.0151359619473452,
+        1.9777703006030205
+      ],
+      "lambda_sl_bulk": [
+        4.946057638942948,
+        30.727634890976717,
+        70.30226109668338
+      ],
+      "lambda_source": "bulk_eigenmode"
+    },
+    {
+      "geometry_name": "unknown_family_2_unknown_004",
+      "family": "unknown",
+      "d": 3,
+      "n_modes": 3,
+      "Delta_bulk_uv": [
+        1.72152886976858,
+        1.5318059533747952,
+        0.45305183491966317
+      ],
+      "lambda_sl_bulk": [
+        3.7345344433143364,
+        40.835014290757854,
+        120.94937039832463
+      ],
+      "lambda_source": "bulk_eigenmode"
+    }
+  ],
+  "by_family_d": {
+    "ads_d5": {
+      "family": "ads",
+      "d": 5,
+      "Delta_bulk_uv": [
+        2.878063861853526,
+        2.5517495098552025,
+        2.295414974307499,
+        2.486765215347559,
+        2.4840313129985727,
+        2.3355604637544443
+      ],
+      "lambda_sl_bulk": [
+        0.8527226141972455,
+        51.6979793936715,
+        121.54390782330212,
+        12.259226648419691,
+        59.860211476156124,
+        124.43902991270599
+      ],
+      "geometries": [
+        "ads_d3_Tfinite_known_000",
+        "ads_d3_Tfinite_known_017"
+      ]
+    },
+    "ads_d3": {
+      "family": "ads",
+      "d": 3,
+      "Delta_bulk_uv": [
+        1.6331069815548813,
+        0.6367868899446645,
+        -6.881001609390978,
+        1.6651904312166856,
+        1.488709429082089,
+        0.4020655413999311,
+        1.5564253966116681,
+        0.49247498405145823,
+        -6.8726841800234935,
+        1.6350532347506261,
+        1.4979816202402148,
+        0.42281136779828593,
+        1.5350095171118598,
+        0.44119788314128594,
+        -6.875282251774129,
+        1.492890283354388,
+        0.35837691749655576,
+        -6.878096184984768,
+        1.734860258188634,
+        1.4584617990785163,
+        0.3321855550320143,
+        1.5218763312400163,
+        0.4129172417875151,
+        -6.876427887685724,
+        1.8003315951561838,
+        1.4283792657342087,
+        0.26094232777005094,
+        1.8159220148678705,
+        1.4200888494565989,
+        0.24253587319365744,
+        1.6330911735637441,
+        0.6367374971760532,
+        -6.881005106833939,
+        1.835489528550706,
+        1.4076504598222812,
+        0.2141642930691142,
+        1.6222378345993498,
+        1.501018598485997,
+        0.4295372806376428,
+        1.6229492308862237,
+        1.5008665411983946,
+        0.4292018496375387,
+        1.5018296591573623,
+        0.37410225303983263,
+        -6.877685101587137,
+        1.5283934986663061,
+        0.4266599625809606,
+        -6.87589605318844
+      ],
+      "lambda_sl_bulk": [
+        35.55039408011202,
+        134.39937952129557,
+        26885.51188750804,
+        14.977839179816897,
+        55.06759383035434,
+        141.31433632926183,
+        40.0705617947668,
+        136.1591348984783,
+        26885.52659659229,
+        16.96071892156369,
+        56.29319769454346,
+        141.6863753028165,
+        38.59065119456204,
+        135.6028467730425,
+        26885.521983386887,
+        37.06613669924815,
+        135.0071945887738,
+        26885.517005971284,
+        9.514799239501782,
+        51.48475179313193,
+        140.1831803329469,
+        37.95937065812199,
+        135.35948988030842,
+        26885.51995454014,
+        5.625075679722827,
+        48.646648749137675,
+        139.24215720526243,
+        4.806258177537659,
+        48.062338526548245,
+        139.04421094408306,
+        35.548519687764724,
+        134.3986520804687,
+        26885.511881359344,
+        3.6741247910249673,
+        47.26732751828755,
+        138.77109330913385,
+        17.642580116333246,
+        56.707538273227826,
+        141.81042427244594,
+        17.607467646523684,
+        56.68666942999427,
+        141.80419844571844,
+        37.2831883400504,
+        135.0937755510655,
+        26885.517731878313,
+        38.25070877293138,
+        135.47231645476685,
+        26885.520895975613
+      ],
+      "geometries": [
+        "ads_d3_Tfinite_known_001",
+        "ads_d3_Tfinite_known_002",
+        "ads_d3_Tfinite_known_003",
+        "ads_d3_Tfinite_known_004",
+        "ads_d3_Tfinite_known_005",
+        "ads_d3_Tfinite_known_006",
+        "ads_d3_Tfinite_known_007",
+        "ads_d3_Tfinite_known_008",
+        "ads_d3_Tfinite_known_009",
+        "ads_d3_Tfinite_known_010",
+        "ads_d3_Tfinite_known_011",
+        "ads_d3_Tfinite_known_012",
+        "ads_d3_Tfinite_known_013",
+        "ads_d3_Tfinite_known_014",
+        "ads_d3_Tfinite_known_015",
+        "ads_d3_Tfinite_known_019"
+      ]
+    },
+    "ads_d4": {
+      "family": "ads",
+      "d": 4,
+      "Delta_bulk_uv": [
+        2.0511420470264285,
+        1.8660103765512084,
+        0.725430163772671,
+        2.1352985002349976,
+        1.8018174048912994,
+        0.6254812163112776
+      ],
+      "lambda_sl_bulk": [
+        31.925261539832483,
+        87.9615027830846,
+        200.32676908115639,
+        22.210255919274562,
+        83.00650084388867,
+        199.3802629848563
+      ],
+      "geometries": [
+        "ads_d3_Tfinite_known_016",
+        "ads_d3_Tfinite_known_018"
+      ]
+    },
+    "deformed_d3": {
+      "family": "deformed",
+      "d": 3,
+      "Delta_bulk_uv": [
+        1.4807499987604038,
+        0.3444583226943408,
+        -6.8586404169811,
+        1.79928265443783,
+        1.4529104346762751,
+        0.345192850992142,
+        1.7377561934305044,
+        0.8308545152002171,
+        -6.874168750183804,
+        1.3886517002170715,
+        0.1839956315243828,
+        -6.854455892853025,
+        1.7720142847784628,
+        0.9504957066344715,
+        -6.87404844441622,
+        1.7114378736883138,
+        0.8625509227666835,
+        -6.8643222812881
+      ],
+      "lambda_sl_bulk": [
+        38.30308569430788,
+        133.51591000279538,
+        26827.33855753483,
+        4.504754438186936,
+        48.87884576557607,
+        138.6047166949414,
+        25.658174150599475,
+        128.09267690972644,
+        26805.514791512967,
+        42.3463547139242,
+        135.4622426254731,
+        26837.8041441786,
+        24.093609405727978,
+        132.24893402827172,
+        26854.867856030654,
+        32.153307576819884,
+        133.9893022664317,
+        26849.139883263677
+      ],
+      "geometries": [
+        "ads_deformed_d3_test_000",
+        "ads_deformed_d3_test_001",
+        "ads_deformed_d3_test_004",
+        "ads_deformed_d3_test_005",
+        "ads_deformed_d3_test_007",
+        "ads_deformed_d3_test_008"
+      ]
+    },
+    "deformed_d5": {
+      "family": "deformed",
+      "d": 5,
+      "Delta_bulk_uv": [
+        2.8736814412340905,
+        2.2334808240736153,
+        1.044509446332562,
+        2.715034780946423,
+        2.042459994276266,
+        0.6021945603029224,
+        2.840450870644275,
+        2.078180085314169,
+        -7.16626509242237,
+        2.867029139712913,
+        2.02546991198741,
+        -7.176878902904321
+      ],
+      "lambda_sl_bulk": [
+        4.396313855459845,
+        88.36149338699624,
+        247.134518194762,
+        7.797748851412927,
+        79.16682528605062,
+        233.05336300044758,
+        58.20342316724621,
+        237.25270340259377,
+        976705.7143067416,
+        42.61617044790445,
+        221.11439647813185,
+        972999.6359887604
+      ],
+      "geometries": [
+        "ads_deformed_d3_test_002",
+        "ads_deformed_d3_test_003",
+        "ads_deformed_d3_test_006",
+        "ads_deformed_d3_test_009"
+      ]
+    },
+    "hyperscaling_d3": {
+      "family": "hyperscaling",
+      "d": 3,
+      "Delta_bulk_uv": [
+        1.1849276332283987,
+        -0.06146830356034636,
+        -6.170191049884519,
+        1.0902334486165284,
+        0.2152464409402066,
+        -6.3254876188868066,
+        1.1603439907968076,
+        0.07877092476514828,
+        -6.62639551461651,
+        1.3877529373329982,
+        1.319762819116223,
+        0.3073713814047637,
+        1.1509207406567141,
+        0.07688478133134787,
+        -6.527173851123038,
+        1.483466004695689,
+        1.4038217503651618,
+        0.3760187548921473,
+        1.74176042217343,
+        1.3087785283362494,
+        0.16455576434178243,
+        1.1073747033040344,
+        1.1765087941445411,
+        0.2410205302008389,
+        1.109966367696152,
+        -0.16055660689788634,
+        -6.604984222480002,
+        1.0479585912769342,
+        1.113475183565382,
+        0.2080818838838921,
+        1.0315147250918517,
+        0.3166754636449902,
+        -6.251100632289668,
+        1.2787398254586013,
+        0.11359206068637473,
+        -6.470970845369921,
+        1.1333495505046833,
+        0.1444605028311638,
+        -6.475670850055252
+      ],
+      "lambda_sl_bulk": [
+        21.19800185286541,
+        88.39385496855958,
+        6462.974340381699,
+        9.91778830197625,
+        46.06132669363043,
+        1670.0641321489568,
+        13.77823940018991,
+        64.05249968340539,
+        3056.043379503029,
+        10.332828752562353,
+        39.6784847633047,
+        108.67352942744868,
+        8.973189277338196,
+        51.65280138103558,
+        2169.7728920771674,
+        15.441357829752807,
+        48.366164810082104,
+        123.68229449389779,
+        1.4521798535564183,
+        35.36938338606036,
+        112.71694715621913,
+        4.451055682183469,
+        24.49932037308198,
+        77.19554497757497,
+        15.108810443209752,
+        80.19502000307871,
+        5460.308595913665,
+        0.11270281672518741,
+        14.255562740078338,
+        56.41485771876943,
+        6.975787453851135,
+        33.46778245309773,
+        1087.451013504936,
+        21.63911570951473,
+        92.9862610498213,
+        7596.807738596799,
+        11.409987277406021,
+        54.159570739205535,
+        2214.9310016891427
+      ],
+      "geometries": [
+        "hvlf_d3_theta1_known_000",
+        "hvlf_d3_theta1_known_002",
+        "hvlf_d3_theta1_known_003",
+        "hvlf_d3_theta1_known_004",
+        "hvlf_d3_theta1_known_006",
+        "hvlf_d3_theta1_known_008",
+        "hvlf_d3_theta1_known_009",
+        "hvlf_d3_theta1_known_011",
+        "hvlf_d3_theta1_known_012",
+        "hvlf_d3_theta1_known_013",
+        "hvlf_d3_theta1_known_015",
+        "hvlf_d3_theta1_known_017",
+        "hvlf_d3_theta1_known_018"
+      ]
+    },
+    "hyperscaling_d4": {
+      "family": "hyperscaling",
+      "d": 4,
+      "Delta_bulk_uv": [
+        1.8173666080766826,
+        1.4779264282751603,
+        0.3123376044845326,
+        1.3068188325840289,
+        0.059557866084915624,
+        -6.3595911546920565,
+        1.1951702866233112,
+        0.04375634997688474,
+        -6.430586925164492,
+        1.6383886061144848,
+        1.4566960218852851,
+        0.3688808931149109
+      ],
+      "lambda_sl_bulk": [
+        7.883055568325688,
+        53.58189814223884,
+        147.92093309061582,
+        39.191451600242395,
+        126.49718676669039,
+        19221.011280095972,
+        20.038154565927762,
+        81.84690344958919,
+        5180.983908221958,
+        12.855859881491114,
+        51.8463020109706,
+        136.3164476206409
+      ],
+      "geometries": [
+        "hvlf_d3_theta1_known_001",
+        "hvlf_d3_theta1_known_005",
+        "hvlf_d3_theta1_known_007",
+        "hvlf_d3_theta1_known_019"
+      ]
+    },
+    "hyperscaling_d5": {
+      "family": "hyperscaling",
+      "d": 5,
+      "Delta_bulk_uv": [
+        2.140664255581642,
+        2.2422365118072283,
+        2.105184030804255,
+        1.6718063287418723,
+        1.6349334279815688,
+        1.5815899799493538,
+        1.8613655098394934,
+        1.5917155516524624,
+        0.44247680673158607
+      ],
+      "lambda_sl_bulk": [
+        20.058136586128434,
+        55.824577862258984,
+        107.45680389974646,
+        5.271594990521117,
+        28.246506548769716,
+        65.55342454016858,
+        14.409400201793641,
+        64.23637386059097,
+        164.50622682262838
+      ],
+      "geometries": [
+        "hvlf_d3_theta1_known_010",
+        "hvlf_d3_theta1_known_014",
+        "hvlf_d3_theta1_known_016"
+      ]
+    },
+    "lifshitz_d4": {
+      "family": "lifshitz",
+      "d": 4,
+      "Delta_bulk_uv": [
+        2.0228328685210184,
+        1.0854828981782163,
+        -6.917182633077364,
+        2.3147030578332113,
+        1.937284887094292,
+        0.9492443819822365,
+        2.0794985135542676,
+        1.8523188241626083,
+        0.74277974706496,
+        2.068057101478968,
+        1.8879714650663275,
+        0.7777212660850775,
+        2.0320904449898873,
+        2.056446149359292,
+        1.9266399825581322
+      ],
+      "lambda_sl_bulk": [
+        69.76501843766972,
+        197.61214416581967,
+        161998.68235460654,
+        5.312260408322248,
+        77.84042808578593,
+        199.76198303775644,
+        29.466141081297142,
+        90.17819447539321,
+        201.4131803529302,
+        35.99648264737694,
+        91.8080939401386,
+        201.42331782981185,
+        5.252720631836477,
+        44.115551095406445,
+        95.19110553007226
+      ],
+      "geometries": [
+        "lifshitz_d3_z2_known_000",
+        "lifshitz_d3_z2_known_002",
+        "lifshitz_d3_z2_known_003",
+        "lifshitz_d3_z2_known_010",
+        "lifshitz_d3_z2_known_019"
+      ]
+    },
+    "lifshitz_d5": {
+      "family": "lifshitz",
+      "d": 5,
+      "Delta_bulk_uv": [
+        2.477947086923878,
+        1.5878370239898878,
+        -7.158816836864293,
+        2.5364027999877417,
+        2.1502337485498333,
+        0.9538677602442666,
+        2.542064607363774,
+        2.2928827252304016,
+        1.1291331818738617,
+        2.7036710750281396,
+        2.359668258600165,
+        1.3450503711681525,
+        2.4164047756783877,
+        2.5125246123848473,
+        2.359425175681529,
+        2.554230770713318,
+        2.2604454559744926,
+        1.0881517915737255,
+        2.4172651130668186,
+        2.5282977260727852,
+        2.375059389310665,
+        2.397854319299649,
+        2.52729313743391,
+        2.3834418968718394
+      ],
+      "lambda_sl_bulk": [
+        89.82472889103731,
+        255.5588267536973,
+        978166.7935769489,
+        35.57692949722974,
+        118.05345592137142,
+        259.3173975025792,
+        50.81226834391508,
+        123.5674759945273,
+        259.73539106385374,
+        16.332736579592957,
+        109.7040312224269,
+        258.5520722714334,
+        14.344948594556802,
+        64.55120215247521,
+        127.26222345620262,
+        45.799796949832,
+        121.3120105351072,
+        259.50899516577465,
+        26.11838336875841,
+        69.33798461421719,
+        127.75738776888085,
+        28.78702638239637,
+        71.44797031355394,
+        128.4985109997605
+      ],
+      "geometries": [
+        "lifshitz_d3_z2_known_001",
+        "lifshitz_d3_z2_known_006",
+        "lifshitz_d3_z2_known_009",
+        "lifshitz_d3_z2_known_015",
+        "lifshitz_d3_z2_known_018",
+        "lifshitz_deformed_d3_test_000",
+        "lifshitz_deformed_d3_test_003",
+        "lifshitz_deformed_d3_test_005"
+      ]
+    },
+    "lifshitz_d3": {
+      "family": "lifshitz",
+      "d": 3,
+      "Delta_bulk_uv": [
+        1.5408954865946316,
+        0.5904540402063079,
+        -6.845992743895941,
+        1.630655166652809,
+        1.4925635202441032,
+        0.46529146543466576,
+        1.686673955787225,
+        1.467670311281044,
+        0.42271007624840173,
+        1.7643682496734157,
+        1.424216364270728,
+        0.3412429695212967,
+        1.769474774133629,
+        0.9714461675035264,
+        -6.876596693918682,
+        1.728691407744513,
+        1.4366645327542416,
+        0.39870035550089294,
+        1.4396984940012745,
+        0.3728657592048036,
+        -6.847059757838966,
+        1.586161205847073,
+        1.5039899381339086,
+        0.49157851018346316,
+        1.5961983550370031,
+        0.6495418597885747,
+        -6.858632365213642,
+        1.5781197761717218,
+        0.6643668802627717,
+        -6.859863921926286,
+        1.7211764918624581,
+        1.4443163568375392,
+        0.3994037723892111,
+        1.7792285633995342,
+        1.4150049987287283,
+        0.3258481104757145,
+        1.5536715654492457,
+        1.5128828835476789,
+        0.4981160486413789,
+        1.6882132926330964,
+        1.4623402928354399,
+        0.44113613975732613,
+        1.6541883045309909,
+        1.4822241027674505,
+        0.4574199796463921,
+        1.5753934958418698,
+        1.527670305811599,
+        0.5217145548605213,
+        1.5740312662718496,
+        1.526398108579594,
+        0.5246944189283458
+      ],
+      "lambda_sl_bulk": [
+        46.830610819908536,
+        141.57978070502148,
+        26885.592980847963,
+        16.846876705463306,
+        59.528856820771026,
+        143.73521500963855,
+        12.09707579460272,
+        57.1909226564013,
+        143.36493482447517,
+        6.166134222042962,
+        53.83312761232337,
+        142.7486041862515,
+        27.510787029098204,
+        134.55316886567363,
+        26885.57903706876,
+        7.626113721919475,
+        56.876359406590765,
+        143.80181868278353,
+        47.87057739388606,
+        141.41400731816475,
+        26885.592182065317,
+        19.23707809148723,
+        61.24964938121967,
+        144.12815412961518,
+        38.487862782440565,
+        138.55046847468844,
+        26885.588045554807,
+        32.188257791431575,
+        137.91851750314547,
+        26885.591377417022,
+        8.601298874532207,
+        56.53358818199095,
+        143.58071365848465,
+        5.186879218396454,
+        53.477263829184274,
+        142.73312606355228,
+        21.344709318092338,
+        61.650802067608005,
+        144.06395584751334,
+        11.078918055854336,
+        58.599508604893,
+        144.0112154391377,
+        14.797206915475021,
+        59.179977336695906,
+        143.84612350554914,
+        25.04438032734446,
+        63.37013970277994,
+        144.33437554986185,
+        24.601207970578674,
+        63.590970704246686,
+        144.43522780408557
+      ],
+      "geometries": [
+        "lifshitz_d3_z2_known_004",
+        "lifshitz_d3_z2_known_005",
+        "lifshitz_d3_z2_known_007",
+        "lifshitz_d3_z2_known_008",
+        "lifshitz_d3_z2_known_011",
+        "lifshitz_d3_z2_known_012",
+        "lifshitz_d3_z2_known_013",
+        "lifshitz_d3_z2_known_014",
+        "lifshitz_d3_z2_known_016",
+        "lifshitz_d3_z2_known_017",
+        "lifshitz_deformed_d3_test_001",
+        "lifshitz_deformed_d3_test_002",
+        "lifshitz_deformed_d3_test_004",
+        "lifshitz_deformed_d3_test_006",
+        "lifshitz_deformed_d3_test_007",
+        "lifshitz_deformed_d3_test_008",
+        "lifshitz_deformed_d3_test_009"
+      ]
+    },
+    "unknown_d5": {
+      "family": "unknown",
+      "d": 5,
+      "Delta_bulk_uv": [
+        2.521137508418991,
+        2.5581857291603236,
+        2.366867271392596
+      ],
+      "lambda_sl_bulk": [
+        7.4527068914781065,
+        44.00209795091103,
+        99.38513524660708
+      ],
+      "geometries": [
+        "unknown_family_1_unknown_000"
+      ]
+    },
+    "unknown_d3": {
+      "family": "unknown",
+      "d": 3,
+      "Delta_bulk_uv": [
+        1.6493600664048051,
+        0.7074536801694892,
+        -6.830169050558676,
+        1.454143494122539,
+        0.31135205510933534,
+        -6.82035189706037,
+        1.72152886976858,
+        1.5318059533747952,
+        0.45305183491966317
+      ],
+      "lambda_sl_bulk": [
+        30.080578995561194,
+        123.29556444483215,
+        25697.66558206663,
+        40.49807020260342,
+        125.65159485064311,
+        25697.66684507641,
+        3.7345344433143364,
+        40.835014290757854,
+        120.94937039832463
+      ],
+      "geometries": [
+        "unknown_family_1_unknown_001",
+        "unknown_family_1_unknown_002",
+        "unknown_family_2_unknown_004"
+      ]
+    },
+    "unknown_d4": {
+      "family": "unknown",
+      "d": 4,
+      "Delta_bulk_uv": [
+        1.6874753673580167,
+        0.46374272607415645,
+        -6.9004620251538205,
+        2.120679185325967,
+        1.9135814969532414,
+        0.7578940724340504,
+        2.0652980011764996,
+        2.0343025255262064,
+        1.9880379981897032,
+        2.117808192660088,
+        1.9384755345263354,
+        0.7805703682655243,
+        2.165762263204395,
+        1.8945078423679869,
+        0.7075131901816747,
+        2.1172998458062726,
+        2.0151359619473452,
+        1.9777703006030205
+      ],
+      "lambda_sl_bulk": [
+        57.72749418162909,
+        174.05701433718644,
+        152510.0421086376,
+        22.57215903403847,
+        71.27661094661207,
+        176.8896834500506,
+        9.685471056731362,
+        33.800321880708566,
+        71.32045464022514,
+        21.17353476868449,
+        66.50455681010173,
+        169.34625802359866,
+        13.288638177480985,
+        62.68756663263105,
+        168.64115375104672,
+        4.946057638942948,
+        30.727634890976717,
+        70.30226109668338
+      ],
+      "geometries": [
+        "unknown_family_1_unknown_003",
+        "unknown_family_1_unknown_004",
+        "unknown_family_2_unknown_000",
+        "unknown_family_2_unknown_001",
+        "unknown_family_2_unknown_002",
+        "unknown_family_2_unknown_003"
+      ]
+    }
+  },
+  "notes": [
+    "Dataset para XII.c construido a partir de modos escalares bulk (eigenmodes).",
+    "NOMENCLATURA v2: Los valores son \u03bb_SL (autovalores Sturm\u2013Liouville),",
+    "NO deben interpretarse autom\u00e1ticamente como m\u00b2 hologr\u00e1fico de Maldacena.",
+    "No se ha usado m^2L^2 = Delta(Delta-d) en el camino de datos.",
+    "Delta_bulk_uv es el exponente UV estimado num\u00e9ricamente desde el modo escalar.",
+    "La relaci\u00f3n \u03bb_SL \u2194 \u0394 es algo a DESCUBRIR, no a asumir."
+  ]
+}

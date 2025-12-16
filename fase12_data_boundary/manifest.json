@@ -1,0 +1,21 @@
+{
+  "geometries": [
+    {
+      "name": "ising_3d",
+      "family": "ads",
+      "category": "unknown",
+      "d": 3,
+      "file": "ising_3d.h5",
+      "operators": []
+    }
+  ],
+  "version": "ising3d_boundary_v1",
+  "config": {
+    "source": "fase12_real_data_adapters",
+    "notes": [
+      "Dataset de contorno real/sintético para Ising 3D.",
+      "Contrato de datos compatible con 02_emergent_geometry_engine.py.",
+      "En esta versión solo garantizamos boundary + metadatos; el tratamiento de bulk_truth depende de lo que haya guardado el adaptador."
+    ]
+  }
+}

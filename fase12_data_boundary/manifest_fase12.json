@@ -1,0 +1,23 @@
+{
+  "processed": [
+    {
+      "name": "ising_3d",
+      "source": "bootstrap",
+      "output_file": "fase12_data_boundary/ising_3d.h5",
+      "n_operators": 4,
+      "has_horizon": false,
+      "features": {
+        "Delta_min": 0.518,
+        "Delta_gap": 0.8919999999999999,
+        "n_relevant": 2,
+        "central_charge": 0.946,
+        "ope_ratio_12": 0.6865535247593634
+      },
+      "known_predictions": {
+        "expected_bulk": "AdS4 or slight deformation",
+        "expected_einstein": true,
+        "expected_theta": 0.0
+      }
+    }
+  ]
+}

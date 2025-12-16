@@ -1,0 +1,49 @@
+{
+  "name": "lifshitz_d3_z2_known_014",
+  "category": "known",
+  "results": {
+    "R_statistics": {
+      "mean": -102.02133178710938,
+      "std": 333.62994384765625,
+      "min": -2111.078857421875,
+      "max": 2.776606559753418,
+      "coefficient_of_variation": 3.270197889040732
+    },
+    "pysr_available": true,
+    "R_is_constant": false,
+    "R_equation": {
+      "equation": "(((x4 + -19.999828) * (square(x2) + x3)) - (x3 / -0.10053728)) - x5",
+      "complexity": 14,
+      "r2": 0.9999186608784246,
+      "variables": [
+        "A",
+        "f",
+        "dA",
+        "d2A",
+        "df",
+        "d2f"
+      ]
+    },
+    "einstein_check": {
+      "consistent_with_einstein_vacuum": false,
+      "note": "R not constant, may indicate non-Einstein or matter sources"
+    },
+    "A_equation": {
+      "equation": "log(0.20598112 / x0) * ((-1.2022526e-6 / square(x0)) + 1.0313158)",
+      "complexity": 11,
+      "r2": 0.9993842668453989
+    },
+    "f_equation": {
+      "equation": "cube(exp(cube(square(x0) / -0.033167012) + -0.14975993) ^ x0)",
+      "complexity": 11,
+      "r2": 0.9995489505388145
+    }
+  },
+  "validation": {
+    "R_constant": false,
+    "einstein_vacuum_compatible": false,
+    "A_is_logarithmic": true,
+    "einstein_score": 0.2,
+    "verdict": "NON_EINSTEIN_OR_DEFORMED"
+  }
+}

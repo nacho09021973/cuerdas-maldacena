@@ -1,0 +1,35 @@
+{
+  "theory": "ising_3d",
+  "d": 3,
+  "operators": [
+    {
+      "name": "sigma",
+      "Delta": 0.518,
+      "spin": 0,
+      "error": 0.001
+    },
+    {
+      "name": "epsilon",
+      "Delta": 1.41,
+      "spin": 0,
+      "error": 0.01
+    },
+    {
+      "name": "epsilon_prime",
+      "Delta": 3.83,
+      "spin": 0,
+      "error": 0.05
+    },
+    {
+      "name": "T",
+      "Delta": 3.0,
+      "spin": 2,
+      "error": 0.001
+    }
+  ],
+  "ope_coefficients": {
+    "sigma_sigma_epsilon": 1.0518,
+    "epsilon_epsilon_epsilon": 1.532
+  },
+  "central_charge": 0.946
+}

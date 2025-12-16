@@ -1,0 +1,27 @@
+--- /mnt/data/02_emergent_geometry_engine.py.bak	2025-12-12 10:56:24.861707780 +0000
++++ /mnt/data/02_emergent_geometry_engine.py	2025-12-12 10:56:24.948730022 +0000
+@@ -1084,6 +1084,7 @@
+             # Atributos (contrato 3.3)
+             f_out.attrs["system_name"] = name
+             f_out.attrs["family_pred"] = preds["family_name"]
++            f_out.attrs["family"] = preds["family_name"]  # IO_CONTRACTS_V1 compat
+             f_out.attrs["d"] = d_boundary
+             f_out.attrs["d_pred"] = d_boundary
+             f_out.attrs["provenance"] = "inference_from_boundary_using_sandbox_model"
+@@ -1095,6 +1096,16 @@
+             f_out.create_dataset("A_emergent", data=preds["A_pred"])
+             f_out.create_dataset("f_emergent", data=preds["f_pred"])
+             f_out.create_dataset("R_emergent", data=preds["R_pred"])
++
++            # IO_CONTRACTS_V1: aliases canónicos (hard-links)
++            # Mantener *_emergent como canónico actual, pero exponer *_of_z para consumidores.
++            try:
++                f_out["A_of_z"] = f_out["A_emergent"]
++                f_out["f_of_z"] = f_out["f_emergent"]
++                f_out["R_of_z"] = f_out["R_emergent"]
++            except Exception as _e:
++                # Si el backend HDF5 no permite hard-links, no fallar: los canónicos *_emergent siguen presentes.
++                pass
+         
+         summary_entries.append({
+             "name": name,

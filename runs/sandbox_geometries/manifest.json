@@ -1,0 +1,220 @@
+{
+  "geometries": [
+    {
+      "name": "ads_d3_Tfinite_known_000",
+      "family": "ads",
+      "category": "known",
+      "d": 4,
+      "file": "ads_d3_Tfinite_known_000.h5",
+      "operators": [
+        "O1",
+        "O2",
+        "O3"
+      ]
+    },
+    {
+      "name": "ads_d3_Tfinite_known_001",
+      "family": "ads",
+      "category": "known",
+      "d": 5,
+      "file": "ads_d3_Tfinite_known_001.h5",
+      "operators": [
+        "O1",
+        "O2",
+        "O3"
+      ]
+    },
+    {
+      "name": "ads_d3_Tfinite_known_002",
+      "family": "ads",
+      "category": "known",
+      "d": 3,
+      "file": "ads_d3_Tfinite_known_002.h5",
+      "operators": [
+        "O1",
+        "O2",
+        "O3"
+      ]
+    },
+    {
+      "name": "ads_d3_Tfinite_test_test_000",
+      "family": "ads",
+      "category": "test",
+      "d": 5,
+      "file": "ads_d3_Tfinite_test_test_000.h5",
+      "operators": [
+        "O1",
+        "O2",
+        "O3"
+      ]
+    },
+    {
+      "name": "ads_d3_Tfinite_test_test_001",
+      "family": "ads",
+      "category": "test",
+      "d": 3,
+      "file": "ads_d3_Tfinite_test_test_001.h5",
+      "operators": [
+        "O1",
+        "O2",
+        "O3"
+      ]
+    },
+    {
+      "name": "lifshitz_d3_z2_known_000",
+      "family": "lifshitz",
+      "category": "known",
+      "d": 3,
+      "file": "lifshitz_d3_z2_known_000.h5",
+      "operators": [
+        "O1",
+        "O2",
+        "O3"
+      ]
+    },
+    {
+      "name": "lifshitz_d3_z2_known_001",
+      "family": "lifshitz",
+      "category": "known",
+      "d": 3,
+      "file": "lifshitz_d3_z2_known_001.h5",
+      "operators": [
+        "O1",
+        "O2",
+        "O3"
+      ]
+    },
+    {
+      "name": "lifshitz_d3_z2_known_002",
+      "family": "lifshitz",
+      "category": "known",
+      "d": 3,
+      "file": "lifshitz_d3_z2_known_002.h5",
+      "operators": [
+        "O1",
+        "O2",
+        "O3"
+      ]
+    },
+    {
+      "name": "hvlf_d3_theta1_known_000",
+      "family": "hyperscaling",
+      "category": "known",
+      "d": 3,
+      "file": "hvlf_d3_theta1_known_000.h5",
+      "operators": [
+        "O1",
+        "O2",
+        "O3"
+      ]
+    },
+    {
+      "name": "hvlf_d3_theta1_known_001",
+      "family": "hyperscaling",
+      "category": "known",
+      "d": 4,
+      "file": "hvlf_d3_theta1_known_001.h5",
+      "operators": [
+        "O1",
+        "O2",
+        "O3"
+      ]
+    },
+    {
+      "name": "hvlf_d3_theta1_known_002",
+      "family": "hyperscaling",
+      "category": "known",
+      "d": 5,
+      "file": "hvlf_d3_theta1_known_002.h5",
+      "operators": [
+        "O1",
+        "O2",
+        "O3"
+      ]
+    },
+    {
+      "name": "ads_deformed_d3_test_000",
+      "family": "deformed",
+      "category": "test",
+      "d": 5,
+      "file": "ads_deformed_d3_test_000.h5",
+      "operators": [
+        "O1",
+        "O2",
+        "O3"
+      ]
+    },
+    {
+      "name": "ads_deformed_d3_test_001",
+      "family": "deformed",
+      "category": "test",
+      "d": 4,
+      "file": "ads_deformed_d3_test_001.h5",
+      "operators": [
+        "O1",
+        "O2",
+        "O3"
+      ]
+    },
+    {
+      "name": "lifshitz_deformed_d3_test_000",
+      "family": "lifshitz",
+      "category": "test",
+      "d": 3,
+      "file": "lifshitz_deformed_d3_test_000.h5",
+      "operators": [
+        "O1",
+        "O2",
+        "O3"
+      ]
+    },
+    {
+      "name": "lifshitz_deformed_d3_test_001",
+      "family": "lifshitz",
+      "category": "test",
+      "d": 3,
+      "file": "lifshitz_deformed_d3_test_001.h5",
+      "operators": [
+        "O1",
+        "O2",
+        "O3"
+      ]
+    },
+    {
+      "name": "unknown_family_1_unknown_000",
+      "family": "unknown",
+      "category": "unknown",
+      "d": 3,
+      "file": "unknown_family_1_unknown_000.h5",
+      "operators": [
+        "O1",
+        "O2",
+        "O3"
+      ]
+    },
+    {
+      "name": "unknown_family_2_unknown_000",
+      "family": "unknown",
+      "category": "unknown",
+      "d": 3,
+      "file": "unknown_family_2_unknown_000.h5",
+      "operators": [
+        "O1",
+        "O2",
+        "O3"
+      ]
+    }
+  ],
+  "version": "v3",
+  "config": {
+    "n_known_per_base": 3,
+    "n_test_per_base": 2,
+    "n_unknown_per_base": 1,
+    "n_samples": 100,
+    "n_operators": 3,
+    "z_max": 5.0,
+    "n_z": 100,
+    "seed": 42,
+    "use_emd_lifshitz": false
+  }
+}

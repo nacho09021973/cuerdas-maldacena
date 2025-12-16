@@ -1,0 +1,26 @@
+{
+  "discovery_results": {
+    "best_equation": "x0*(x0 - x1)",
+    "test_metrics": {
+      "r2": 0.9998,
+      "mae": 0.0021
+    }
+  },
+  "dictionary_source": "emergent_2025_dec_stub",
+  "provenance": "07_emergent_lambda_sl_dictionary (stub honesto para pruebas)",
+  "notes": [
+    "Este es un stub HONESTO que simula que PySR redescubrió exactamente Δ(Δ−d)",
+    "Se usa solo para probar que 09_real_data_and_dictionary_contracts.py",
+    "reacciona correctamente cuando dictionary_source NO es manual"
+  ],
+  "config": {
+    "autofilled": true,
+    "timestamp": "2025-12-12T11:33:04",
+    "note": "Added to satisfy IO_CONTRACTS_V1"
+  },
+  "data_stats": {
+    "autofilled": true,
+    "note": "Populate properly in script 07 (source ranges, counts)."
+  },
+  "nomenclature_version": "v2_lambda_sl"
+}

@@ -1,0 +1,24 @@
+{
+  "version": "V2.2",
+  "mode": "inference",
+  "description": "Geometría emergente inferida desde datos boundary-only usando modelo entrenado en sandbox",
+  "checkpoint": "runs/fase11_sandbox/emergent_geometry_model.pt",
+  "n_systems": 1,
+  "z_grid_from_checkpoint": {
+    "min": 0.01,
+    "max": 5.0,
+    "n_points": 100
+  },
+  "systems": [
+    {
+      "name": "ising_3d",
+      "h5_input": "fase12_data_boundary/ising_3d.h5",
+      "h5_output": "runs/fase12_ising_real/fase11_geometry_from_real/geometry_emergent/ising_3d_emergent.h5",
+      "family_pred": "ads",
+      "zh_pred": 0.9931257367134094,
+      "d": 3,
+      "provenance": "inference_from_boundary_using_sandbox_model"
+    }
+  ],
+  "metrics": null
+}

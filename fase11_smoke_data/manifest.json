@@ -1,0 +1,1006 @@
+{
+  "geometries": [
+    {
+      "name": "ads_d3_Tfinite_known_000",
+      "family": "ads",
+      "category": "known",
+      "d": 5,
+      "file": "ads_d3_Tfinite_known_000.h5",
+      "operators": [
+        "O1",
+        "O2"
+      ]
+    },
+    {
+      "name": "ads_d3_Tfinite_known_001",
+      "family": "ads",
+      "category": "known",
+      "d": 3,
+      "file": "ads_d3_Tfinite_known_001.h5",
+      "operators": [
+        "O1",
+        "O2"
+      ]
+    },
+    {
+      "name": "ads_d3_Tfinite_known_002",
+      "family": "ads",
+      "category": "known",
+      "d": 3,
+      "file": "ads_d3_Tfinite_known_002.h5",
+      "operators": [
+        "O1",
+        "O2"
+      ]
+    },
+    {
+      "name": "ads_d3_Tfinite_known_003",
+      "family": "ads",
+      "category": "known",
+      "d": 3,
+      "file": "ads_d3_Tfinite_known_003.h5",
+      "operators": [
+        "O1",
+        "O2"
+      ]
+    },
+    {
+      "name": "ads_d3_Tfinite_known_004",
+      "family": "ads",
+      "category": "known",
+      "d": 3,
+      "file": "ads_d3_Tfinite_known_004.h5",
+      "operators": [
+        "O1",
+        "O2"
+      ]
+    },
+    {
+      "name": "ads_d3_Tfinite_known_005",
+      "family": "ads",
+      "category": "known",
+      "d": 3,
+      "file": "ads_d3_Tfinite_known_005.h5",
+      "operators": [
+        "O1",
+        "O2"
+      ]
+    },
+    {
+      "name": "ads_d3_Tfinite_known_006",
+      "family": "ads",
+      "category": "known",
+      "d": 3,
+      "file": "ads_d3_Tfinite_known_006.h5",
+      "operators": [
+        "O1",
+        "O2"
+      ]
+    },
+    {
+      "name": "ads_d3_Tfinite_known_007",
+      "family": "ads",
+      "category": "known",
+      "d": 3,
+      "file": "ads_d3_Tfinite_known_007.h5",
+      "operators": [
+        "O1",
+        "O2"
+      ]
+    },
+    {
+      "name": "ads_d3_Tfinite_known_008",
+      "family": "ads",
+      "category": "known",
+      "d": 3,
+      "file": "ads_d3_Tfinite_known_008.h5",
+      "operators": [
+        "O1",
+        "O2"
+      ]
+    },
+    {
+      "name": "ads_d3_Tfinite_known_009",
+      "family": "ads",
+      "category": "known",
+      "d": 3,
+      "file": "ads_d3_Tfinite_known_009.h5",
+      "operators": [
+        "O1",
+        "O2"
+      ]
+    },
+    {
+      "name": "ads_d3_Tfinite_known_010",
+      "family": "ads",
+      "category": "known",
+      "d": 3,
+      "file": "ads_d3_Tfinite_known_010.h5",
+      "operators": [
+        "O1",
+        "O2"
+      ]
+    },
+    {
+      "name": "ads_d3_Tfinite_known_011",
+      "family": "ads",
+      "category": "known",
+      "d": 3,
+      "file": "ads_d3_Tfinite_known_011.h5",
+      "operators": [
+        "O1",
+        "O2"
+      ]
+    },
+    {
+      "name": "ads_d3_Tfinite_known_012",
+      "family": "ads",
+      "category": "known",
+      "d": 3,
+      "file": "ads_d3_Tfinite_known_012.h5",
+      "operators": [
+        "O1",
+        "O2"
+      ]
+    },
+    {
+      "name": "ads_d3_Tfinite_known_013",
+      "family": "ads",
+      "category": "known",
+      "d": 3,
+      "file": "ads_d3_Tfinite_known_013.h5",
+      "operators": [
+        "O1",
+        "O2"
+      ]
+    },
+    {
+      "name": "ads_d3_Tfinite_known_014",
+      "family": "ads",
+      "category": "known",
+      "d": 3,
+      "file": "ads_d3_Tfinite_known_014.h5",
+      "operators": [
+        "O1",
+        "O2"
+      ]
+    },
+    {
+      "name": "ads_d3_Tfinite_known_015",
+      "family": "ads",
+      "category": "known",
+      "d": 3,
+      "file": "ads_d3_Tfinite_known_015.h5",
+      "operators": [
+        "O1",
+        "O2"
+      ]
+    },
+    {
+      "name": "ads_d3_Tfinite_known_016",
+      "family": "ads",
+      "category": "known",
+      "d": 4,
+      "file": "ads_d3_Tfinite_known_016.h5",
+      "operators": [
+        "O1",
+        "O2"
+      ]
+    },
+    {
+      "name": "ads_d3_Tfinite_known_017",
+      "family": "ads",
+      "category": "known",
+      "d": 5,
+      "file": "ads_d3_Tfinite_known_017.h5",
+      "operators": [
+        "O1",
+        "O2"
+      ]
+    },
+    {
+      "name": "ads_d3_Tfinite_known_018",
+      "family": "ads",
+      "category": "known",
+      "d": 4,
+      "file": "ads_d3_Tfinite_known_018.h5",
+      "operators": [
+        "O1",
+        "O2"
+      ]
+    },
+    {
+      "name": "ads_d3_Tfinite_known_019",
+      "family": "ads",
+      "category": "known",
+      "d": 3,
+      "file": "ads_d3_Tfinite_known_019.h5",
+      "operators": [
+        "O1",
+        "O2"
+      ]
+    },
+    {
+      "name": "lifshitz_d3_z2_known_000",
+      "family": "lifshitz",
+      "category": "known",
+      "d": 4,
+      "file": "lifshitz_d3_z2_known_000.h5",
+      "operators": [
+        "O1",
+        "O2"
+      ]
+    },
+    {
+      "name": "lifshitz_d3_z2_known_001",
+      "family": "lifshitz",
+      "category": "known",
+      "d": 5,
+      "file": "lifshitz_d3_z2_known_001.h5",
+      "operators": [
+        "O1",
+        "O2"
+      ]
+    },
+    {
+      "name": "lifshitz_d3_z2_known_002",
+      "family": "lifshitz",
+      "category": "known",
+      "d": 4,
+      "file": "lifshitz_d3_z2_known_002.h5",
+      "operators": [
+        "O1",
+        "O2"
+      ]
+    },
+    {
+      "name": "lifshitz_d3_z2_known_003",
+      "family": "lifshitz",
+      "category": "known",
+      "d": 4,
+      "file": "lifshitz_d3_z2_known_003.h5",
+      "operators": [
+        "O1",
+        "O2"
+      ]
+    },
+    {
+      "name": "lifshitz_d3_z2_known_004",
+      "family": "lifshitz",
+      "category": "known",
+      "d": 3,
+      "file": "lifshitz_d3_z2_known_004.h5",
+      "operators": [
+        "O1",
+        "O2"
+      ]
+    },
+    {
+      "name": "lifshitz_d3_z2_known_005",
+      "family": "lifshitz",
+      "category": "known",
+      "d": 3,
+      "file": "lifshitz_d3_z2_known_005.h5",
+      "operators": [
+        "O1",
+        "O2"
+      ]
+    },
+    {
+      "name": "lifshitz_d3_z2_known_006",
+      "family": "lifshitz",
+      "category": "known",
+      "d": 5,
+      "file": "lifshitz_d3_z2_known_006.h5",
+      "operators": [
+        "O1",
+        "O2"
+      ]
+    },
+    {
+      "name": "lifshitz_d3_z2_known_007",
+      "family": "lifshitz",
+      "category": "known",
+      "d": 3,
+      "file": "lifshitz_d3_z2_known_007.h5",
+      "operators": [
+        "O1",
+        "O2"
+      ]
+    },
+    {
+      "name": "lifshitz_d3_z2_known_008",
+      "family": "lifshitz",
+      "category": "known",
+      "d": 3,
+      "file": "lifshitz_d3_z2_known_008.h5",
+      "operators": [
+        "O1",
+        "O2"
+      ]
+    },
+    {
+      "name": "lifshitz_d3_z2_known_009",
+      "family": "lifshitz",
+      "category": "known",
+      "d": 5,
+      "file": "lifshitz_d3_z2_known_009.h5",
+      "operators": [
+        "O1",
+        "O2"
+      ]
+    },
+    {
+      "name": "lifshitz_d3_z2_known_010",
+      "family": "lifshitz",
+      "category": "known",
+      "d": 4,
+      "file": "lifshitz_d3_z2_known_010.h5",
+      "operators": [
+        "O1",
+        "O2"
+      ]
+    },
+    {
+      "name": "lifshitz_d3_z2_known_011",
+      "family": "lifshitz",
+      "category": "known",
+      "d": 3,
+      "file": "lifshitz_d3_z2_known_011.h5",
+      "operators": [
+        "O1",
+        "O2"
+      ]
+    },
+    {
+      "name": "lifshitz_d3_z2_known_012",
+      "family": "lifshitz",
+      "category": "known",
+      "d": 3,
+      "file": "lifshitz_d3_z2_known_012.h5",
+      "operators": [
+        "O1",
+        "O2"
+      ]
+    },
+    {
+      "name": "lifshitz_d3_z2_known_013",
+      "family": "lifshitz",
+      "category": "known",
+      "d": 3,
+      "file": "lifshitz_d3_z2_known_013.h5",
+      "operators": [
+        "O1",
+        "O2"
+      ]
+    },
+    {
+      "name": "lifshitz_d3_z2_known_014",
+      "family": "lifshitz",
+      "category": "known",
+      "d": 3,
+      "file": "lifshitz_d3_z2_known_014.h5",
+      "operators": [
+        "O1",
+        "O2"
+      ]
+    },
+    {
+      "name": "lifshitz_d3_z2_known_015",
+      "family": "lifshitz",
+      "category": "known",
+      "d": 5,
+      "file": "lifshitz_d3_z2_known_015.h5",
+      "operators": [
+        "O1",
+        "O2"
+      ]
+    },
+    {
+      "name": "lifshitz_d3_z2_known_016",
+      "family": "lifshitz",
+      "category": "known",
+      "d": 3,
+      "file": "lifshitz_d3_z2_known_016.h5",
+      "operators": [
+        "O1",
+        "O2"
+      ]
+    },
+    {
+      "name": "lifshitz_d3_z2_known_017",
+      "family": "lifshitz",
+      "category": "known",
+      "d": 3,
+      "file": "lifshitz_d3_z2_known_017.h5",
+      "operators": [
+        "O1",
+        "O2"
+      ]
+    },
+    {
+      "name": "lifshitz_d3_z2_known_018",
+      "family": "lifshitz",
+      "category": "known",
+      "d": 5,
+      "file": "lifshitz_d3_z2_known_018.h5",
+      "operators": [
+        "O1",
+        "O2"
+      ]
+    },
+    {
+      "name": "lifshitz_d3_z2_known_019",
+      "family": "lifshitz",
+      "category": "known",
+      "d": 4,
+      "file": "lifshitz_d3_z2_known_019.h5",
+      "operators": [
+        "O1",
+        "O2"
+      ]
+    },
+    {
+      "name": "hvlf_d3_theta1_known_000",
+      "family": "hyperscaling",
+      "category": "known",
+      "d": 3,
+      "file": "hvlf_d3_theta1_known_000.h5",
+      "operators": [
+        "O1",
+        "O2"
+      ]
+    },
+    {
+      "name": "hvlf_d3_theta1_known_001",
+      "family": "hyperscaling",
+      "category": "known",
+      "d": 4,
+      "file": "hvlf_d3_theta1_known_001.h5",
+      "operators": [
+        "O1",
+        "O2"
+      ]
+    },
+    {
+      "name": "hvlf_d3_theta1_known_002",
+      "family": "hyperscaling",
+      "category": "known",
+      "d": 3,
+      "file": "hvlf_d3_theta1_known_002.h5",
+      "operators": [
+        "O1",
+        "O2"
+      ]
+    },
+    {
+      "name": "hvlf_d3_theta1_known_003",
+      "family": "hyperscaling",
+      "category": "known",
+      "d": 3,
+      "file": "hvlf_d3_theta1_known_003.h5",
+      "operators": [
+        "O1",
+        "O2"
+      ]
+    },
+    {
+      "name": "hvlf_d3_theta1_known_004",
+      "family": "hyperscaling",
+      "category": "known",
+      "d": 3,
+      "file": "hvlf_d3_theta1_known_004.h5",
+      "operators": [
+        "O1",
+        "O2"
+      ]
+    },
+    {
+      "name": "hvlf_d3_theta1_known_005",
+      "family": "hyperscaling",
+      "category": "known",
+      "d": 4,
+      "file": "hvlf_d3_theta1_known_005.h5",
+      "operators": [
+        "O1",
+        "O2"
+      ]
+    },
+    {
+      "name": "hvlf_d3_theta1_known_006",
+      "family": "hyperscaling",
+      "category": "known",
+      "d": 3,
+      "file": "hvlf_d3_theta1_known_006.h5",
+      "operators": [
+        "O1",
+        "O2"
+      ]
+    },
+    {
+      "name": "hvlf_d3_theta1_known_007",
+      "family": "hyperscaling",
+      "category": "known",
+      "d": 4,
+      "file": "hvlf_d3_theta1_known_007.h5",
+      "operators": [
+        "O1",
+        "O2"
+      ]
+    },
+    {
+      "name": "hvlf_d3_theta1_known_008",
+      "family": "hyperscaling",
+      "category": "known",
+      "d": 3,
+      "file": "hvlf_d3_theta1_known_008.h5",
+      "operators": [
+        "O1",
+        "O2"
+      ]
+    },
+    {
+      "name": "hvlf_d3_theta1_known_009",
+      "family": "hyperscaling",
+      "category": "known",
+      "d": 3,
+      "file": "hvlf_d3_theta1_known_009.h5",
+      "operators": [
+        "O1",
+        "O2"
+      ]
+    },
+    {
+      "name": "hvlf_d3_theta1_known_010",
+      "family": "hyperscaling",
+      "category": "known",
+      "d": 5,
+      "file": "hvlf_d3_theta1_known_010.h5",
+      "operators": [
+        "O1",
+        "O2"
+      ]
+    },
+    {
+      "name": "hvlf_d3_theta1_known_011",
+      "family": "hyperscaling",
+      "category": "known",
+      "d": 3,
+      "file": "hvlf_d3_theta1_known_011.h5",
+      "operators": [
+        "O1",
+        "O2"
+      ]
+    },
+    {
+      "name": "hvlf_d3_theta1_known_012",
+      "family": "hyperscaling",
+      "category": "known",
+      "d": 3,
+      "file": "hvlf_d3_theta1_known_012.h5",
+      "operators": [
+        "O1",
+        "O2"
+      ]
+    },
+    {
+      "name": "hvlf_d3_theta1_known_013",
+      "family": "hyperscaling",
+      "category": "known",
+      "d": 3,
+      "file": "hvlf_d3_theta1_known_013.h5",
+      "operators": [
+        "O1",
+        "O2"
+      ]
+    },
+    {
+      "name": "hvlf_d3_theta1_known_014",
+      "family": "hyperscaling",
+      "category": "known",
+      "d": 5,
+      "file": "hvlf_d3_theta1_known_014.h5",
+      "operators": [
+        "O1",
+        "O2"
+      ]
+    },
+    {
+      "name": "hvlf_d3_theta1_known_015",
+      "family": "hyperscaling",
+      "category": "known",
+      "d": 3,
+      "file": "hvlf_d3_theta1_known_015.h5",
+      "operators": [
+        "O1",
+        "O2"
+      ]
+    },
+    {
+      "name": "hvlf_d3_theta1_known_016",
+      "family": "hyperscaling",
+      "category": "known",
+      "d": 5,
+      "file": "hvlf_d3_theta1_known_016.h5",
+      "operators": [
+        "O1",
+        "O2"
+      ]
+    },
+    {
+      "name": "hvlf_d3_theta1_known_017",
+      "family": "hyperscaling",
+      "category": "known",
+      "d": 3,
+      "file": "hvlf_d3_theta1_known_017.h5",
+      "operators": [
+        "O1",
+        "O2"
+      ]
+    },
+    {
+      "name": "hvlf_d3_theta1_known_018",
+      "family": "hyperscaling",
+      "category": "known",
+      "d": 3,
+      "file": "hvlf_d3_theta1_known_018.h5",
+      "operators": [
+        "O1",
+        "O2"
+      ]
+    },
+    {
+      "name": "hvlf_d3_theta1_known_019",
+      "family": "hyperscaling",
+      "category": "known",
+      "d": 4,
+      "file": "hvlf_d3_theta1_known_019.h5",
+      "operators": [
+        "O1",
+        "O2"
+      ]
+    },
+    {
+      "name": "ads_deformed_d3_test_000",
+      "family": "deformed",
+      "category": "test",
+      "d": 3,
+      "file": "ads_deformed_d3_test_000.h5",
+      "operators": [
+        "O1",
+        "O2"
+      ]
+    },
+    {
+      "name": "ads_deformed_d3_test_001",
+      "family": "deformed",
+      "category": "test",
+      "d": 3,
+      "file": "ads_deformed_d3_test_001.h5",
+      "operators": [
+        "O1",
+        "O2"
+      ]
+    },
+    {
+      "name": "ads_deformed_d3_test_002",
+      "family": "deformed",
+      "category": "test",
+      "d": 5,
+      "file": "ads_deformed_d3_test_002.h5",
+      "operators": [
+        "O1",
+        "O2"
+      ]
+    },
+    {
+      "name": "ads_deformed_d3_test_003",
+      "family": "deformed",
+      "category": "test",
+      "d": 5,
+      "file": "ads_deformed_d3_test_003.h5",
+      "operators": [
+        "O1",
+        "O2"
+      ]
+    },
+    {
+      "name": "ads_deformed_d3_test_004",
+      "family": "deformed",
+      "category": "test",
+      "d": 3,
+      "file": "ads_deformed_d3_test_004.h5",
+      "operators": [
+        "O1",
+        "O2"
+      ]
+    },
+    {
+      "name": "ads_deformed_d3_test_005",
+      "family": "deformed",
+      "category": "test",
+      "d": 3,
+      "file": "ads_deformed_d3_test_005.h5",
+      "operators": [
+        "O1",
+        "O2"
+      ]
+    },
+    {
+      "name": "ads_deformed_d3_test_006",
+      "family": "deformed",
+      "category": "test",
+      "d": 5,
+      "file": "ads_deformed_d3_test_006.h5",
+      "operators": [
+        "O1",
+        "O2"
+      ]
+    },
+    {
+      "name": "ads_deformed_d3_test_007",
+      "family": "deformed",
+      "category": "test",
+      "d": 3,
+      "file": "ads_deformed_d3_test_007.h5",
+      "operators": [
+        "O1",
+        "O2"
+      ]
+    },
+    {
+      "name": "ads_deformed_d3_test_008",
+      "family": "deformed",
+      "category": "test",
+      "d": 3,
+      "file": "ads_deformed_d3_test_008.h5",
+      "operators": [
+        "O1",
+        "O2"
+      ]
+    },
+    {
+      "name": "ads_deformed_d3_test_009",
+      "family": "deformed",
+      "category": "test",
+      "d": 5,
+      "file": "ads_deformed_d3_test_009.h5",
+      "operators": [
+        "O1",
+        "O2"
+      ]
+    },
+    {
+      "name": "lifshitz_deformed_d3_test_000",
+      "family": "lifshitz",
+      "category": "test",
+      "d": 5,
+      "file": "lifshitz_deformed_d3_test_000.h5",
+      "operators": [
+        "O1",
+        "O2"
+      ]
+    },
+    {
+      "name": "lifshitz_deformed_d3_test_001",
+      "family": "lifshitz",
+      "category": "test",
+      "d": 3,
+      "file": "lifshitz_deformed_d3_test_001.h5",
+      "operators": [
+        "O1",
+        "O2"
+      ]
+    },
+    {
+      "name": "lifshitz_deformed_d3_test_002",
+      "family": "lifshitz",
+      "category": "test",
+      "d": 3,
+      "file": "lifshitz_deformed_d3_test_002.h5",
+      "operators": [
+        "O1",
+        "O2"
+      ]
+    },
+    {
+      "name": "lifshitz_deformed_d3_test_003",
+      "family": "lifshitz",
+      "category": "test",
+      "d": 5,
+      "file": "lifshitz_deformed_d3_test_003.h5",
+      "operators": [
+        "O1",
+        "O2"
+      ]
+    },
+    {
+      "name": "lifshitz_deformed_d3_test_004",
+      "family": "lifshitz",
+      "category": "test",
+      "d": 3,
+      "file": "lifshitz_deformed_d3_test_004.h5",
+      "operators": [
+        "O1",
+        "O2"
+      ]
+    },
+    {
+      "name": "lifshitz_deformed_d3_test_005",
+      "family": "lifshitz",
+      "category": "test",
+      "d": 5,
+      "file": "lifshitz_deformed_d3_test_005.h5",
+      "operators": [
+        "O1",
+        "O2"
+      ]
+    },
+    {
+      "name": "lifshitz_deformed_d3_test_006",
+      "family": "lifshitz",
+      "category": "test",
+      "d": 3,
+      "file": "lifshitz_deformed_d3_test_006.h5",
+      "operators": [
+        "O1",
+        "O2"
+      ]
+    },
+    {
+      "name": "lifshitz_deformed_d3_test_007",
+      "family": "lifshitz",
+      "category": "test",
+      "d": 3,
+      "file": "lifshitz_deformed_d3_test_007.h5",
+      "operators": [
+        "O1",
+        "O2"
+      ]
+    },
+    {
+      "name": "lifshitz_deformed_d3_test_008",
+      "family": "lifshitz",
+      "category": "test",
+      "d": 3,
+      "file": "lifshitz_deformed_d3_test_008.h5",
+      "operators": [
+        "O1",
+        "O2"
+      ]
+    },
+    {
+      "name": "lifshitz_deformed_d3_test_009",
+      "family": "lifshitz",
+      "category": "test",
+      "d": 3,
+      "file": "lifshitz_deformed_d3_test_009.h5",
+      "operators": [
+        "O1",
+        "O2"
+      ]
+    },
+    {
+      "name": "unknown_family_1_unknown_000",
+      "family": "unknown",
+      "category": "unknown",
+      "d": 5,
+      "file": "unknown_family_1_unknown_000.h5",
+      "operators": [
+        "O1",
+        "O2"
+      ]
+    },
+    {
+      "name": "unknown_family_1_unknown_001",
+      "family": "unknown",
+      "category": "unknown",
+      "d": 3,
+      "file": "unknown_family_1_unknown_001.h5",
+      "operators": [
+        "O1",
+        "O2"
+      ]
+    },
+    {
+      "name": "unknown_family_1_unknown_002",
+      "family": "unknown",
+      "category": "unknown",
+      "d": 3,
+      "file": "unknown_family_1_unknown_002.h5",
+      "operators": [
+        "O1",
+        "O2"
+      ]
+    },
+    {
+      "name": "unknown_family_1_unknown_003",
+      "family": "unknown",
+      "category": "unknown",
+      "d": 4,
+      "file": "unknown_family_1_unknown_003.h5",
+      "operators": [
+        "O1",
+        "O2"
+      ]
+    },
+    {
+      "name": "unknown_family_1_unknown_004",
+      "family": "unknown",
+      "category": "unknown",
+      "d": 4,
+      "file": "unknown_family_1_unknown_004.h5",
+      "operators": [
+        "O1",
+        "O2"
+      ]
+    },
+    {
+      "name": "unknown_family_2_unknown_000",
+      "family": "unknown",
+      "category": "unknown",
+      "d": 4,
+      "file": "unknown_family_2_unknown_000.h5",
+      "operators": [
+        "O1",
+        "O2"
+      ]
+    },
+    {
+      "name": "unknown_family_2_unknown_001",
+      "family": "unknown",
+      "category": "unknown",
+      "d": 4,
+      "file": "unknown_family_2_unknown_001.h5",
+      "operators": [
+        "O1",
+        "O2"
+      ]
+    },
+    {
+      "name": "unknown_family_2_unknown_002",
+      "family": "unknown",
+      "category": "unknown",
+      "d": 4,
+      "file": "unknown_family_2_unknown_002.h5",
+      "operators": [
+        "O1",
+        "O2"
+      ]
+    },
+    {
+      "name": "unknown_family_2_unknown_003",
+      "family": "unknown",
+      "category": "unknown",
+      "d": 4,
+      "file": "unknown_family_2_unknown_003.h5",
+      "operators": [
+        "O1",
+        "O2"
+      ]
+    },
+    {
+      "name": "unknown_family_2_unknown_004",
+      "family": "unknown",
+      "category": "unknown",
+      "d": 3,
+      "file": "unknown_family_2_unknown_004.h5",
+      "operators": [
+        "O1",
+        "O2"
+      ]
+    }
+  ],
+  "version": "v3",
+  "config": {
+    "n_known_per_base": 20,
+    "n_test_per_base": 10,
+    "n_unknown_per_base": 5,
+    "n_samples": 32,
+    "n_operators": 2,
+    "z_max": 3.0,
+    "n_z": 64,
+    "seed": 123,
+    "use_emd_lifshitz": false
+  }
+}

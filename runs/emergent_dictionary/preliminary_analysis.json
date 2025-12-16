@@ -1,0 +1,58 @@
+{
+  "n_points": 4,
+  "d_values": [
+    3
+  ],
+  "lambda_sl_range": [
+    0.0,
+    0.04942965
+  ],
+  "Delta_range": [
+    0.5,
+    4.126
+  ],
+  "Delta_theoretical_comparison": {
+    "formula": "d/2 + sqrt(d^2/4 + lambda_sl)",
+    "mean_residual": -0.7632503861563342,
+    "std_residual": 1.731486130383963,
+    "max_abs_residual": 2.5
+  },
+  "point_by_point": [
+    {
+      "system": "ising_3d",
+      "operator": "sigma",
+      "d": 3,
+      "lambda_sl": 0.00472916,
+      "Delta_observed": 0.5181489,
+      "Delta_theory": 3.001575559204398,
+      "residual": -2.483426659204398
+    },
+    {
+      "system": "ising_3d",
+      "operator": "epsilon_prime",
+      "d": 3,
+      "lambda_sl": 0.02668218,
+      "Delta_observed": 3.82968,
+      "Delta_theory": 3.008867847095961,
+      "residual": 0.8208121529040393
+    },
+    {
+      "system": "ising_3d",
+      "operator": "sigma_prime",
+      "d": 3,
+      "lambda_sl": 0.04942965,
+      "Delta_observed": 4.126,
+      "Delta_theory": 3.0163870383249787,
+      "residual": 1.1096129616750217
+    },
+    {
+      "system": "free_scalar",
+      "operator": "phi",
+      "d": 3,
+      "lambda_sl": 0.0,
+      "Delta_observed": 0.5,
+      "Delta_theory": 3.0,
+      "residual": -2.5
+    }
+  ]
+}

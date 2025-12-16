@@ -1,0 +1,22 @@
+{
+  "theory": "O4_model",
+  "d": 3,
+  "operators": [
+    {
+      "name": "phi",
+      "Delta": 0.519,
+      "spin": 0
+    },
+    {
+      "name": "s",
+      "Delta": 1.51,
+      "spin": 0
+    },
+    {
+      "name": "t",
+      "Delta": 1.24,
+      "spin": 2
+    }
+  ],
+  "central_charge": 1.1
+}

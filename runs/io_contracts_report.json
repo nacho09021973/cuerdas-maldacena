@@ -1,0 +1,393 @@
+{
+  "timestamp": "2025-12-12T11:34:58.223937",
+  "contract_version": "v1.0",
+  "runs_dir": "runs",
+  "total_files": 20,
+  "passed": 20,
+  "failed": 0,
+  "warnings": 0,
+  "files": [
+    {
+      "filepath": "runs/sandbox_geometries/ads_d3_Tfinite_test_test_001.h5",
+      "filetype": "sandbox_h5",
+      "status": "PASS",
+      "issues": [],
+      "metadata_extracted": {
+        "root_attrs": {
+          "category": "test",
+          "d": "3",
+          "deformation": "0.0",
+          "family": "ads",
+          "name": "ads_d3_Tfinite_test_test_001",
+          "operators": "[{\"name\": \"O1\", \"Delta\": 2.942192412286265, \"m2L2\": -0.1700810459439237, \"spin\": 0}, {\"name\": \"O2\", \"Delta\": 3.1304722129623777, \"m2L2\": 0.408439637242433, \"spin\": 0}, {\"name\": \"O3\", \"Delta\": 3.3368059235809433, \"m2L2\": 1.1238560009020422, \"spin\": 0}]",
+          "theta": "0.0",
+          "z_dyn": "1.0",
+          "z_h": "0.9224788145395487"
+        }
+      }
+    },
+    {
+      "filepath": "runs/sandbox_geometries/unknown_family_2_unknown_000.h5",
+      "filetype": "sandbox_h5",
+      "status": "PASS",
+      "issues": [],
+      "metadata_extracted": {
+        "root_attrs": {
+          "category": "unknown",
+          "d": "3",
+          "deformation": "0.4",
+          "family": "unknown",
+          "name": "unknown_family_2_unknown_000",
+          "operators": "[{\"name\": \"O1\", \"Delta\": 2.1752998386322018, \"m2L2\": -1.7939701279433222, \"spin\": 0}, {\"name\": \"O2\", \"Delta\": 2.2360118042410306, \"m2L2\": -1.708286624017863, \"spin\": 0}, {\"name\": \"O3\", \"Delta\": 2.723625221106781, \"m2L2\": -0.7527413182713811, \"spin\": 0}]",
+          "theta": "0.2",
+          "z_dyn": "1.1",
+          "z_h": "1.212233135643536"
+        }
+      }
+    },
+    {
+      "filepath": "runs/sandbox_geometries/unknown_family_1_unknown_000.h5",
+      "filetype": "sandbox_h5",
+      "status": "PASS",
+      "issues": [],
+      "metadata_extracted": {
+        "root_attrs": {
+          "category": "unknown",
+          "d": "3",
+          "deformation": "0.3",
+          "family": "unknown",
+          "name": "unknown_family_1_unknown_000",
+          "operators": "[{\"name\": \"O1\", \"Delta\": 2.603024178295753, \"m2L2\": -1.0333376620949792, \"spin\": 0}, {\"name\": \"O2\", \"Delta\": 2.762042452192965, \"m2L2\": -0.6572488488627678, \"spin\": 0}, {\"name\": \"O3\", \"Delta\": 3.260565186237777, \"m2L2\": 0.8495897749924581, \"spin\": 0}]",
+          "theta": "0.5",
+          "z_dyn": "1.3",
+          "z_h": "1.1993558808371207"
+        }
+      }
+    },
+    {
+      "filepath": "runs/sandbox_geometries/lifshitz_deformed_d3_test_000.h5",
+      "filetype": "sandbox_h5",
+      "status": "PASS",
+      "issues": [],
+      "metadata_extracted": {
+        "root_attrs": {
+          "category": "test",
+          "d": "3",
+          "deformation": "0.15",
+          "family": "lifshitz",
+          "name": "lifshitz_deformed_d3_test_000",
+          "operators": "[{\"name\": \"O1\", \"Delta\": 2.3225435580672036, \"m2L2\": -1.573422095082145, \"spin\": 0}, {\"name\": \"O2\", \"Delta\": 2.9237544605027748, \"m2L2\": -0.22292323619845278, \"spin\": 0}, {\"name\": \"O3\", \"Delta\": 3.002089550206727, \"m2L2\": 0.00627301684024766, \"spin\": 0}]",
+          "theta": "0.3",
+          "z_dyn": "2.155727878308496",
+          "z_h": "0.9197601703735835"
+        }
+      }
+    },
+    {
+      "filepath": "runs/sandbox_geometries/hvlf_d3_theta1_known_000.h5",
+      "filetype": "sandbox_h5",
+      "status": "PASS",
+      "issues": [],
+      "metadata_extracted": {
+        "root_attrs": {
+          "category": "known",
+          "d": "3",
+          "deformation": "0.0",
+          "family": "hyperscaling",
+          "name": "hvlf_d3_theta1_known_000",
+          "operators": "[{\"name\": \"O1\", \"Delta\": 2.116605483378132, \"m2L2\": -1.86979767786802, \"spin\": 0}, {\"name\": \"O2\", \"Delta\": 2.4678789717306815, \"m2L2\": -1.3132102960815586, \"spin\": 0}, {\"name\": \"O3\", \"Delta\": 3.7068061465363322, \"m2L2\": 2.619993368390536, \"spin\": 0}]",
+          "theta": "1.818305906247736",
+          "z_dyn": "1.0",
+          "z_h": "1.0952586970535052"
+        }
+      }
+    },
+    {
+      "filepath": "runs/sandbox_geometries/lifshitz_d3_z2_known_001.h5",
+      "filetype": "sandbox_h5",
+      "status": "PASS",
+      "issues": [],
+      "metadata_extracted": {
+        "root_attrs": {
+          "category": "known",
+          "d": "3",
+          "deformation": "0.0",
+          "family": "lifshitz",
+          "name": "lifshitz_d3_z2_known_001",
+          "operators": "[{\"name\": \"O1\", \"Delta\": 2.061635669135879, \"m2L2\": -1.9345653751542935, \"spin\": 0}, {\"name\": \"O2\", \"Delta\": 2.6079001961252244, \"m2L2\": -1.0225571554256894, \"spin\": 0}, {\"name\": \"O3\", \"Delta\": 3.1184143214908273, \"m2L2\": 0.36926491600661493, \"spin\": 0}]",
+          "theta": "0.0",
+          "z_dyn": "1.595725884156263",
+          "z_h": "0.8363432330708661"
+        }
+      }
+    },
+    {
+      "filepath": "runs/sandbox_geometries/ads_deformed_d3_test_001.h5",
+      "filetype": "sandbox_h5",
+      "status": "PASS",
+      "issues": [],
+      "metadata_extracted": {
+        "root_attrs": {
+          "category": "test",
+          "d": "3",
+          "deformation": "0.16892623155648345",
+          "family": "deformed",
+          "name": "ads_deformed_d3_test_001",
+          "operators": "[{\"name\": \"O1\", \"Delta\": 2.545424146267721, \"m2L2\": -3.7025125006681274, \"spin\": 0}, {\"name\": \"O2\", \"Delta\": 2.6800957215512833, \"m2L2\": -3.5374698095276393, \"spin\": 0}, {\"name\": \"O3\", \"Delta\": 3.9447187011929006, \"m2L2\": -0.21806917323059788, \"spin\": 0}]",
+          "theta": "0.0",
+          "z_dyn": "1.0",
+          "z_h": "0.7853867894123878"
+        }
+      }
+    },
+    {
+      "filepath": "runs/sandbox_geometries/ads_d3_Tfinite_known_002.h5",
+      "filetype": "sandbox_h5",
+      "status": "PASS",
+      "issues": [],
+      "metadata_extracted": {
+        "root_attrs": {
+          "category": "known",
+          "d": "3",
+          "deformation": "0.0",
+          "family": "ads",
+          "name": "ads_d3_Tfinite_known_002",
+          "operators": "[{\"name\": \"O1\", \"Delta\": 2.91783155107668, \"m2L2\": -0.23975369277149602, \"spin\": 0}, {\"name\": \"O2\", \"Delta\": 3.4103307572526704, \"m2L2\": 1.3993636021055613, \"spin\": 0}, {\"name\": \"O3\", \"Delta\": 3.561458062043936, \"m2L2\": 1.9996093415659393, \"spin\": 0}]",
+          "theta": "0.0",
+          "z_dyn": "1.0",
+          "z_h": "1.2853734109820536"
+        }
+      }
+    },
+    {
+      "filepath": "runs/sandbox_geometries/ads_d3_Tfinite_known_001.h5",
+      "filetype": "sandbox_h5",
+      "status": "PASS",
+      "issues": [],
+      "metadata_extracted": {
+        "root_attrs": {
+          "category": "known",
+          "d": "3",
+          "deformation": "0.0",
+          "family": "ads",
+          "name": "ads_d3_Tfinite_known_001",
+          "operators": "[{\"name\": \"O1\", \"Delta\": 3.0147245395020112, \"m2L2\": -5.985058648434443, \"spin\": 0}, {\"name\": \"O2\", \"Delta\": 4.329701713184065, \"m2L2\": -2.9021916407712984, \"spin\": 0}, {\"name\": \"O3\", \"Delta\": 4.573848755004277, \"m2L2\": -1.9491513413672112, \"spin\": 0}]",
+          "theta": "0.0",
+          "z_dyn": "1.0",
+          "z_h": "1.1184208174356183"
+        }
+      }
+    },
+    {
+      "filepath": "runs/sandbox_geometries/hvlf_d3_theta1_known_001.h5",
+      "filetype": "sandbox_h5",
+      "status": "PASS",
+      "issues": [],
+      "metadata_extracted": {
+        "root_attrs": {
+          "category": "known",
+          "d": "3",
+          "deformation": "0.0",
+          "family": "hyperscaling",
+          "name": "hvlf_d3_theta1_known_001",
+          "operators": "[{\"name\": \"O1\", \"Delta\": 3.0627677840439933, \"m2L2\": -2.87052463719822, \"spin\": 0}, {\"name\": \"O2\", \"Delta\": 3.0871875155333672, \"m2L2\": -2.8180233060683846, \"spin\": 0}, {\"name\": \"O3\", \"Delta\": 3.82383302945379, \"m2L2\": -0.6736330806734103, \"spin\": 0}]",
+          "theta": "1.093425706335958",
+          "z_dyn": "1.0",
+          "z_h": "1.4004361178931086"
+        }
+      }
+    },
+    {
+      "filepath": "runs/sandbox_geometries/hvlf_d3_theta1_known_002.h5",
+      "filetype": "sandbox_h5",
+      "status": "PASS",
+      "issues": [],
+      "metadata_extracted": {
+        "root_attrs": {
+          "category": "known",
+          "d": "3",
+          "deformation": "0.0",
+          "family": "hyperscaling",
+          "name": "hvlf_d3_theta1_known_002",
+          "operators": "[{\"name\": \"O1\", \"Delta\": 4.1140643046825565, \"m2L2\": -3.6447964203496155, \"spin\": 0}, {\"name\": \"O2\", \"Delta\": 4.328627080654775, \"m2L2\": -2.906122999895994, \"spin\": 0}, {\"name\": \"O3\", \"Delta\": 4.5677964182128274, \"m2L2\": -1.9742179728262017, \"spin\": 0}]",
+          "theta": "1.5660956650432891",
+          "z_dyn": "1.0",
+          "z_h": "0.8715387113668047"
+        }
+      }
+    },
+    {
+      "filepath": "runs/sandbox_geometries/lifshitz_d3_z2_known_000.h5",
+      "filetype": "sandbox_h5",
+      "status": "PASS",
+      "issues": [],
+      "metadata_extracted": {
+        "root_attrs": {
+          "category": "known",
+          "d": "3",
+          "deformation": "0.0",
+          "family": "lifshitz",
+          "name": "lifshitz_d3_z2_known_000",
+          "operators": "[{\"name\": \"O1\", \"Delta\": 3.1071588013159914, \"m2L2\": 0.3329594126474544, \"spin\": 0}, {\"name\": \"O2\", \"Delta\": 3.2694366400011816, \"m2L2\": 0.8809060229786712, \"spin\": 0}, {\"name\": \"O3\", \"Delta\": 3.529997714832051, \"m2L2\": 1.8708907222233497, \"spin\": 0}]",
+          "theta": "0.0",
+          "z_dyn": "2.1651212982409964",
+          "z_h": "1.0863190720483988"
+        }
+      }
+    },
+    {
+      "filepath": "runs/sandbox_geometries/ads_d3_Tfinite_known_000.h5",
+      "filetype": "sandbox_h5",
+      "status": "PASS",
+      "issues": [],
+      "metadata_extracted": {
+        "root_attrs": {
+          "category": "known",
+          "d": "3",
+          "deformation": "0.0",
+          "family": "ads",
+          "name": "ads_d3_Tfinite_known_000",
+          "operators": "[{\"name\": \"O1\", \"Delta\": 2.7795049672186196, \"m2L2\": -3.392372006081499, \"spin\": 0}, {\"name\": \"O2\", \"Delta\": 2.899816404950217, \"m2L2\": -3.1903304373824675, \"spin\": 0}, {\"name\": \"O3\", \"Delta\": 3.8649910079499508, \"m2L2\": -0.5218085402658267, \"spin\": 0}]",
+          "theta": "0.0",
+          "z_dyn": "1.0",
+          "z_h": "1.164373629133578"
+        }
+      }
+    },
+    {
+      "filepath": "runs/sandbox_geometries/ads_deformed_d3_test_000.h5",
+      "filetype": "sandbox_h5",
+      "status": "PASS",
+      "issues": [],
+      "metadata_extracted": {
+        "root_attrs": {
+          "category": "test",
+          "d": "3",
+          "deformation": "0.1426149265087172",
+          "family": "deformed",
+          "name": "ads_deformed_d3_test_000",
+          "operators": "[{\"name\": \"O1\", \"Delta\": 3.333945839815408, \"m2L2\": -5.554534336254574, \"spin\": 0}, {\"name\": \"O2\", \"Delta\": 3.812773722880141, \"m2L2\": -4.526625152515415, \"spin\": 0}, {\"name\": \"O3\", \"Delta\": 4.6280407693320695, \"m2L2\": -1.7214424840605735, \"spin\": 0}]",
+          "theta": "0.0",
+          "z_dyn": "1.0",
+          "z_h": "1.024404671568421"
+        }
+      }
+    },
+    {
+      "filepath": "runs/sandbox_geometries/lifshitz_d3_z2_known_002.h5",
+      "filetype": "sandbox_h5",
+      "status": "PASS",
+      "issues": [],
+      "metadata_extracted": {
+        "root_attrs": {
+          "category": "known",
+          "d": "3",
+          "deformation": "0.0",
+          "family": "lifshitz",
+          "name": "lifshitz_d3_z2_known_002",
+          "operators": "[{\"name\": \"O1\", \"Delta\": 2.4291693456390586, \"m2L2\": -1.3866443271246836, \"spin\": 0}, {\"name\": \"O2\", \"Delta\": 2.8170572874492725, \"m2L2\": -0.5153601015767643, \"spin\": 0}, {\"name\": \"O3\", \"Delta\": 2.8734347784647247, \"m2L2\": -0.3636769093035525, \"spin\": 0}]",
+          "theta": "0.0",
+          "z_dyn": "2.6371316101280606",
+          "z_h": "1.1965787031955493"
+        }
+      }
+    },
+    {
+      "filepath": "runs/sandbox_geometries/lifshitz_deformed_d3_test_001.h5",
+      "filetype": "sandbox_h5",
+      "status": "PASS",
+      "issues": [],
+      "metadata_extracted": {
+        "root_attrs": {
+          "category": "test",
+          "d": "3",
+          "deformation": "0.15",
+          "family": "lifshitz",
+          "name": "lifshitz_deformed_d3_test_001",
+          "operators": "[{\"name\": \"O1\", \"Delta\": 2.304624205426337, \"m2L2\": -1.602579888042036, \"spin\": 0}, {\"name\": \"O2\", \"Delta\": 2.8923125511480614, \"m2L2\": -0.3114657599155769, \"spin\": 0}, {\"name\": \"O3\", \"Delta\": 3.392640750155472, \"m2L2\": 1.332089009149068, \"spin\": 0}]",
+          "theta": "0.3",
+          "z_dyn": "1.9685499620730615",
+          "z_h": "1.319567609398173"
+        }
+      }
+    },
+    {
+      "filepath": "runs/sandbox_geometries/ads_d3_Tfinite_test_test_000.h5",
+      "filetype": "sandbox_h5",
+      "status": "PASS",
+      "issues": [],
+      "metadata_extracted": {
+        "root_attrs": {
+          "category": "test",
+          "d": "3",
+          "deformation": "0.0",
+          "family": "ads",
+          "name": "ads_d3_Tfinite_test_test_000",
+          "operators": "[{\"name\": \"O1\", \"Delta\": 3.229060147071947, \"m2L2\": -5.718471301951431, \"spin\": 0}, {\"name\": \"O2\", \"Delta\": 3.279593996255315, \"m2L2\": -5.642233201002668, \"spin\": 0}, {\"name\": \"O3\", \"Delta\": 4.137482391905787, \"m2L2\": -3.568651416198502, \"spin\": 0}]",
+          "theta": "0.0",
+          "z_dyn": "1.0",
+          "z_h": "1.1716385831661724"
+        }
+      }
+    },
+    {
+      "filepath": "runs/fase12_ising_real/fase11_geometry_from_real/geometry_emergent/ising_3d_emergent.h5",
+      "filetype": "emergent_h5",
+      "status": "PASS",
+      "issues": [
+        {
+          "level": "INFO",
+          "code": "LEGACY_DATASET",
+          "message": "Usando alias legacy 'R_emergent' (deber\u00eda ser 'R_of_z')",
+          "field": "R_emergent"
+        }
+      ],
+      "metadata_extracted": {
+        "root_attrs": {
+          "checkpoint_source": "runs/fase11_sandbox/emergent_geometry_model.pt",
+          "d": "3",
+          "d_pred": "3",
+          "family": "ads",
+          "family_pred": "ads",
+          "provenance": "inference_from_boundary_using_sandbox_model",
+          "system_name": "ising_3d",
+          "zh_pred": "0.9931257367134094"
+        }
+      }
+    },
+    {
+      "filepath": "runs/emergent_dictionary/lambda_sl_dictionary_report.json",
+      "filetype": "dictionary_json",
+      "status": "PASS",
+      "issues": [],
+      "metadata_extracted": {
+        "keys": [
+          "discovery_results",
+          "dictionary_source",
+          "provenance",
+          "notes",
+          "config",
+          "data_stats",
+          "nomenclature_version"
+        ]
+      }
+    },
+    {
+      "filepath": "runs/emergent_dictionary/lambda_sl_dictionary_report.json",
+      "filetype": "dictionary_json",
+      "status": "PASS",
+      "issues": [],
+      "metadata_extracted": {
+        "keys": [
+          "discovery_results",
+          "dictionary_source",
+          "provenance",
+          "notes",
+          "config",
+          "data_stats",
+          "nomenclature_version"
+        ]
+      }
+    }
+  ]
+}

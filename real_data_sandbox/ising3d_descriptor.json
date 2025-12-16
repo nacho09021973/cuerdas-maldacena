@@ -1,0 +1,45 @@
+{
+  "system_name": "ising3d_bootstrap",
+  "source": "bootstrap",
+  "theory": "Ising 3D",
+  "d": 3,
+  "operators": [
+    {
+      "name": "sigma",
+      "Delta": 0.518,
+      "spin": 0,
+      "role": "order_parameter",
+      "error": 0.001
+    },
+    {
+      "name": "epsilon",
+      "Delta": 1.41,
+      "spin": 0,
+      "role": "energy_density",
+      "error": 0.01
+    },
+    {
+      "name": "epsilon_prime",
+      "Delta": 3.83,
+      "spin": 0,
+      "role": "next_scalar",
+      "error": 0.05
+    },
+    {
+      "name": "T",
+      "Delta": 3.0,
+      "spin": 2,
+      "role": "stress_tensor",
+      "error": 0.001
+    }
+  ],
+  "metadata": {
+    "central_charge_normalized": 0.946,
+    "reference": "Bootstrap Ising 3D (literatura est\u00e1ndar, valores aproximados)",
+    "notes": [
+      "Este descriptor es un stub honesto para tests de Fase XII.",
+      "No codifica ninguna relaci\u00f3n hologr\u00e1fica \u0394 \u2194 m\u00b2L\u00b2.",
+      "Uso previsto: servir como 'real_data' para adaptadores bootstrap."
+    ]
+  }
+}

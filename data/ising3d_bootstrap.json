@@ -1,0 +1,49 @@
+{
+  "system_name": "ising3d_bootstrap",
+  "display_name": "Ising 3D (bootstrap)",
+  "source": "bootstrap",
+  "category": "real",
+  "d": 3,
+  "global_symmetry": "Z2",
+  "family_hint": "ads_like",
+  "provenance": {
+    "type": "manual",
+    "description": "Adapter v0 para Ising 3D: Δ_sigma y Δ_epsilon aproximados, coherentes con contratos de Fase XII. Sustituir por datos reales del bootstrap cuando estén disponibles.",
+    "notes": "Este fichero permite testear la integración de Fase XII con Ising 3D.",
+    "reference": "Conformal bootstrap Ising 3D (literatura estándar)."
+  },
+  "operators": [
+    {
+      "name": "sigma",
+      "label": "σ",
+      "sector": "Z2_odd_scalar",
+      "spin": 0,
+      "parity": "odd",
+      "Delta": 0.518,
+      "Delta_error": 0.001,
+      "role": "order_parameter",
+      "OPE": {
+        "lambda_sigma_sigma_identity": 1.0,
+        "lambda_sigma_sigma_epsilon": 1.0
+      }
+    },
+    {
+      "name": "epsilon",
+      "label": "ε",
+      "sector": "Z2_even_scalar",
+      "spin": 0,
+      "parity": "even",
+      "Delta": 1.41,
+      "Delta_error": 0.01,
+      "role": "energy_density",
+      "OPE": {
+        "lambda_sigma_sigma_epsilon": 1.0
+      }
+    }
+  ],
+  "spectrum_summary": {
+    "n_operators": 2,
+    "has_sigma": true,
+    "has_epsilon": true
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "expected_bulk_dim": 4,
+  "expected_family": "ads",
+  "expected_m2L2": {
+    "sigma": -1.285676,
+    "epsilon": -2.2419
+  },
+  "has_stress_tensor": true,
+  "bulk_has_gravity": true,
+  "notes": [
+    "Ising 3D es un CFT unitario sin par\u00e1metros continuos",
+    "No hay dual hologr\u00e1fico conocido exacto",
+    "CUERDAS deber\u00eda proponer geometr\u00eda tipo AdS4 o deformaci\u00f3n suave",
+    "El test es: \u00bfm\u00b2L\u00b2 emergente \u2248 \u0394(\u0394-d)?"
+  ]
+}

@@ -1,0 +1,46 @@
+{
+  "fase12": {
+    "phase": "XII",
+    "n_contracts": 1,
+    "n_passed": 1,
+    "pass_rate": 1.0,
+    "all_passed": true,
+    "results": [
+      {
+        "name": "ising3d_consistency",
+        "passed": true,
+        "checks": [
+          {
+            "name": "has_predicted_Deltas",
+            "passed": true,
+            "n_operators": 4
+          },
+          {
+            "name": "family_is_ads_like",
+            "passed": true,
+            "family": "AdS4 or slight deformation"
+          },
+          {
+            "name": "Delta_sigma_match",
+            "passed": true,
+            "known": 0.518,
+            "closest_predicted": 0.518,
+            "difference": 0.0,
+            "tolerance": 0.1
+          },
+          {
+            "name": "Delta_epsilon_match",
+            "passed": true,
+            "known": 1.41,
+            "closest_predicted": 1.41,
+            "difference": 0.0,
+            "tolerance": 0.1
+          }
+        ],
+        "n_predicted_Deltas": 4,
+        "dictionary_source": "manual_v0",
+        "note": "Diccionario v0 (manual): este check valida la tuber\u00eda t\u00e9cnica, no es una confirmaci\u00f3n f\u00edsica. Para validaci\u00f3n f\u00edsica, usar diccionario emergente de Fase XII.c."
+      }
+    ]
+  }
+}

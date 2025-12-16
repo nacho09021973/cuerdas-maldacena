@@ -1,0 +1,10 @@
+{
+  "geometries": [],
+  "summary": {
+    "n_geometries": 0,
+    "n_likely_einstein": 0,
+    "n_possibly_einstein": 0,
+    "n_non_einstein": 0,
+    "average_einstein_score": NaN
+  }
+}

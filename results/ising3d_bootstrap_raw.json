@@ -1,0 +1,91 @@
+{
+  "name": "ising3d_bootstrap",
+  "description": "3D Ising CFT data from conformal bootstrap - Precision Islands",
+  "d": 3,
+  "source": "Precision Islands in the Ising and O(N) Models",
+  "authors": ["Filip Kos", "David Poland", "David Simmons-Duffin", "Alessandro Vichi"],
+  "reference": "arXiv:1603.04436v1",
+  "year": 2016,
+  
+  "operators": [
+    {
+      "label": "sigma",
+      "description": "Leading Z2-odd scalar (spin field)",
+      "spin": 0,
+      "Z2_parity": -1,
+      "Delta": 0.5181489,
+      "Delta_error": 0.0000010,
+      "is_relevant": true
+    },
+    {
+      "label": "epsilon", 
+      "description": "Leading Z2-even scalar (energy density)",
+      "spin": 0,
+      "Z2_parity": 1,
+      "Delta": 1.412625,
+      "Delta_error": 0.000010,
+      "is_relevant": true
+    }
+  ],
+  
+  "ope_coefficients": [
+    {
+      "structure": "sigma-sigma-epsilon",
+      "op1": "sigma",
+      "op2": "sigma", 
+      "op3": "epsilon",
+      "lambda": 1.0518537,
+      "lambda_error": 0.0000041,
+      "notation": "lambda_sigma_sigma_epsilon"
+    },
+    {
+      "structure": "epsilon-epsilon-epsilon",
+      "op1": "epsilon",
+      "op2": "epsilon",
+      "op3": "epsilon", 
+      "lambda": 1.532435,
+      "lambda_error": 0.000019,
+      "notation": "lambda_epsilon_epsilon_epsilon"
+    }
+  ],
+  
+  "ope_ratios": [
+    {
+      "ratio": "lambda_eee/lambda_sse",
+      "value": 1.456889,
+      "error": 0.000050
+    }
+  ],
+  
+  "critical_exponents": {
+    "eta": {
+      "value": 0.0362978,
+      "error": 0.0000020,
+      "formula": "2*Delta_sigma - (d-2)"
+    },
+    "nu": {
+      "value": 0.629971,
+      "error": 0.000004,
+      "formula": "1/(d - Delta_epsilon)"
+    }
+  },
+  
+  "central_charge": {
+    "c_T_normalized": null,
+    "note": "Not directly reported in this paper, see arXiv:2411.15300 for c_T"
+  },
+  
+  "methodology": {
+    "approach": "mixed_correlator_bootstrap",
+    "correlators": ["<sigma sigma sigma sigma>", "<sigma sigma epsilon epsilon>", "<epsilon epsilon epsilon epsilon>"],
+    "Lambda": 43,
+    "solver": "SDPB"
+  },
+  
+  "comparisons": {
+    "monte_carlo_hasenbusch_2010": {
+      "Delta_sigma": {"value": 0.51815, "error": 0.00005},
+      "Delta_epsilon": {"value": 1.4127, "error": 0.0003}
+    }
+  }
+}

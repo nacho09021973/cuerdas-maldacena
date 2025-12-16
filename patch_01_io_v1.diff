@@ -1,0 +1,10 @@
+--- /mnt/data/01_generate_sandbox_geometries.py.bak	2025-12-12 10:55:47.924567196 +0000
++++ /mnt/data/01_generate_sandbox_geometries.py	2025-12-12 10:55:48.020064296 +0000
+@@ -841,6 +841,7 @@
+         with h5py.File(output_path, "w") as f:
+             # attrs globales
+             f.attrs["name"] = geo.name
++            f.attrs["system_name"] = geo.name  # IO_CONTRACTS_V1
+             f.attrs["family"] = geo.family
+             f.attrs["category"] = category
+             f.attrs["d"] = geo.d

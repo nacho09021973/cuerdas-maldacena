@@ -1,0 +1,9 @@
+{
+  "system": "Ising3D",
+  "d_boundary": 3,
+  "operators": {
+    "sigma":   { "lambda_sl_target": 0.518 },
+    "epsilon": { "lambda_sl_target": 1.412 }
+  },
+  "notes": "Valores λ_SL tomados como proxy razonable para pruebas iniciales. En producción se medirían o estimarían desde lattice/bootstrap."
+}

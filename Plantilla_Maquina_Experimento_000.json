@@ -1,0 +1,30 @@
+{
+  "experiment_id": "EXP-0001",
+  "date": "2025-12-12T10:34:00",
+  "phase": ["XI", "XII"],
+  "scripts": [
+    "02_emergent_geometry_engine.py",
+    "06_build_bulk_eigenmodes_dataset.py",
+    "07_emergent_lambda_sl_dictionary.py"
+  ],
+  "seeds": {
+    "numpy": 1234,
+    "torch": 1234,
+    "pysr": 1234
+  },
+  "data_sources": {
+    "sandbox": "runs/fase11_sandbox/...",
+    "real": "runs/fase12_ising_real/fase12/predictions/fase12_report.json"
+  },
+  "pysr_config": {
+    "niterations": 2000,
+    "population_size": 1000,
+    "max_depth": 5,
+    "max_degree": 4
+  },
+  "metrics": {
+    "rmse_dictionary": 2e-6,
+    "contracts_fase12_pass": true
+  },
+  "notes_short": "Smoke test de diccionario con 4 puntos (φ libre + Ising3D σ, ε’, σ’)."
+}

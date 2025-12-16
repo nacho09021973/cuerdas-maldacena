@@ -1,0 +1,217 @@
+{
+  "timestamp": "2025-12-10T08:43:22.871091",
+  "nomenclature_version": "v2_lambda_sl",
+  "config": {
+    "niterations": 50,
+    "populations": 30,
+    "ncyclesperiteration": 1000,
+    "maxsize": 30,
+    "features": [
+      "Delta",
+      "d"
+    ],
+    "target": "lambda_sl_emergent",
+    "binary_operators": [
+      "+",
+      "-",
+      "*",
+      "/"
+    ],
+    "unary_operators": [
+      "square",
+      "sqrt",
+      "exp",
+      "log"
+    ],
+    "binary_ops_minimal": [
+      "+",
+      "-",
+      "*",
+      "/"
+    ],
+    "unary_ops_minimal": [
+      "square",
+      "sqrt"
+    ],
+    "complexity_of_constants": 1.0,
+    "complexity_of_variables": 1.0,
+    "parsimony": 0.003,
+    "annealing": true,
+    "early_stop_condition": "1e-6",
+    "random_state": 123,
+    "deterministic": true,
+    "parallelism": "serial",
+    "test_split_ratio": 0.2,
+    "evaluation_metrics": [
+      "r2",
+      "mae",
+      "pearson",
+      "complexity"
+    ],
+    "save_pareto_front": true,
+    "save_raw_equations": true
+  },
+  "input_metadata": {
+    "format": "v2_lambda_sl",
+    "source": "fase11_bulk_scalar_solver_v2",
+    "total_operators": 27,
+    "systems_count": 9,
+    "methods_found": [
+      "bulk_eigenmode"
+    ],
+    "suspicious_methods": [],
+    "valid_methods": [
+      "bulk_eigenmode"
+    ]
+  },
+  "data_stats": {
+    "train_samples": 21,
+    "test_samples": 6,
+    "Delta_range": [
+      1.3906656178906842,
+      2.512188111973459
+    ],
+    "lambda_sl_range": [
+      10.13993241770872,
+      226.39115036845615
+    ]
+  },
+  "discovery_results": {
+    "best_equation": "((-0.8734184 / (1.5795547 - x0)) + ((x1 * -4.781403) / (square(x0) - x0))) + 83.49291",
+    "complexity": 16,
+    "train_metrics": {
+      "r2": 0.8435335331633307
+    },
+    "test_metrics": {
+      "r2": -0.7067128732006258,
+      "mae": 65.37362538089239,
+      "pearson": 0.5744582402290334
+    },
+    "use_minimal_ops": true
+  },
+  "theory_comparison": {
+    "theoretical_formula": "\u03bb_SL \u2248 \u0394(\u0394 - d)  [si fuera masa hologr\u00e1fica m\u00b2L\u00b2]",
+    "discovered_formula": "((-0.8734184 / (1.5795547 - x0)) + ((x1 * -4.781403) / (square(x0) - x0))) + 83.49291",
+    "theory_r2": -2.232374466143275,
+    "theory_mae": 99.45499970364159,
+    "theory_max_rel_error": 1.2213429168887324,
+    "discovered_r2": -0.7067128732006258,
+    "discovered_mae": 65.37362538089238,
+    "compatible_with_maldacena": "False",
+    "maldacena_comparison": {
+      "enabled": true,
+      "formula": "\u03bb_theory = \u0394(\u0394 - d)",
+      "note": "Esta comparaci\u00f3n es A POSTERIORI y NO afecta al ajuste de PySR",
+      "r2": -2.232374466143275,
+      "mae": 99.45499970364159,
+      "max_rel_error": 1.2213429168887324,
+      "mean_rel_error": 1.0717607519456822,
+      "tolerance_used": 0.1,
+      "is_compatible": "False",
+      "interpretation": "La relaci\u00f3n \u03bb_SL \u2194 \u0394 difiere de Maldacena; puede indicar f\u00edsica m\u00e1s all\u00e1 de AdS/CFT"
+    },
+    "note": "Esta comparaci\u00f3n se hace a posteriori y NO afecta al ajuste de PySR"
+  },
+  "pareto_front": [
+    {
+      "equation": "90.4673",
+      "complexity": 1,
+      "loss": 6244.134
+    },
+    {
+      "equation": "120.85518 / x0",
+      "complexity": 3,
+      "loss": 4875.922
+    },
+    {
+      "equation": "(117.0234 / x0) + x1",
+      "complexity": 5,
+      "loss": 4870.1147
+    },
+    {
+      "equation": "(square(x1) + 110.38665) / x0",
+      "complexity": 6,
+      "loss": 4848.2617
+    },
+    {
+      "equation": "(15.072148 / (1.0025729 - x0)) + 95.29453",
+      "complexity": 7,
+      "loss": 1596.1908
+    },
+    {
+      "equation": "(-30.137842 / (square(x0) - 1.006532)) + 89.203896",
+      "complexity": 8,
+      "loss": 1593.0223
+    },
+    {
+      "equation": "((x1 + 12.082701) / (1.0030694 - x0)) + 95.97484",
+      "complexity": 9,
+      "loss": 1589.1232
+    },
+    {
+      "equation": "((x1 * -4.751784) / (square(x0) - x0)) + 84.929504",
+      "complexity": 10,
+      "loss": 1581.527
+    },
+    {
+      "equation": "(((-4.8140397 / (square(x0) - x0)) + x0) * x1) + 79.42646",
+      "complexity": 12,
+      "loss": 1571.3878
+    },
+    {
+      "equation": "((-14.441868 / (square(x0) - x0)) + 79.86058) + (2.4382014 / (2.0071535 - x0))",
+      "complexity": 14,
+      "loss": 1130.3662
+    },
+    {
+      "equation": "(-14.38687 / ((x0 * x0) - x0)) + ((2.389038 / (2.0064354 - x0)) + 79.54538)",
+      "complexity": 15,
+      "loss": 1129.8928
+    },
+    {
+      "equation": "((-0.8734184 / (1.5795547 - x0)) + ((x1 * -4.781403) / (square(x0) - x0))) + 83.49291",
+      "complexity": 16,
+      "loss": 976.9979
+    },
+    {
+      "equation": "(((x1 * -0.27722394) / (1.579594 - x0)) + 83.093254) + ((x1 / (square(x0) - x0)) * -4.7786293)",
+      "complexity": 18,
+      "loss": 959.4735
+    },
+    {
+      "equation": "(((x1 * -4.8334775) / (square(x0) - x0)) + 65.98342) + (((-0.28891718 / (1.5805529 - x0)) + 4.848839) * x1)",
+      "complexity": 20,
+      "loss": 945.40027
+    },
+    {
+      "equation": "((x0 * -15.321529) + 78.840256) + ((-0.8911191 / (1.5813414 - x0)) + (((-4.677666 / (square(x0) - x0)) + (x1 - -3.9753656)) * x1))",
+      "complexity": 24,
+      "loss": 940.94226
+    },
+    {
+      "equation": "((((x1 * -4.7157874) / (square(x0) - x0)) - (x1 / (x1 - square(x0)))) + 88.39642) + ((x1 * -0.29743966) / (1.5805086 - x0))",
+      "complexity": 25,
+      "loss": 925.38513
+    },
+    {
+      "equation": "(((x1 * -0.29055634) / (1.5805738 - x0)) + ((x1 * (-4.794513 / (square(x0) - x0))) + 82.42014)) - (x1 / (x1 - square(x0 - 0.11538746)))",
+      "complexity": 27,
+      "loss": 867.41705
+    },
+    {
+      "equation": "((-0.27722394 * x1) / (1.579594 - x0)) + (83.093254 + (x1 * ((-4.7786293 / (square(x0) - x0)) - (x1 / (x1 - square(square(x0) - 1.579594))))))",
+      "complexity": 28,
+      "loss": 750.44324
+    },
+    {
+      "equation": "(((x1 / (1.5798088 - x0)) * -0.27560896) + (((x1 * (-4.7920866 / (square(x0) - x0))) - (x1 / (x1 - square(square(x0) - 1.6514616)))) + 83.0901)) + 0.43570516",
+      "complexity": 30,
+      "loss": 685.8644
+    }
+  ],
+  "notes": [
+    "Los valores \u03bb_SL son autovalores Sturm\u2013Liouville, NO asumidos como m\u00b2L\u00b2.",
+    "La comparaci\u00f3n con \u0394(\u0394-d) es A POSTERIORI, no una suposici\u00f3n.",
+    "Si compatible_with_maldacena=True, el descubrimiento valida la interpretaci\u00f3n f\u00edsica."
+  ]
+}

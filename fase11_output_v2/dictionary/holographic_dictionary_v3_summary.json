@@ -1,0 +1,11 @@
+{
+  "by_system": {},
+  "discoveries": {},
+  "geometry_results": [],
+  "mass_source": "hdf5",
+  "compute_m2_from_delta": false,
+  "notes": [
+    "v3.1: FIX MODO EMERGENT (no mezcla d ni masas entre geometr\u00edas)",
+    "rev.honestidad: en modo emergent no se calcula m\u00b2L\u00b2 en este script; las masas deben venir de datos externos (HDF5 u otros m\u00f3dulos)."
+  ]
+}

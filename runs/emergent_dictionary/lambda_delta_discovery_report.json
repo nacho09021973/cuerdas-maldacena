@@ -1,0 +1,169 @@
+{
+  "timestamp": "2025-12-11T17:20:53.151623",
+  "input_file": "ground_truth_deltas.json",
+  "n_points": 4,
+  "pairs": [
+    {
+      "system": "ising_3d",
+      "d": 3,
+      "lambda_sl": 0.00472916,
+      "Delta": 0.5181489,
+      "name": "sigma"
+    },
+    {
+      "system": "ising_3d",
+      "d": 3,
+      "lambda_sl": 0.02668218,
+      "Delta": 3.82968,
+      "name": "epsilon_prime"
+    },
+    {
+      "system": "ising_3d",
+      "d": 3,
+      "lambda_sl": 0.04942965,
+      "Delta": 4.126,
+      "name": "sigma_prime"
+    },
+    {
+      "system": "free_scalar",
+      "d": 3,
+      "lambda_sl": 0.0,
+      "Delta": 0.5,
+      "name": "phi"
+    }
+  ],
+  "preliminary_analysis": {
+    "n_points": 4,
+    "d_values": [
+      3
+    ],
+    "lambda_sl_range": [
+      0.0,
+      0.04942965
+    ],
+    "Delta_range": [
+      0.5,
+      4.126
+    ],
+    "Delta_theoretical_comparison": {
+      "formula": "d/2 + sqrt(d^2/4 + lambda_sl)",
+      "mean_residual": -0.7632503861563342,
+      "std_residual": 1.731486130383963,
+      "max_abs_residual": 2.5
+    },
+    "point_by_point": [
+      {
+        "system": "ising_3d",
+        "operator": "sigma",
+        "d": 3,
+        "lambda_sl": 0.00472916,
+        "Delta_observed": 0.5181489,
+        "Delta_theory": 3.001575559204398,
+        "residual": -2.483426659204398
+      },
+      {
+        "system": "ising_3d",
+        "operator": "epsilon_prime",
+        "d": 3,
+        "lambda_sl": 0.02668218,
+        "Delta_observed": 3.82968,
+        "Delta_theory": 3.008867847095961,
+        "residual": 0.8208121529040393
+      },
+      {
+        "system": "ising_3d",
+        "operator": "sigma_prime",
+        "d": 3,
+        "lambda_sl": 0.04942965,
+        "Delta_observed": 4.126,
+        "Delta_theory": 3.0163870383249787,
+        "residual": 1.1096129616750217
+      },
+      {
+        "system": "free_scalar",
+        "operator": "phi",
+        "d": 3,
+        "lambda_sl": 0.0,
+        "Delta_observed": 0.5,
+        "Delta_theory": 3.0,
+        "residual": -2.5
+      }
+    ]
+  },
+  "pysr_results": {
+    "best_equation": "(lambda_sl/(lambda_sl + 0.0975410215107364/(-3.14408202331488*sqrt(lambda_sl)*exp(d) + 3.9710834)**2) + 1.3577025)**2 - 1.3433323",
+    "best_loss": 1.5110807e-08,
+    "pareto_front": [
+      {
+        "complexity": 1,
+        "loss": 3.0191002,
+        "equation": "2.2434938"
+      },
+      {
+        "complexity": 3,
+        "loss": 0.56049055,
+        "equation": "lambda_sl * 97.11165"
+      },
+      {
+        "complexity": 4,
+        "loss": 0.34653386,
+        "equation": "sqrt(lambda_sl) * 19.526262"
+      },
+      {
+        "complexity": 6,
+        "loss": 0.17506622,
+        "equation": "lambda_sl / square(0.05990124 + lambda_sl)"
+      },
+      {
+        "complexity": 8,
+        "loss": 0.12775585,
+        "equation": "square((lambda_sl * 2.4290962) / (lambda_sl + 0.008093347))"
+      },
+      {
+        "complexity": 9,
+        "loss": 0.06321973,
+        "equation": "square(lambda_sl * square(0.5853822 / (lambda_sl + 0.041757826)))"
+      },
+      {
+        "complexity": 10,
+        "loss": 0.0017070911,
+        "equation": "((square(lambda_sl) / 0.020424824) / (lambda_sl + -0.016000945)) + 0.55838466"
+      },
+      {
+        "complexity": 13,
+        "loss": 0.0016989178,
+        "equation": "(((square(lambda_sl) / 0.020424824) / (-0.016000945 + lambda_sl)) + 0.55838466) - square(lambda_sl)"
+      },
+      {
+        "complexity": 14,
+        "loss": 0.0015496202,
+        "equation": "((square(lambda_sl) / 0.021217728) / (-0.016122958 + lambda_sl)) + square(square(lambda_sl - -0.8636454))"
+      },
+      {
+        "complexity": 15,
+        "loss": 0.00051790883,
+        "equation": "(((lambda_sl / (lambda_sl + (-0.050875023 / d))) + 0.21998423) * (lambda_sl / 0.024101282)) + 0.5438381"
+      },
+      {
+        "complexity": 17,
+        "loss": 6.6236615e-05,
+        "equation": "(((lambda_sl * lambda_sl) / 0.022888267) / (lambda_sl + (-0.049570806 / d))) + square(sqrt(lambda_sl) + 0.71399677)"
+      },
+      {
+        "complexity": 18,
+        "loss": 1.0593804e-07,
+        "equation": "sqrt(lambda_sl * 2.2431421) + ((lambda_sl * ((lambda_sl / 0.022476634) / (lambda_sl + (-0.049243305 / d)))) + 0.49996808)"
+      },
+      {
+        "complexity": 21,
+        "loss": 1.5110807e-08,
+        "equation": "square((lambda_sl / (lambda_sl + square(0.31231558 / ((sqrt(lambda_sl) / (-0.31805786 / exp(d))) + 3.9710834)))) + 1.3577025) - 1.3433323"
+      }
+    ],
+    "metrics": {
+      "r2": 0.9999999949535655,
+      "mae": 8.623020815248794e-05
+    }
+  },
+  "philosophy_note": "La relaci\u00f3n fue DESCUBIERTA por PySR, no impuesta. Los \u03bb_SL vienen del solver emergente, los \u0394 de datos externos (bootstrap/exact). Si la ecuaci\u00f3n se parece a d/2 + sqrt(d\u00b2/4 + \u03bb_SL), hemos redescubierto AdS/CFT."
+}

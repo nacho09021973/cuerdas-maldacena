@@ -1,0 +1,35 @@
+{
+  "_metadata": {
+    "description": "Ground truth Delta values from conformal bootstrap, exact solutions, and lattice",
+    "purpose": "External CFT data for discovering emergent lambda_SL <-> Delta dictionary"
+  },
+  "systems": [
+    {
+      "system": "ising_3d",
+      "d": 3,
+      "source": "conformal_bootstrap_2024",
+      "operators": [
+        {"name": "sigma",        "Delta": 0.5181489, "spin": 0, "lambda_sl": 0.00472916},
+        {"name": "epsilon_prime","Delta": 3.82968,   "spin": 0, "lambda_sl": 0.02668218},
+        {"name": "sigma_prime",  "Delta": 4.126,     "spin": 0, "lambda_sl": 0.04942965}
+      ]
+    },
+    {
+      "system": "ising_2d",
+      "d": 2,
+      "source": "exact_cft",
+      "operators": [
+        {"name": "sigma",   "Delta": 0.125, "spin": 0, "lambda_sl": null},
+        {"name": "epsilon", "Delta": 1.0,   "spin": 0, "lambda_sl": null}
+      ]
+    },
+    {
+      "system": "free_scalar",
+      "d": 3,
+      "source": "free_field_theory",
+      "operators": [
+        {"name": "phi", "Delta": 0.5, "spin": 0, "lambda_sl": 0.0}
+      ]
+    }
+  ]
+}

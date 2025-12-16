@@ -1,0 +1,49 @@
+{
+  "name": "lifshitz_deformed_d3_test_006",
+  "category": "test",
+  "results": {
+    "R_statistics": {
+      "mean": -104.03643798828125,
+      "std": 340.45233154296875,
+      "min": -2170.218505859375,
+      "max": 16.365272521972656,
+      "coefficient_of_variation": 3.272433563911428
+    },
+    "pysr_available": true,
+    "R_is_constant": false,
+    "R_equation": {
+      "equation": "((square(x2) * -20.0) + (x3 * -10.0)) - ((x2 * x4) / x1)",
+      "complexity": 14,
+      "r2": 1.0,
+      "variables": [
+        "A",
+        "f",
+        "dA",
+        "d2A",
+        "df",
+        "d2f"
+      ]
+    },
+    "einstein_check": {
+      "consistent_with_einstein_vacuum": false,
+      "note": "R not constant, may indicate non-Einstein or matter sources"
+    },
+    "A_equation": {
+      "equation": "log((x0 * 4.5334816) + 0.024084358) * -1.075888",
+      "complexity": 8,
+      "r2": 0.9969380398697676
+    },
+    "f_equation": {
+      "equation": "cube(cube(cube((((0.0009517965 ^ x0) / 0.4721698) ^ x0) ^ x0)))",
+      "complexity": 12,
+      "r2": 0.9851465294667545
+    }
+  },
+  "validation": {
+    "R_constant": false,
+    "einstein_vacuum_compatible": false,
+    "A_is_logarithmic": true,
+    "einstein_score": 0.2,
+    "verdict": "NON_EINSTEIN_OR_DEFORMED"
+  }
+}

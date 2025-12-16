@@ -1,0 +1,49 @@
+{
+  "name": "hvlf_d3_theta1_known_014",
+  "category": "known",
+  "results": {
+    "R_statistics": {
+      "mean": -28.459312438964844,
+      "std": 90.70642852783203,
+      "min": -568.0337524414062,
+      "max": 3.4238178730010986,
+      "coefficient_of_variation": 3.1872319024588704
+    },
+    "pysr_available": true,
+    "R_is_constant": false,
+    "R_equation": {
+      "equation": "((x2 + 0.47137356) * (((x4 * -327.20535) - 9.329834) * x0)) - 4.312676",
+      "complexity": 13,
+      "r2": 0.9980295619894703,
+      "variables": [
+        "A",
+        "f",
+        "dA",
+        "d2A",
+        "df",
+        "d2f"
+      ]
+    },
+    "einstein_check": {
+      "consistent_with_einstein_vacuum": false,
+      "note": "R not constant, may indicate non-Einstein or matter sources"
+    },
+    "A_equation": {
+      "equation": "log(sqrt(0.035773426 / square(x0 + -0.006909566))) * 0.44573474",
+      "complexity": 10,
+      "r2": 0.998042226970644
+    },
+    "f_equation": {
+      "equation": "square(exp(square((x0 - -0.13041605) ^ 2.081817) * -62.69624))",
+      "complexity": 10,
+      "r2": 0.9983267664714585
+    }
+  },
+  "validation": {
+    "R_constant": false,
+    "einstein_vacuum_compatible": false,
+    "A_is_logarithmic": true,
+    "einstein_score": 0.2,
+    "verdict": "NON_EINSTEIN_OR_DEFORMED"
+  }
+}

@@ -1,0 +1,1151 @@
+{
+  "n_total": 30,
+  "n_generic_passed": 30,
+  "n_ads_family": 0,
+  "n_ads_specific_passed": 0,
+  "n_overall_passed": 30,
+  "avg_score": 0.8103842428273822,
+  "phase_passed": true,
+  "contracts": [
+    {
+      "name": "ads_deformed_d3_test_000",
+      "family": "deformed",
+      "category": "test",
+      "d": 4,
+      "regularity": {
+        "A_finite": true,
+        "f_finite": true,
+        "no_nan": true,
+        "smooth": true
+      },
+      "causality": {
+        "f_non_negative": true,
+        "f_bounded": true,
+        "horizon_if_thermal": true
+      },
+      "ads_einstein": {
+        "R_is_constant": false,
+        "R_matches_ads": false,
+        "Lambda_matches_ads": false,
+        "R_mean": -0.29507720470428467,
+        "R_expected": -20.0
+      },
+      "ads_asymptotic": {
+        "A_logarithmic_uv": false,
+        "f_to_one_uv": true,
+        "A_monotone": true
+      },
+      "holographic": {
+        "mass_dimension_ok": false,
+        "hawking_ok": false,
+        "conformal_symmetry_ok": false
+      },
+      "A_r2": -1.0,
+      "f_r2": 0.971906120906289,
+      "R_r2": -0.010101089221505655,
+      "family_accuracy": 0.0
+    },
+    {
+      "name": "ads_deformed_d3_test_001",
+      "family": "deformed",
+      "category": "test",
+      "d": 4,
+      "regularity": {
+        "A_finite": true,
+        "f_finite": true,
+        "no_nan": true,
+        "smooth": true
+      },
+      "causality": {
+        "f_non_negative": true,
+        "f_bounded": true,
+        "horizon_if_thermal": true
+      },
+      "ads_einstein": {
+        "R_is_constant": false,
+        "R_matches_ads": false,
+        "Lambda_matches_ads": false,
+        "R_mean": -0.32517433166503906,
+        "R_expected": -20.0
+      },
+      "ads_asymptotic": {
+        "A_logarithmic_uv": false,
+        "f_to_one_uv": true,
+        "A_monotone": true
+      },
+      "holographic": {
+        "mass_dimension_ok": false,
+        "hawking_ok": false,
+        "conformal_symmetry_ok": false
+      },
+      "A_r2": -1.0,
+      "f_r2": 0.9719833512814492,
+      "R_r2": -0.010101660349489228,
+      "family_accuracy": 0.0
+    },
+    {
+      "name": "ads_deformed_d3_test_002",
+      "family": "deformed",
+      "category": "test",
+      "d": 4,
+      "regularity": {
+        "A_finite": true,
+        "f_finite": true,
+        "no_nan": true,
+        "smooth": true
+      },
+      "causality": {
+        "f_non_negative": true,
+        "f_bounded": true,
+        "horizon_if_thermal": true
+      },
+      "ads_einstein": {
+        "R_is_constant": false,
+        "R_matches_ads": false,
+        "Lambda_matches_ads": false,
+        "R_mean": -0.5481299161911011,
+        "R_expected": -20.0
+      },
+      "ads_asymptotic": {
+        "A_logarithmic_uv": false,
+        "f_to_one_uv": true,
+        "A_monotone": true
+      },
+      "holographic": {
+        "mass_dimension_ok": false,
+        "hawking_ok": false,
+        "conformal_symmetry_ok": false
+      },
+      "A_r2": -0.7928151959798306,
+      "f_r2": 0.9713328259932629,
+      "R_r2": -0.010101763219437121,
+      "family_accuracy": 0.0
+    },
+    {
+      "name": "ads_deformed_d3_test_003",
+      "family": "deformed",
+      "category": "test",
+      "d": 4,
+      "regularity": {
+        "A_finite": true,
+        "f_finite": true,
+        "no_nan": true,
+        "smooth": true
+      },
+      "causality": {
+        "f_non_negative": true,
+        "f_bounded": true,
+        "horizon_if_thermal": true
+      },
+      "ads_einstein": {
+        "R_is_constant": false,
+        "R_matches_ads": false,
+        "Lambda_matches_ads": false,
+        "R_mean": -0.5542580485343933,
+        "R_expected": -20.0
+      },
+      "ads_asymptotic": {
+        "A_logarithmic_uv": false,
+        "f_to_one_uv": true,
+        "A_monotone": true
+      },
+      "holographic": {
+        "mass_dimension_ok": false,
+        "hawking_ok": false,
+        "conformal_symmetry_ok": false
+      },
+      "A_r2": -1.0,
+      "f_r2": 0.9655406632919555,
+      "R_r2": -0.010102335169858145,
+      "family_accuracy": 0.0
+    },
+    {
+      "name": "ads_deformed_d3_test_004",
+      "family": "deformed",
+      "category": "test",
+      "d": 4,
+      "regularity": {
+        "A_finite": true,
+        "f_finite": true,
+        "no_nan": true,
+        "smooth": true
+      },
+      "causality": {
+        "f_non_negative": true,
+        "f_bounded": true,
+        "horizon_if_thermal": true
+      },
+      "ads_einstein": {
+        "R_is_constant": false,
+        "R_matches_ads": false,
+        "Lambda_matches_ads": false,
+        "R_mean": -0.28402456641197205,
+        "R_expected": -20.0
+      },
+      "ads_asymptotic": {
+        "A_logarithmic_uv": false,
+        "f_to_one_uv": true,
+        "A_monotone": true
+      },
+      "holographic": {
+        "mass_dimension_ok": false,
+        "hawking_ok": false,
+        "conformal_symmetry_ok": false
+      },
+      "A_r2": -1.0,
+      "f_r2": 0.9653936464776833,
+      "R_r2": -0.010101047016765952,
+      "family_accuracy": 0.0
+    },
+    {
+      "name": "ads_deformed_d3_test_005",
+      "family": "deformed",
+      "category": "test",
+      "d": 4,
+      "regularity": {
+        "A_finite": true,
+        "f_finite": true,
+        "no_nan": true,
+        "smooth": true
+      },
+      "causality": {
+        "f_non_negative": true,
+        "f_bounded": true,
+        "horizon_if_thermal": true
+      },
+      "ads_einstein": {
+        "R_is_constant": false,
+        "R_matches_ads": false,
+        "Lambda_matches_ads": false,
+        "R_mean": -0.36169055104255676,
+        "R_expected": -20.0
+      },
+      "ads_asymptotic": {
+        "A_logarithmic_uv": false,
+        "f_to_one_uv": true,
+        "A_monotone": true
+      },
+      "holographic": {
+        "mass_dimension_ok": false,
+        "hawking_ok": false,
+        "conformal_symmetry_ok": false
+      },
+      "A_r2": -1.0,
+      "f_r2": 0.9757145574958582,
+      "R_r2": -0.010101105087112705,
+      "family_accuracy": 0.0
+    },
+    {
+      "name": "ads_deformed_d3_test_006",
+      "family": "deformed",
+      "category": "test",
+      "d": 4,
+      "regularity": {
+        "A_finite": true,
+        "f_finite": true,
+        "no_nan": true,
+        "smooth": true
+      },
+      "causality": {
+        "f_non_negative": true,
+        "f_bounded": true,
+        "horizon_if_thermal": true
+      },
+      "ads_einstein": {
+        "R_is_constant": false,
+        "R_matches_ads": false,
+        "Lambda_matches_ads": false,
+        "R_mean": -0.30707862973213196,
+        "R_expected": -20.0
+      },
+      "ads_asymptotic": {
+        "A_logarithmic_uv": false,
+        "f_to_one_uv": true,
+        "A_monotone": true
+      },
+      "holographic": {
+        "mass_dimension_ok": false,
+        "hawking_ok": false,
+        "conformal_symmetry_ok": false
+      },
+      "A_r2": -1.0,
+      "f_r2": 0.9017591847731815,
+      "R_r2": -0.0101010473406693,
+      "family_accuracy": 0.0
+    },
+    {
+      "name": "ads_deformed_d3_test_007",
+      "family": "deformed",
+      "category": "test",
+      "d": 4,
+      "regularity": {
+        "A_finite": true,
+        "f_finite": true,
+        "no_nan": true,
+        "smooth": true
+      },
+      "causality": {
+        "f_non_negative": true,
+        "f_bounded": true,
+        "horizon_if_thermal": true
+      },
+      "ads_einstein": {
+        "R_is_constant": false,
+        "R_matches_ads": false,
+        "Lambda_matches_ads": false,
+        "R_mean": -0.2785097658634186,
+        "R_expected": -20.0
+      },
+      "ads_asymptotic": {
+        "A_logarithmic_uv": false,
+        "f_to_one_uv": true,
+        "A_monotone": true
+      },
+      "holographic": {
+        "mass_dimension_ok": false,
+        "hawking_ok": false,
+        "conformal_symmetry_ok": false
+      },
+      "A_r2": -1.0,
+      "f_r2": 0.9617128149254073,
+      "R_r2": -0.010101042403268368,
+      "family_accuracy": 0.0
+    },
+    {
+      "name": "ads_deformed_d3_test_008",
+      "family": "deformed",
+      "category": "test",
+      "d": 4,
+      "regularity": {
+        "A_finite": true,
+        "f_finite": true,
+        "no_nan": true,
+        "smooth": true
+      },
+      "causality": {
+        "f_non_negative": true,
+        "f_bounded": true,
+        "horizon_if_thermal": true
+      },
+      "ads_einstein": {
+        "R_is_constant": false,
+        "R_matches_ads": false,
+        "Lambda_matches_ads": false,
+        "R_mean": -0.281602680683136,
+        "R_expected": -20.0
+      },
+      "ads_asymptotic": {
+        "A_logarithmic_uv": false,
+        "f_to_one_uv": true,
+        "A_monotone": true
+      },
+      "holographic": {
+        "mass_dimension_ok": false,
+        "hawking_ok": false,
+        "conformal_symmetry_ok": false
+      },
+      "A_r2": -1.0,
+      "f_r2": 0.9640203831980663,
+      "R_r2": -0.010101032205885208,
+      "family_accuracy": 0.0
+    },
+    {
+      "name": "ads_deformed_d3_test_009",
+      "family": "deformed",
+      "category": "test",
+      "d": 4,
+      "regularity": {
+        "A_finite": true,
+        "f_finite": true,
+        "no_nan": true,
+        "smooth": true
+      },
+      "causality": {
+        "f_non_negative": true,
+        "f_bounded": true,
+        "horizon_if_thermal": true
+      },
+      "ads_einstein": {
+        "R_is_constant": false,
+        "R_matches_ads": false,
+        "Lambda_matches_ads": false,
+        "R_mean": -0.2903907001018524,
+        "R_expected": -20.0
+      },
+      "ads_asymptotic": {
+        "A_logarithmic_uv": false,
+        "f_to_one_uv": true,
+        "A_monotone": true
+      },
+      "holographic": {
+        "mass_dimension_ok": false,
+        "hawking_ok": false,
+        "conformal_symmetry_ok": false
+      },
+      "A_r2": -1.0,
+      "f_r2": 0.8932129938933685,
+      "R_r2": -0.010101085575400015,
+      "family_accuracy": 0.0
+    },
+    {
+      "name": "lifshitz_deformed_d3_test_000",
+      "family": "lifshitz",
+      "category": "test",
+      "d": 4,
+      "regularity": {
+        "A_finite": true,
+        "f_finite": true,
+        "no_nan": true,
+        "smooth": true
+      },
+      "causality": {
+        "f_non_negative": true,
+        "f_bounded": true,
+        "horizon_if_thermal": true
+      },
+      "ads_einstein": {
+        "R_is_constant": false,
+        "R_matches_ads": false,
+        "Lambda_matches_ads": false,
+        "R_mean": -0.5548017621040344,
+        "R_expected": -20.0
+      },
+      "ads_asymptotic": {
+        "A_logarithmic_uv": false,
+        "f_to_one_uv": true,
+        "A_monotone": true
+      },
+      "holographic": {
+        "mass_dimension_ok": false,
+        "hawking_ok": false,
+        "conformal_symmetry_ok": false
+      },
+      "A_r2": 0.21988444798570084,
+      "f_r2": 0.9713865783195844,
+      "R_r2": -0.01010106713962089,
+      "family_accuracy": 1.0
+    },
+    {
+      "name": "lifshitz_deformed_d3_test_001",
+      "family": "lifshitz",
+      "category": "test",
+      "d": 4,
+      "regularity": {
+        "A_finite": true,
+        "f_finite": true,
+        "no_nan": true,
+        "smooth": true
+      },
+      "causality": {
+        "f_non_negative": true,
+        "f_bounded": true,
+        "horizon_if_thermal": true
+      },
+      "ads_einstein": {
+        "R_is_constant": false,
+        "R_matches_ads": false,
+        "Lambda_matches_ads": false,
+        "R_mean": -0.2772367298603058,
+        "R_expected": -20.0
+      },
+      "ads_asymptotic": {
+        "A_logarithmic_uv": false,
+        "f_to_one_uv": true,
+        "A_monotone": true
+      },
+      "holographic": {
+        "mass_dimension_ok": false,
+        "hawking_ok": false,
+        "conformal_symmetry_ok": false
+      },
+      "A_r2": 0.2213341337484802,
+      "f_r2": 0.9574516732124597,
+      "R_r2": -0.01010104401911116,
+      "family_accuracy": 0.0
+    },
+    {
+      "name": "lifshitz_deformed_d3_test_002",
+      "family": "lifshitz",
+      "category": "test",
+      "d": 4,
+      "regularity": {
+        "A_finite": true,
+        "f_finite": true,
+        "no_nan": true,
+        "smooth": true
+      },
+      "causality": {
+        "f_non_negative": true,
+        "f_bounded": true,
+        "horizon_if_thermal": true
+      },
+      "ads_einstein": {
+        "R_is_constant": false,
+        "R_matches_ads": false,
+        "Lambda_matches_ads": false,
+        "R_mean": -0.38074731826782227,
+        "R_expected": -20.0
+      },
+      "ads_asymptotic": {
+        "A_logarithmic_uv": false,
+        "f_to_one_uv": true,
+        "A_monotone": true
+      },
+      "holographic": {
+        "mass_dimension_ok": false,
+        "hawking_ok": false,
+        "conformal_symmetry_ok": false
+      },
+      "A_r2": 0.22514991139085105,
+      "f_r2": 0.9722274848518331,
+      "R_r2": -0.010101136372421271,
+      "family_accuracy": 0.0
+    },
+    {
+      "name": "lifshitz_deformed_d3_test_003",
+      "family": "lifshitz",
+      "category": "test",
+      "d": 4,
+      "regularity": {
+        "A_finite": true,
+        "f_finite": true,
+        "no_nan": true,
+        "smooth": true
+      },
+      "causality": {
+        "f_non_negative": true,
+        "f_bounded": true,
+        "horizon_if_thermal": true
+      },
+      "ads_einstein": {
+        "R_is_constant": false,
+        "R_matches_ads": false,
+        "Lambda_matches_ads": false,
+        "R_mean": -0.32525578141212463,
+        "R_expected": -20.0
+      },
+      "ads_asymptotic": {
+        "A_logarithmic_uv": false,
+        "f_to_one_uv": true,
+        "A_monotone": true
+      },
+      "holographic": {
+        "mass_dimension_ok": false,
+        "hawking_ok": false,
+        "conformal_symmetry_ok": false
+      },
+      "A_r2": 0.2065656605015408,
+      "f_r2": 0.9636960049525937,
+      "R_r2": -0.010102342114071572,
+      "family_accuracy": 0.0
+    },
+    {
+      "name": "lifshitz_deformed_d3_test_004",
+      "family": "lifshitz",
+      "category": "test",
+      "d": 4,
+      "regularity": {
+        "A_finite": true,
+        "f_finite": true,
+        "no_nan": true,
+        "smooth": true
+      },
+      "causality": {
+        "f_non_negative": true,
+        "f_bounded": true,
+        "horizon_if_thermal": true
+      },
+      "ads_einstein": {
+        "R_is_constant": false,
+        "R_matches_ads": false,
+        "Lambda_matches_ads": false,
+        "R_mean": -0.33104032278060913,
+        "R_expected": -20.0
+      },
+      "ads_asymptotic": {
+        "A_logarithmic_uv": false,
+        "f_to_one_uv": true,
+        "A_monotone": true
+      },
+      "holographic": {
+        "mass_dimension_ok": false,
+        "hawking_ok": false,
+        "conformal_symmetry_ok": false
+      },
+      "A_r2": 0.21997075966672386,
+      "f_r2": 0.972898869737742,
+      "R_r2": -0.010101092829300162,
+      "family_accuracy": 0.0
+    },
+    {
+      "name": "lifshitz_deformed_d3_test_005",
+      "family": "lifshitz",
+      "category": "test",
+      "d": 4,
+      "regularity": {
+        "A_finite": true,
+        "f_finite": true,
+        "no_nan": true,
+        "smooth": true
+      },
+      "causality": {
+        "f_non_negative": true,
+        "f_bounded": true,
+        "horizon_if_thermal": true
+      },
+      "ads_einstein": {
+        "R_is_constant": false,
+        "R_matches_ads": false,
+        "Lambda_matches_ads": false,
+        "R_mean": -0.2935203015804291,
+        "R_expected": -20.0
+      },
+      "ads_asymptotic": {
+        "A_logarithmic_uv": false,
+        "f_to_one_uv": true,
+        "A_monotone": true
+      },
+      "holographic": {
+        "mass_dimension_ok": false,
+        "hawking_ok": false,
+        "conformal_symmetry_ok": false
+      },
+      "A_r2": 0.20752537902834545,
+      "f_r2": 0.9568300608965801,
+      "R_r2": -0.010101190450165554,
+      "family_accuracy": 0.0
+    },
+    {
+      "name": "lifshitz_deformed_d3_test_006",
+      "family": "lifshitz",
+      "category": "test",
+      "d": 4,
+      "regularity": {
+        "A_finite": true,
+        "f_finite": true,
+        "no_nan": true,
+        "smooth": true
+      },
+      "causality": {
+        "f_non_negative": true,
+        "f_bounded": true,
+        "horizon_if_thermal": true
+      },
+      "ads_einstein": {
+        "R_is_constant": false,
+        "R_matches_ads": false,
+        "Lambda_matches_ads": false,
+        "R_mean": -0.31255120038986206,
+        "R_expected": -20.0
+      },
+      "ads_asymptotic": {
+        "A_logarithmic_uv": false,
+        "f_to_one_uv": true,
+        "A_monotone": true
+      },
+      "holographic": {
+        "mass_dimension_ok": false,
+        "hawking_ok": false,
+        "conformal_symmetry_ok": false
+      },
+      "A_r2": 0.22062020935337479,
+      "f_r2": 0.9666466532526851,
+      "R_r2": -0.010101081321735705,
+      "family_accuracy": 0.0
+    },
+    {
+      "name": "lifshitz_deformed_d3_test_007",
+      "family": "lifshitz",
+      "category": "test",
+      "d": 4,
+      "regularity": {
+        "A_finite": true,
+        "f_finite": true,
+        "no_nan": true,
+        "smooth": true
+      },
+      "causality": {
+        "f_non_negative": true,
+        "f_bounded": true,
+        "horizon_if_thermal": true
+      },
+      "ads_einstein": {
+        "R_is_constant": false,
+        "R_matches_ads": false,
+        "Lambda_matches_ads": false,
+        "R_mean": -0.5568596124649048,
+        "R_expected": -20.0
+      },
+      "ads_asymptotic": {
+        "A_logarithmic_uv": false,
+        "f_to_one_uv": true,
+        "A_monotone": true
+      },
+      "holographic": {
+        "mass_dimension_ok": false,
+        "hawking_ok": false,
+        "conformal_symmetry_ok": false
+      },
+      "A_r2": 0.22405098101828502,
+      "f_r2": 0.9704311730056133,
+      "R_r2": -0.0101010576172611,
+      "family_accuracy": 0.0
+    },
+    {
+      "name": "lifshitz_deformed_d3_test_008",
+      "family": "lifshitz",
+      "category": "test",
+      "d": 4,
+      "regularity": {
+        "A_finite": true,
+        "f_finite": true,
+        "no_nan": true,
+        "smooth": true
+      },
+      "causality": {
+        "f_non_negative": true,
+        "f_bounded": true,
+        "horizon_if_thermal": true
+      },
+      "ads_einstein": {
+        "R_is_constant": false,
+        "R_matches_ads": false,
+        "Lambda_matches_ads": false,
+        "R_mean": -0.3106606602668762,
+        "R_expected": -20.0
+      },
+      "ads_asymptotic": {
+        "A_logarithmic_uv": false,
+        "f_to_one_uv": true,
+        "A_monotone": true
+      },
+      "holographic": {
+        "mass_dimension_ok": false,
+        "hawking_ok": false,
+        "conformal_symmetry_ok": false
+      },
+      "A_r2": 0.2192085434436234,
+      "f_r2": 0.9477600475318724,
+      "R_r2": -0.010101165427140568,
+      "family_accuracy": 0.0
+    },
+    {
+      "name": "lifshitz_deformed_d3_test_009",
+      "family": "lifshitz",
+      "category": "test",
+      "d": 4,
+      "regularity": {
+        "A_finite": true,
+        "f_finite": true,
+        "no_nan": true,
+        "smooth": true
+      },
+      "causality": {
+        "f_non_negative": true,
+        "f_bounded": true,
+        "horizon_if_thermal": true
+      },
+      "ads_einstein": {
+        "R_is_constant": false,
+        "R_matches_ads": false,
+        "Lambda_matches_ads": false,
+        "R_mean": -0.2952956557273865,
+        "R_expected": -20.0
+      },
+      "ads_asymptotic": {
+        "A_logarithmic_uv": false,
+        "f_to_one_uv": true,
+        "A_monotone": true
+      },
+      "holographic": {
+        "mass_dimension_ok": false,
+        "hawking_ok": false,
+        "conformal_symmetry_ok": false
+      },
+      "A_r2": 0.21724985740657587,
+      "f_r2": 0.9282784123767178,
+      "R_r2": -0.010101082599733413,
+      "family_accuracy": 0.0
+    },
+    {
+      "name": "unknown_family_1_unknown_000",
+      "family": "unknown",
+      "category": "unknown",
+      "d": 4,
+      "regularity": {
+        "A_finite": true,
+        "f_finite": true,
+        "no_nan": true,
+        "smooth": true
+      },
+      "causality": {
+        "f_non_negative": true,
+        "f_bounded": true,
+        "horizon_if_thermal": true
+      },
+      "ads_einstein": {
+        "R_is_constant": false,
+        "R_matches_ads": false,
+        "Lambda_matches_ads": false,
+        "R_mean": -0.4113074839115143,
+        "R_expected": -20.0
+      },
+      "ads_asymptotic": {
+        "A_logarithmic_uv": false,
+        "f_to_one_uv": true,
+        "A_monotone": true
+      },
+      "holographic": {
+        "mass_dimension_ok": false,
+        "hawking_ok": false,
+        "conformal_symmetry_ok": false
+      },
+      "A_r2": 0.19875480305384507,
+      "f_r2": 0.9967569313241751,
+      "R_r2": -0.010101373322628726,
+      "family_accuracy": 0.0
+    },
+    {
+      "name": "unknown_family_1_unknown_001",
+      "family": "unknown",
+      "category": "unknown",
+      "d": 4,
+      "regularity": {
+        "A_finite": true,
+        "f_finite": true,
+        "no_nan": true,
+        "smooth": true
+      },
+      "causality": {
+        "f_non_negative": true,
+        "f_bounded": true,
+        "horizon_if_thermal": true
+      },
+      "ads_einstein": {
+        "R_is_constant": false,
+        "R_matches_ads": false,
+        "Lambda_matches_ads": false,
+        "R_mean": -0.2842961847782135,
+        "R_expected": -20.0
+      },
+      "ads_asymptotic": {
+        "A_logarithmic_uv": false,
+        "f_to_one_uv": true,
+        "A_monotone": true
+      },
+      "holographic": {
+        "mass_dimension_ok": false,
+        "hawking_ok": false,
+        "conformal_symmetry_ok": false
+      },
+      "A_r2": 0.21125512712660022,
+      "f_r2": 0.9800459604012033,
+      "R_r2": -0.010101049221886926,
+      "family_accuracy": 0.0
+    },
+    {
+      "name": "unknown_family_1_unknown_002",
+      "family": "unknown",
+      "category": "unknown",
+      "d": 4,
+      "regularity": {
+        "A_finite": true,
+        "f_finite": true,
+        "no_nan": true,
+        "smooth": true
+      },
+      "causality": {
+        "f_non_negative": true,
+        "f_bounded": true,
+        "horizon_if_thermal": true
+      },
+      "ads_einstein": {
+        "R_is_constant": false,
+        "R_matches_ads": false,
+        "Lambda_matches_ads": false,
+        "R_mean": -0.42900675535202026,
+        "R_expected": -20.0
+      },
+      "ads_asymptotic": {
+        "A_logarithmic_uv": false,
+        "f_to_one_uv": true,
+        "A_monotone": true
+      },
+      "holographic": {
+        "mass_dimension_ok": false,
+        "hawking_ok": false,
+        "conformal_symmetry_ok": false
+      },
+      "A_r2": 0.2127497197504289,
+      "f_r2": 0.976133117402444,
+      "R_r2": -0.010101051927554394,
+      "family_accuracy": 0.0
+    },
+    {
+      "name": "unknown_family_1_unknown_003",
+      "family": "unknown",
+      "category": "unknown",
+      "d": 4,
+      "regularity": {
+        "A_finite": true,
+        "f_finite": true,
+        "no_nan": true,
+        "smooth": true
+      },
+      "causality": {
+        "f_non_negative": true,
+        "f_bounded": true,
+        "horizon_if_thermal": true
+      },
+      "ads_einstein": {
+        "R_is_constant": false,
+        "R_matches_ads": false,
+        "Lambda_matches_ads": false,
+        "R_mean": -0.5567739009857178,
+        "R_expected": -20.0
+      },
+      "ads_asymptotic": {
+        "A_logarithmic_uv": false,
+        "f_to_one_uv": true,
+        "A_monotone": true
+      },
+      "holographic": {
+        "mass_dimension_ok": false,
+        "hawking_ok": false,
+        "conformal_symmetry_ok": false
+      },
+      "A_r2": 0.21126578968762355,
+      "f_r2": 0.9820897178952551,
+      "R_r2": -0.010104532040175362,
+      "family_accuracy": 0.0
+    },
+    {
+      "name": "unknown_family_1_unknown_004",
+      "family": "unknown",
+      "category": "unknown",
+      "d": 4,
+      "regularity": {
+        "A_finite": true,
+        "f_finite": true,
+        "no_nan": true,
+        "smooth": true
+      },
+      "causality": {
+        "f_non_negative": true,
+        "f_bounded": true,
+        "horizon_if_thermal": true
+      },
+      "ads_einstein": {
+        "R_is_constant": false,
+        "R_matches_ads": false,
+        "Lambda_matches_ads": false,
+        "R_mean": -0.2988249361515045,
+        "R_expected": -20.0
+      },
+      "ads_asymptotic": {
+        "A_logarithmic_uv": false,
+        "f_to_one_uv": true,
+        "A_monotone": true
+      },
+      "holographic": {
+        "mass_dimension_ok": false,
+        "hawking_ok": false,
+        "conformal_symmetry_ok": false
+      },
+      "A_r2": 0.20321820485695352,
+      "f_r2": 0.9827974034236809,
+      "R_r2": -0.01010112297585919,
+      "family_accuracy": 0.0
+    },
+    {
+      "name": "unknown_family_2_unknown_000",
+      "family": "unknown",
+      "category": "unknown",
+      "d": 4,
+      "regularity": {
+        "A_finite": true,
+        "f_finite": true,
+        "no_nan": true,
+        "smooth": true
+      },
+      "causality": {
+        "f_non_negative": true,
+        "f_bounded": true,
+        "horizon_if_thermal": true
+      },
+      "ads_einstein": {
+        "R_is_constant": false,
+        "R_matches_ads": false,
+        "Lambda_matches_ads": false,
+        "R_mean": -0.5361572504043579,
+        "R_expected": -20.0
+      },
+      "ads_asymptotic": {
+        "A_logarithmic_uv": false,
+        "f_to_one_uv": true,
+        "A_monotone": true
+      },
+      "holographic": {
+        "mass_dimension_ok": false,
+        "hawking_ok": false,
+        "conformal_symmetry_ok": false
+      },
+      "A_r2": 0.19886043374038032,
+      "f_r2": 0.9046557784010987,
+      "R_r2": -0.010101203934525405,
+      "family_accuracy": 0.0
+    },
+    {
+      "name": "unknown_family_2_unknown_001",
+      "family": "unknown",
+      "category": "unknown",
+      "d": 4,
+      "regularity": {
+        "A_finite": true,
+        "f_finite": true,
+        "no_nan": true,
+        "smooth": true
+      },
+      "causality": {
+        "f_non_negative": true,
+        "f_bounded": true,
+        "horizon_if_thermal": true
+      },
+      "ads_einstein": {
+        "R_is_constant": false,
+        "R_matches_ads": false,
+        "Lambda_matches_ads": false,
+        "R_mean": -0.5552781224250793,
+        "R_expected": -20.0
+      },
+      "ads_asymptotic": {
+        "A_logarithmic_uv": false,
+        "f_to_one_uv": true,
+        "A_monotone": true
+      },
+      "holographic": {
+        "mass_dimension_ok": false,
+        "hawking_ok": false,
+        "conformal_symmetry_ok": false
+      },
+      "A_r2": 0.20221839732478475,
+      "f_r2": 0.9912433384851114,
+      "R_r2": -0.01010122968008309,
+      "family_accuracy": 0.0
+    },
+    {
+      "name": "unknown_family_2_unknown_002",
+      "family": "unknown",
+      "category": "unknown",
+      "d": 4,
+      "regularity": {
+        "A_finite": true,
+        "f_finite": true,
+        "no_nan": true,
+        "smooth": true
+      },
+      "causality": {
+        "f_non_negative": true,
+        "f_bounded": true,
+        "horizon_if_thermal": true
+      },
+      "ads_einstein": {
+        "R_is_constant": false,
+        "R_matches_ads": false,
+        "Lambda_matches_ads": false,
+        "R_mean": -0.5639530420303345,
+        "R_expected": -20.0
+      },
+      "ads_asymptotic": {
+        "A_logarithmic_uv": false,
+        "f_to_one_uv": true,
+        "A_monotone": true
+      },
+      "holographic": {
+        "mass_dimension_ok": false,
+        "hawking_ok": false,
+        "conformal_symmetry_ok": false
+      },
+      "A_r2": 0.2047898035712563,
+      "f_r2": 0.9834213581535174,
+      "R_r2": -0.010101104217451695,
+      "family_accuracy": 0.0
+    },
+    {
+      "name": "unknown_family_2_unknown_003",
+      "family": "unknown",
+      "category": "unknown",
+      "d": 4,
+      "regularity": {
+        "A_finite": true,
+        "f_finite": true,
+        "no_nan": true,
+        "smooth": true
+      },
+      "causality": {
+        "f_non_negative": true,
+        "f_bounded": true,
+        "horizon_if_thermal": true
+      },
+      "ads_einstein": {
+        "R_is_constant": false,
+        "R_matches_ads": false,
+        "Lambda_matches_ads": false,
+        "R_mean": -0.5454031229019165,
+        "R_expected": -20.0
+      },
+      "ads_asymptotic": {
+        "A_logarithmic_uv": false,
+        "f_to_one_uv": true,
+        "A_monotone": true
+      },
+      "holographic": {
+        "mass_dimension_ok": false,
+        "hawking_ok": false,
+        "conformal_symmetry_ok": false
+      },
+      "A_r2": 0.199731770976458,
+      "f_r2": 0.9587607922661687,
+      "R_r2": -0.010101408093407871,
+      "family_accuracy": 0.0
+    },
+    {
+      "name": "unknown_family_2_unknown_004",
+      "family": "unknown",
+      "category": "unknown",
+      "d": 4,
+      "regularity": {
+        "A_finite": true,
+        "f_finite": true,
+        "no_nan": true,
+        "smooth": true
+      },
+      "causality": {
+        "f_non_negative": true,
+        "f_bounded": true,
+        "horizon_if_thermal": true
+      },
+      "ads_einstein": {
+        "R_is_constant": false,
+        "R_matches_ads": false,
+        "Lambda_matches_ads": false,
+        "R_mean": -0.5451779365539551,
+        "R_expected": -20.0
+      },
+      "ads_asymptotic": {
+        "A_logarithmic_uv": false,
+        "f_to_one_uv": true,
+        "A_monotone": true
+      },
+      "holographic": {
+        "mass_dimension_ok": false,
+        "hawking_ok": false,
+        "conformal_symmetry_ok": false
+      },
+      "A_r2": 0.20558258550716835,
+      "f_r2": 0.9791984309487787,
+      "R_r2": -0.010101442787813664,
+      "family_accuracy": 0.0
+    }
+  ]
+}

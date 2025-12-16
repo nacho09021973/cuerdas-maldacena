@@ -1,0 +1,122 @@
+{
+  "timestamp": "2025-12-09T09:14:02.664513",
+  "config": {
+    "niterations": 200,
+    "populations": 30,
+    "ncyclesperiteration": 1000,
+    "maxsize": 30,
+    "features": [
+      "Delta",
+      "d"
+    ],
+    "target": "m2L2_emergent",
+    "binary_operators": [
+      "+",
+      "-",
+      "*",
+      "/"
+    ],
+    "unary_operators": [
+      "square",
+      "sqrt",
+      "exp",
+      "log"
+    ],
+    "binary_ops_minimal": [
+      "+",
+      "-",
+      "*",
+      "/"
+    ],
+    "unary_ops_minimal": [
+      "square",
+      "sqrt"
+    ],
+    "complexity_of_constants": 1.0,
+    "complexity_of_variables": 1.0,
+    "parsimony": 0.003,
+    "annealing": true,
+    "early_stop_condition": "1e-6",
+    "random_state": 42,
+    "deterministic": true,
+    "parallelism": "serial",
+    "test_split_ratio": 0.2,
+    "evaluation_metrics": [
+      "r2",
+      "mae",
+      "pearson",
+      "complexity"
+    ],
+    "save_pareto_front": true,
+    "save_raw_equations": true
+  },
+  "input_metadata": {
+    "format": "dictionary_v3",
+    "version": "v3.1_fixed_emergent",
+    "mass_source": "emergent",
+    "total_operators": 270,
+    "systems_count": 14,
+    "methods_found": [
+      "emergent"
+    ],
+    "suspicious_methods": [],
+    "valid_methods": [
+      "emergent"
+    ]
+  },
+  "data_stats": {
+    "train_samples": 216,
+    "test_samples": 54,
+    "Delta_range": [
+      3.859310811445278,
+      16.75617724171668
+    ],
+    "m2L2_range": [
+      3.3163475050025757,
+      196.98858954724065
+    ]
+  },
+  "discovery_results": {
+    "best_equation": "(x0 - x1) * x0",
+    "complexity": 5,
+    "train_metrics": {
+      "r2": 1.0
+    },
+    "test_metrics": {
+      "r2": 1.0,
+      "mae": 0.0,
+      "pearson": 1.0
+    },
+    "use_minimal_ops": false
+  },
+  "theory_comparison": {
+    "theoretical_formula": "m\u00b2L\u00b2 = Delta(Delta - d)",
+    "discovered_formula": "(x0 - x1) * x0",
+    "theory_r2": 1.0,
+    "theory_mae": 0.0,
+    "discovered_r2": 1.0,
+    "compatible": "True"
+  },
+  "pareto_front": [
+    {
+      "equation": "58.65238",
+      "complexity": 1,
+      "loss": 2840.9104
+    },
+    {
+      "equation": "square(x0)",
+      "complexity": 2,
+      "loss": 1665.5591
+    },
+    {
+      "equation": "square(x0 / 1.1411805)",
+      "complexity": 4,
+      "loss": 215.05994
+    },
+    {
+      "equation": "(x0 - x1) * x0",
+      "complexity": 5,
+      "loss": 4.212229e-11
+    }
+  ]
+}

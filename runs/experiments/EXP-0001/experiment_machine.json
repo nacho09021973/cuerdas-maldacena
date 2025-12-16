@@ -1,0 +1,53 @@
+{
+  "experiment_id": "EXP-0001",
+  "date": "2025-12-12T09:00:00+01:00",
+  "phase": ["XI", "B"],
+  "scripts": [
+    "bulk_scalar_solver.py",
+    "06_build_bulk_eigenmodes_dataset.py"
+  ],
+  "seeds": {
+    "numpy": 1234
+  },
+  "data_sources": {
+    "geometry_dir": "runs/fase11_sandbox/fase11_output_v2/data",
+    "geometry_file_examples": [
+      "runs/fase11_sandbox/fase11_output_v2/data/<geom_1>.h5",
+      "runs/fase11_sandbox/fase11_output_v2/data/<geom_2>.h5"
+    ]
+  },
+  "solver_config": {
+    "n_eigs": 6,
+    "discard_negative": true,
+    "uv_fit_frac": 0.2,
+    "datasets_h5": {
+      "z_dataset": "bulk_truth/z_grid",
+      "A_dataset": "bulk_truth/A_truth",
+      "f_dataset": "bulk_truth/f_truth"
+    },
+    "boundary_conditions": "Dirichlet(phi(z_min)=phi(z_max)=0)"
+  },
+  "dataset_builder_config": {
+    "n_eigs": 6,
+    "output_json": "runs/experiments/EXP-0001/bulk_modes_summary.json",
+    "datasets_h5": {
+      "z_dataset": "bulk_truth/z_grid",
+      "A_dataset": "bulk_truth/A_truth",
+      "f_dataset": "bulk_truth/f_truth"
+    },
+    "expected_nomenclature": "v2_lambda_sl"
+  },
+  "metrics": {
+    "n_geometries_processed": null,
+    "n_geometries_solver_failed": null,
+    "fraction_modes_with_finite_Delta_uv": null,
+    "all_v2_clean": null,
+    "compat_used_keys": null
+  },
+  "artifacts": {
+    "per_geometry_solver_outputs_dir": "runs/experiments/EXP-0001/solver_outputs/",
+    "bulk_modes_summary_json": "runs/experiments/EXP-0001/bulk_modes_summary.json",
+    "human_report_md": "runs/experiments/EXP-0001/experiment_human.md"
+  },
+  "notes_short": "Experimento basal: validar solver Sturm–Liouville (λ_SL) + estimación Δ_UV y construcción de dataset de modos bulk, antes de tocar diccionario λ↔Δ."
+}

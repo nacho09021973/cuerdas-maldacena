@@ -1,0 +1,49 @@
+{
+  "name": "ads_deformed_d3_test_004",
+  "category": "test",
+  "results": {
+    "R_statistics": {
+      "mean": -0.7986169457435608,
+      "std": 6.2229413986206055,
+      "min": -53.60477066040039,
+      "max": 9.194862365722656,
+      "coefficient_of_variation": 7.792147951540716
+    },
+    "pysr_available": true,
+    "R_is_constant": false,
+    "R_equation": {
+      "equation": "(x3 / -0.09955513) - (((x4 / x1) - 2.4646757) * x2)",
+      "complexity": 11,
+      "r2": 0.9998927535182758,
+      "variables": [
+        "A",
+        "f",
+        "dA",
+        "d2A",
+        "df",
+        "d2f"
+      ]
+    },
+    "einstein_check": {
+      "consistent_with_einstein_vacuum": false,
+      "note": "R not constant, may indicate non-Einstein or matter sources"
+    },
+    "A_equation": {
+      "equation": "(exp(exp(sqrt(x0))) * 0.040004693) + (-0.56471246 - x0)",
+      "complexity": 10,
+      "r2": 0.994051535584946
+    },
+    "f_equation": {
+      "equation": "cube(cube(cube(cube(((0.018706378 ^ x0) ^ x0) ^ x0))))",
+      "complexity": 11,
+      "r2": 0.998820694688968
+    }
+  },
+  "validation": {
+    "R_constant": false,
+    "einstein_vacuum_compatible": false,
+    "A_is_logarithmic": false,
+    "einstein_score": 0.0,
+    "verdict": "NON_EINSTEIN_OR_DEFORMED"
+  }
+}

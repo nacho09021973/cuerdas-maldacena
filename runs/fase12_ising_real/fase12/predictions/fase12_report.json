@@ -1,0 +1,90 @@
+{
+  "phase": 12,
+  "description": "Stub inicial Ising 3D (bootstrap sint\u00e9tico, diccionario manual v0)",
+  "systems": [
+    {
+      "name": "ising3d_bootstrap",
+      "source": "bootstrap",
+      "d": 3,
+      "T": 0.0,
+      "geometry": {
+        "predicted_family": "AdS4 or slight deformation",
+        "z_h": 0.0,
+        "z_dyn": 1.0,
+        "operators_predicted": [
+          {
+            "name": "sigma",
+            "Delta": 0.518,
+            "spin": 0
+          },
+          {
+            "name": "epsilon",
+            "Delta": 1.41,
+            "spin": 0
+          },
+          {
+            "name": "epsilon_prime",
+            "Delta": 3.83,
+            "spin": 0
+          },
+          {
+            "name": "T",
+            "Delta": 3.0,
+            "spin": 2
+          }
+        ]
+      },
+      "dictionary": {
+        "provenance": "manual",
+        "operators_predicted": [
+          {
+            "name": "sigma",
+            "Delta": 0.518,
+            "spin": 0,
+            "Delta_error": 0.001
+          },
+          {
+            "name": "epsilon",
+            "Delta": 1.41,
+            "spin": 0,
+            "Delta_error": 0.01
+          },
+          {
+            "name": "epsilon_prime",
+            "Delta": 3.83,
+            "spin": 0,
+            "Delta_error": 0.05
+          },
+          {
+            "name": "T",
+            "Delta": 3.0,
+            "spin": 2,
+            "Delta_error": 0.001
+          }
+        ]
+      },
+      "dictionary_source": "manual_v0",
+      "physics_metadata": {
+        "known_predictions": {
+          "expected_bulk": "AdS4 or slight deformation",
+          "expected_einstein": true,
+          "expected_theta": 0.0
+        },
+        "central_charge_normalized": 0.946,
+        "reference": "Bootstrap Ising 3D (literatura est\u00e1ndar, valores aproximados)",
+        "notes": [
+          "Este descriptor es un stub honesto para tests de Fase XII.",
+          "No codifica ninguna relaci\u00f3n hologr\u00e1fica \u0394 \u2194 m\u00b2L\u00b2.",
+          "Uso previsto: servir como 'real_data' para adaptadores bootstrap."
+        ]
+      },
+      "features": {
+        "Delta_min": 0.518,
+        "Delta_gap": 0.8919999999999999,
+        "n_relevant": 2,
+        "central_charge": 0.946,
+        "ope_ratio_12": 0.6865535247593634
+      }
+    }
+  ]
+}
