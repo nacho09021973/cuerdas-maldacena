@@ -92,3 +92,4 @@ IDEAS FUTURAS/
 
 # Local venv dirs
 .venv*/
+logs/
