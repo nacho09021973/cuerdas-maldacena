@@ -2,7 +2,7 @@
 
 ## Project Structure & Modules
 - Core pipeline scripts live at repo root (`01_generate_sandbox_geometries.py` → `09_real_data_and_dictionary_contracts.py`), plus `bulk_scalar_solver.py` shared by steps B/C. Keep numbering and signatures stable.
-- Extensions: `fase11_ising3d_emergent_geometry.py`, `make_fase12_report_from_emergent.py`, `extended_physics_contracts_fase12_13.py`, and optional `04b_negative_control_contracts.py` for controls. Treat them as add-ons, not replacements.
+- Extensions: `fase11_ising3d_emergent_geometry.py`, `make_fase12_report_from_emergent.py`, `extended_physics_contracts_fase12_13.py`. Controles negativos y versiones legacy viven en `attic/` (ver `attic/README.md`) y no forman parte del pipeline activo.
 - Data/layout: `runs/` holds generated artifacts (sandbox, emergent geometry, equations, eigenmodes, dictionaries, contracts). `data/`, `fase12_data_boundary/`, `real_data_sandbox/`, and `outputs/` store inputs or reports; `config/` stores helper configs. Avoid committing heavy outputs unless required.
 
 ## Build, Test, and Development Commands
