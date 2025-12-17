@@ -2,7 +2,7 @@ import argparse
 import json
 import re
 from pathlib import Path
-from typing import List, Dict, Any, Optional, Tuple
+from typing import List, Dict, Any, Optional
 
 import fitz  # PyMuPDF
 
@@ -10,11 +10,13 @@ import fitz  # PyMuPDF
 PDF_PATH_DEFAULT = Path("data/papers/maldacena_1999.pdf")
 OUT_DIR_DEFAULT = Path("data/corpus/m99")
 
+
 # --- Utils
 
 def page_num(page_id: str) -> int:
     # "M99:p0108" -> 108
     return int(page_id.split(":p")[1])
+
 
 def write_jsonl(path: Path, records: List[Dict[str, Any]]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -22,10 +24,12 @@ def write_jsonl(path: Path, records: List[Dict[str, Any]]) -> None:
         for r in records:
             f.write(json.dumps(r, ensure_ascii=False) + "\n")
 
+
 def iter_jsonl(path: Path):
     with path.open("r", encoding="utf-8") as f:
         for line in f:
             yield json.loads(line)
+
 
 # --- Core build (pages/blocks/paragraphs)
 
@@ -46,7 +50,7 @@ def build_index(pdf_path: Path, out_dir: Path) -> None:
 
     per_page_blocks: Dict[str, List[Dict[str, Any]]] = {}
 
-    # Header/footer filtering (tuned)
+    # Header/footer filtering (tuned, conservative)
     TOP_CUT = 90.0
     BOT_CUT = 70.0
 
@@ -83,20 +87,19 @@ def build_index(pdf_path: Path, out_dir: Path) -> None:
             x0, y0, x1, y1 = map(float, b["bbox"])
             t = block_text.strip()
 
-            # micro numeric noise (you validated this is safe)
+            # micro numeric noise (validated safe on this PDF)
             w = x1 - x0
             h = y1 - y0
             if t.isdigit() and w <= 10.0 and h <= 14.0:
                 continue
 
-            # header/footer bands
-            in_header = (y0 < TOP_CUT)
-            in_footer = (y1 > (page_h - BOT_CUT))
-
             # page numbers: digits in lower half => out (robust across layouts)
             if t.isdigit() and y0 > (0.60 * page_h):
                 continue
 
+            # header/footer bands
+            in_header = (y0 < TOP_CUT)
+            in_footer = (y1 > (page_h - BOT_CUT))
             if in_header or in_footer:
                 tl = t.lower()
                 if tl.startswith("arxiv:") or ("hep-th/" in tl) or ("arxiv:" in tl):
@@ -196,7 +199,13 @@ def build_index(pdf_path: Path, out_dir: Path) -> None:
 
 # --- Query (Citation Locator basic)
 
-def query_paragraphs(corpus_dir: Path, text: str, max_hits: int, no_front_matter: bool) -> None:
+def query_paragraphs(
+    corpus_dir: Path,
+    text: str,
+    max_hits: int,
+    no_front_matter: bool,
+    jsonl: bool,
+) -> None:
     para_path = corpus_dir / "paragraphs_sections.jsonl"
     if not para_path.exists():
         raise FileNotFoundError(
@@ -220,16 +229,33 @@ def query_paragraphs(corpus_dir: Path, text: str, max_hits: int, no_front_matter
         if rx.search(r["text"]):
             snippet = rx.sub(lambda m: f"<<{m.group(0)}>>", r["text"])
             snippet = " ".join(snippet.split())
-            print("\n---")
-            print("section_id:", r.get("section_id"))
-            print("page_id:", r["page_id"], "para_id:", r["para_id"])
-            print("bbox:", r["bbox"])
-            print("snippet:", snippet[:260] + ("..." if len(snippet) > 260 else ""))
+
+            hit = {
+                "section_id": r.get("section_id"),
+                "page_id": r["page_id"],
+                "para_id": r["para_id"],
+                "bbox": r["bbox"],
+                "snippet": snippet[:260] + ("..." if len(snippet) > 260 else ""),
+            }
+
+            if jsonl:
+                print(json.dumps(hit, ensure_ascii=False))
+            else:
+                print("\n---")
+                print("section_id:", hit["section_id"])
+                print("page_id:", hit["page_id"], "para_id:", hit["para_id"])
+                print("bbox:", hit["bbox"])
+                print("snippet:", hit["snippet"])
+
             hits += 1
             if hits >= max_hits:
                 break
 
-    print("\nhits:", hits)
+    if not jsonl:
+        print(f"\nhits: {hits}")
+    else:
+        # still provide a machine-friendly footer on stderr? keep silent in JSONL mode
+        pass
 
 
 def main():
@@ -245,6 +271,7 @@ def main():
     p_query.add_argument("--text", required=True)
     p_query.add_argument("--max", type=int, default=10)
     p_query.add_argument("--no-front-matter", action="store_true", default=False)
+    p_query.add_argument("--jsonl", action="store_true", default=False, help="Output hits as JSONL")
 
     args = parser.parse_args()
 
@@ -258,7 +285,7 @@ def main():
         return
 
     if args.cmd == "query":
-        query_paragraphs(args.corpus, args.text, args.max, args.no_front_matter)
+        query_paragraphs(args.corpus, args.text, args.max, args.no_front_matter, args.jsonl)
         return
 
 
