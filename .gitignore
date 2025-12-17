@@ -96,3 +96,6 @@ IDEAS FUTURAS/
 logs/
 
 
+
+# local backups
+*.bak_before_*
