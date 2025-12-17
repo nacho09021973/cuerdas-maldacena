@@ -83,6 +83,7 @@ IDEAS FUTURAS/
 *.pt
 *.pth
 *.ckpt
+*:Zone.Identifier
 
 # =========================
 # Local secrets
@@ -93,3 +94,5 @@ IDEAS FUTURAS/
 # Local venv dirs
 .venv*/
 logs/
+
+
