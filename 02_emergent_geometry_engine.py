@@ -1032,6 +1032,9 @@ def run_inference_mode(args):
     # === PREPARAR DIRECTORIOS DE SALIDA ===
     geom_dir = output_dir / "geometry_emergent"
     geom_dir.mkdir(parents=True, exist_ok=True)
+
+    preds_dir = output_dir / "predictions"
+    preds_dir.mkdir(parents=True, exist_ok=True)
     
     # === CARGAR MANIFEST ===
     manifest_path = data_dir / "manifest.json"
@@ -1102,6 +1105,28 @@ def run_inference_mode(args):
             f_out.create_dataset("f_of_z", data=preds["f_pred"])
             # Opcional pero útil para contratos/diagnóstico
             f_out.create_dataset("R_of_z", data=preds["R_pred"])
+
+            # Export NPZ (compatibilidad con 03/04)
+            A_arr = preds.get('A_pred', preds.get('A_of_z'))
+            f_arr = preds.get('f_pred', preds.get('f_of_z'))
+            R_arr = preds.get('R_pred', preds.get('R_of_z'))
+            if A_arr is None or f_arr is None or R_arr is None:
+                raise ValueError(f"[inference] faltan A/f/R para {name}")
+            np.savez(
+                preds_dir / f"{name}_geometry.npz",
+                z=np.asarray(z_grid, dtype=np.float64),
+                z_grid=np.asarray(z_grid, dtype=np.float64),
+                A_pred=np.asarray(A_arr, dtype=np.float32),
+                f_pred=np.asarray(f_arr, dtype=np.float32),
+                R_pred=np.asarray(R_arr, dtype=np.float32),
+                A_of_z=np.asarray(A_arr, dtype=np.float32),
+                f_of_z=np.asarray(f_arr, dtype=np.float32),
+                R_of_z=np.asarray(R_arr, dtype=np.float32),
+                family_pred=np.array(str(preds.get('family_name','unknown')), dtype=object),
+                zh_pred=np.array(float(preds.get('zh_pred', float('nan'))), dtype=np.float32),
+                d=np.array(int(d_boundary), dtype=np.int32),
+                provenance=np.array('inference', dtype=object),
+            )
 
         summary_entries.append({
             "name": name,
