@@ -92,3 +92,6 @@ IDEAS FUTURAS/
 
 # Local venv dirs
 .venv*/
+
+# Windows Zone.Identifier ADS
+*:Zone.Identifier
