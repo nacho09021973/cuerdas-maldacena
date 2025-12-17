@@ -1,0 +1,53 @@
+{
+  "dataset_id": "ising2d_v0",
+  "model": "Ising2D",
+  "lattice": "square",
+  "boundary_conditions": "periodic",
+  "spin_values": [-1, 1],
+  "units": { "J": 1.0, "kB": 1.0 },
+  "temperature": { "mode": "critical", "label": "Tc" },
+
+  "sizes_L": [16, 24, 32, 48, 64, 96, 128],
+  "r_max_rule": "floor(L/4)",
+
+  "observables": {
+    "C_sigma_r": {
+      "type": "two_point",
+      "definition": "angular_shell_average_of_<s(0)s(r)>",
+      "r_values": "1..r_max",
+      "per_sample_vector": true
+    },
+    "S_k": {
+      "type": "structure_factor",
+      "definition": "|sum_x s_x exp(i k·x)|^2",
+      "k_modes_units": "2pi/L",
+      "k_modes": [[1,0],[0,1],[1,1],[2,0],[0,2],[2,1],[1,2],[2,2]],
+      "per_sample_vector": true
+    },
+    "global_controls": {
+      "m": "magnetization_per_site",
+      "e": "energy_per_site",
+      "note": "controls only; not used as training targets"
+    }
+  },
+
+  "sampling": {
+    "algorithm": "Wolff",
+    "thermalization_clusters": 2000,
+    "samples_per_L": 10000,
+    "thinning_clusters": 5,
+    "binning": { "enabled": true, "bins": 20, "samples_per_bin": 500 }
+  },
+
+  "storage": {
+    "raw_dir": "data/ising2d_raw",
+    "suggested_format": "h5_or_npz",
+    "fields_per_record": ["L", "sample_id", "C_sigma_r", "S_k", "m", "e"]
+  },
+
+  "MAI_compliance": {
+    "no_theory_in_loss": true,
+    "no_explicit_Delta_or_scaling_labels": true,
+    "contracts_use": "post_hoc_only"
+  }
+}
