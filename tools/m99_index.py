@@ -1,6 +1,7 @@
 import argparse
 import json
 import re
+import unicodedata
 from pathlib import Path
 from typing import List, Dict, Any, Optional
 
@@ -14,9 +15,7 @@ OUT_DIR_DEFAULT = Path("data/corpus/m99")
 # --- Utils
 
 def page_num(page_id: str) -> int:
-    # "M99:p0108" -> 108
     return int(page_id.split(":p")[1])
-
 
 def write_jsonl(path: Path, records: List[Dict[str, Any]]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -24,11 +23,15 @@ def write_jsonl(path: Path, records: List[Dict[str, Any]]) -> None:
         for r in records:
             f.write(json.dumps(r, ensure_ascii=False) + "\n")
 
-
 def iter_jsonl(path: Path):
     with path.open("r", encoding="utf-8") as f:
         for line in f:
             yield json.loads(line)
+
+def norm_text(s: str) -> str:
+    s = s.strip()
+    s = unicodedata.normalize("NFKC", s)
+    return " ".join(s.split())
 
 
 # --- Core build (pages/blocks/paragraphs)
@@ -75,7 +78,6 @@ def build_index(pdf_path: Path, out_dir: Path) -> None:
             if "lines" not in b:
                 continue
 
-            # rebuild block text
             lines = []
             for ln in b.get("lines", []):
                 spans = [sp.get("text", "") for sp in ln.get("spans", [])]
@@ -93,11 +95,10 @@ def build_index(pdf_path: Path, out_dir: Path) -> None:
             if t.isdigit() and w <= 10.0 and h <= 14.0:
                 continue
 
-            # page numbers: digits in lower half => out (robust across layouts)
+            # page numbers: digits in lower half => out
             if t.isdigit() and y0 > (0.60 * page_h):
                 continue
 
-            # header/footer bands
             in_header = (y0 < TOP_CUT)
             in_footer = (y1 > (page_h - BOT_CUT))
             if in_header or in_footer:
@@ -167,7 +168,6 @@ def build_index(pdf_path: Path, out_dir: Path) -> None:
                 gap = bbox[1] - prev_bbox[3]
                 if gap > GAP_Y:
                     new_para = True
-                # weak signal: end of sentence + uppercase (only if some gap)
                 if (not new_para) and gap > 10:
                     if prev_text and prev_text.rstrip().endswith((".", ":", ";")) and text[:1].isupper():
                         new_para = True
@@ -197,6 +197,103 @@ def build_index(pdf_path: Path, out_dir: Path) -> None:
     print(f"Wrote: {paras_path} ({len(para_records)} records)")
 
 
+# --- make-sections: headings + toc + paragraphs_sections
+
+RE_DECIMAL = re.compile(r"^\s*(\d+\.\d+(?:\.\d+)*)\s+(.+?)\s*$")
+BAD_SYMS = set("=<>≈∼√⟨⟩∫ζµ˜×κΩψθφΔΛΣΠ∂")
+
+def is_clean_title(title: str) -> bool:
+    if not any(ch.isalpha() for ch in title):
+        return False
+    if any(ch in BAD_SYMS for ch in title):
+        return False
+    if title.strip().startswith("(") and title.strip().endswith(")"):
+        return False
+    if len(title) > 90:
+        return False
+    return True
+
+def make_sections(corpus_dir: Path) -> None:
+    blocks_path = corpus_dir / "blocks.jsonl"
+    paras_path = corpus_dir / "paragraphs.jsonl"
+    if not blocks_path.exists() or not paras_path.exists():
+        raise FileNotFoundError("Missing blocks.jsonl or paragraphs.jsonl. Run build first.")
+
+    headings_path = corpus_dir / "headings.jsonl"
+    headings_dec_path = corpus_dir / "headings_toc_decimals.jsonl"
+    toc_out = corpus_dir / "toc.json"
+    paras_out = corpus_dir / "paragraphs_sections.jsonl"
+
+    # 1) headings.jsonl: from blocks using a permissive rule: anything that starts with decimal section pattern
+    headings = []
+    for b in iter_jsonl(blocks_path):
+        t = norm_text(b["text"])
+        m = RE_DECIMAL.match(t)
+        if not m:
+            continue
+        sec = m.group(1)
+        title = m.group(2).strip()
+        if not is_clean_title(title):
+            continue
+        headings.append({
+            "doc_id": "M99",
+            "page_id": b["page_id"],
+            "block_id": b["block_id"],
+            "bbox": b["bbox"],
+            "section": sec,
+            "title": title,
+            "text": f"{sec} {title}",
+        })
+
+    # stable sort: by page then numeric section tuple
+    headings.sort(key=lambda r: (page_num(r["page_id"]), tuple(int(x) for x in r["section"].split("."))))
+
+    write_jsonl(headings_path, [{"doc_id":h["doc_id"], "page_id":h["page_id"], "text":h["text"], "bbox":h["bbox"], "block_id":h["block_id"]} for h in headings])
+    write_jsonl(headings_dec_path, [{"doc_id":h["doc_id"], "page_id":h["page_id"], "section":h["section"], "title":h["title"], "text":h["text"]} for h in headings])
+
+    # 2) toc.json
+    toc = []
+    for h in headings:
+        toc.append({
+            "page_id": h["page_id"],
+            "section_id": f"M99:s{h['section']}",
+            "section": h["section"],
+            "title": h["title"],
+            "text": h["text"],
+        })
+    toc_out.write_text(json.dumps({"doc_id": "M99", "toc": toc}, ensure_ascii=False, indent=2), encoding="utf-8")
+
+    # 3) paragraphs_sections.jsonl: assign last heading seen by page progression
+    pages_present = set()
+    paras = []
+    for p in iter_jsonl(paras_path):
+        paras.append(p)
+        pages_present.add(p["page_id"])
+    pages_sorted = sorted(list(pages_present), key=page_num)
+
+    heads_by_page: Dict[str, Optional[str]] = {}
+    current = None
+    idx = 0
+    for pg in pages_sorted:
+        pg_n = page_num(pg)
+        while idx < len(toc) and page_num(toc[idx]["page_id"]) <= pg_n:
+            current = toc[idx]
+            idx += 1
+        heads_by_page[pg] = current["section_id"] if current else None
+
+    out_records = []
+    for p in paras:
+        p2 = dict(p)
+        p2["section_id"] = heads_by_page.get(p["page_id"])
+        out_records.append(p2)
+    write_jsonl(paras_out, out_records)
+
+    print(f"Wrote: {headings_path} ({len(headings)} records)")
+    print(f"Wrote: {headings_dec_path} ({len(headings)} records)")
+    print(f"Wrote: {toc_out} (entries: {len(toc)})")
+    print(f"Wrote: {paras_out} ({len(out_records)} records)")
+
+
 # --- Query (Citation Locator basic)
 
 def query_paragraphs(
@@ -208,9 +305,7 @@ def query_paragraphs(
 ) -> None:
     para_path = corpus_dir / "paragraphs_sections.jsonl"
     if not para_path.exists():
-        raise FileNotFoundError(
-            f"Missing {para_path}. Generate it first (you already did via the helper script)."
-        )
+        raise FileNotFoundError(f"Missing {para_path}. Run make-sections first.")
 
     rx = re.compile(re.escape(text), re.IGNORECASE)
 
@@ -253,9 +348,6 @@ def query_paragraphs(
 
     if not jsonl:
         print(f"\nhits: {hits}")
-    else:
-        # still provide a machine-friendly footer on stderr? keep silent in JSONL mode
-        pass
 
 
 def main():
@@ -265,6 +357,9 @@ def main():
     p_build = sub.add_parser("build", help="Build pages/blocks/paragraphs index from PDF")
     p_build.add_argument("--pdf", type=Path, default=PDF_PATH_DEFAULT)
     p_build.add_argument("--out", type=Path, default=OUT_DIR_DEFAULT)
+
+    p_ms = sub.add_parser("make-sections", help="Generate toc + paragraphs_sections from blocks/paragraphs")
+    p_ms.add_argument("--corpus", type=Path, default=OUT_DIR_DEFAULT)
 
     p_query = sub.add_parser("query", help="Search paragraphs_sections.jsonl and print citables")
     p_query.add_argument("--corpus", type=Path, default=OUT_DIR_DEFAULT)
@@ -282,6 +377,10 @@ def main():
 
     if args.cmd == "build":
         build_index(args.pdf, args.out)
+        return
+
+    if args.cmd == "make-sections":
+        make_sections(args.corpus)
         return
 
     if args.cmd == "query":
