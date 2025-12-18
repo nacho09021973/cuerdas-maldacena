@@ -31,7 +31,6 @@ Adicionalmente, el repositorio puede incluir algunos scripts auxiliares:
 - `fase11_ising3d_emergent_geometry.py`  
 - `make_fase12_report_from_emergent.py`  
 - `extended_physics_contracts_fase12_13.py`  
-- (opcional) `04b_negative_control_contracts.py`  
 
 Estos extienden el pipeline núcleo hacia **datos reales** y **contratos avanzados**, sin cambiar el corazón del flujo A–B–C.
 
@@ -197,10 +196,6 @@ Estos scripts **no forman parte del “núcleo mínimo”**, pero extienden el p
     * contratos de suavidad, continuidad y coherencia entre puntos de una “nube” de teorías en el espacio de parámetros.
 
   Este módulo es consumido por `09_real_data_and_dictionary_contracts.py`.
-
-* (Opcional) `04b_negative_control_contracts.py`
-  Script para **controles negativos** sobre geometría y ecuaciones (por ejemplo, datasets mezclados o corruptos) para verificar que los contratos de 04 detectan situaciones “malas” como deben.
-  Si este archivo está presente, se considera complementario a 04 pero no forma parte del run mínimo.
 
 ---
 
@@ -653,7 +648,6 @@ Scripts de contratos:
 * `04_geometry_physics_contracts.py`
 * `09_real_data_and_dictionary_contracts.py`
 * `extended_physics_contracts_fase12_13.py`
-* (opcional) `04b_negative_control_contracts.py`
 
 Su papel:
 
@@ -888,16 +882,15 @@ Esta sección define un flujo **mínimo** que debe seguir funcionando después d
    ```bash
    python 06_build_bulk_eigenmodes_dataset.py \
      --geometry-dir runs/emergent_geometry/geometry_emergent \
-     --output-csv runs/bulk_eigenmodes/bulk_modes_dataset.csv
+     --output-csv runs/bulk_eigenmodes/bulk_modes_dataset.csv \
+     --output-json runs/bulk_eigenmodes/bulk_modes_dataset_v2.json
    ```
 
 7. **Diccionario λ_SL ↔ Δ (emergente)**
 
-   Primero, asegurar que los datos están en formato compatible (`bulk_modes_dataset.csv` o un JSON intermedio).
-   Ejemplo usando un JSON derivado:
+   Primero, asegurar que los datos están en formato compatible (usar el JSON producido en el paso anterior).
 
    ```bash
-   # (si se dispone de un .json con nomenclatura v2_lambda_sl o dictionary_v3)
    python 07_emergent_lambda_sl_dictionary.py \
      --input-file runs/bulk_eigenmodes/bulk_modes_dataset_v2.json \
      --output-dir runs/emergent_dictionary \
