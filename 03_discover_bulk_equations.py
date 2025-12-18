@@ -52,6 +52,13 @@ except ImportError:
     HAS_PYSR = False
     print("Warning: PySR not available.")
 
+# Import local IO module for run manifest support
+try:
+    from cuerdas_io import RunContext, resolve_predictions_dir, update_run_manifest
+    HAS_CUERDAS_IO = True
+except ImportError:
+    HAS_CUERDAS_IO = False
+
 
 # ============================================================
 # CALCULO DE TENSORES GEOMETRICOS
@@ -388,19 +395,52 @@ def main():
     parser = argparse.ArgumentParser(
         description="Fase XI v2: Descubrimiento genuino de ecuaciones gravitatorias"
     )
-    parser.add_argument("--geometry-dir", type=str, required=True)
-    parser.add_argument("--output-dir", type=str, default="fase11_einstein_v2")
+    parser.add_argument("--geometry-dir", type=str, default=None,
+                        help="Directorio con geometry_emergent/ (legacy)")
+    parser.add_argument("--run-dir", type=str, default=None,
+                        help="Directorio raíz con run_manifest.json (IO v2)")
+    parser.add_argument("--output-dir", type=str, default=None,
+                        help="Directorio de salida (default: run-dir/bulk_equations o fase11_einstein_v2)")
     parser.add_argument("--niterations", type=int, default=100)
     parser.add_argument("--maxsize", type=int, default=15)
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--d", type=int, default=4)
     args = parser.parse_args()
     
-    geometry_dir = Path(args.geometry_dir)
-    output_dir = Path(args.output_dir)
-    output_dir.mkdir(parents=True, exist_ok=True)
+    # === RESOLVER RUTAS ===
+    preds_dir = None
     
-    preds_dir = geometry_dir / "predictions"
+    # Prioridad 1: --run-dir con manifest
+    if args.run_dir and HAS_CUERDAS_IO:
+        run_dir = Path(args.run_dir)
+        preds_dir = resolve_predictions_dir(run_dir=run_dir)
+        if preds_dir is None:
+            # Fallback: buscar directamente en run_dir/predictions
+            candidate = run_dir / "predictions"
+            if candidate.exists():
+                preds_dir = candidate
+    
+    # Prioridad 2: --geometry-dir (legacy)
+    if preds_dir is None and args.geometry_dir:
+        geometry_dir = Path(args.geometry_dir)
+        preds_dir = geometry_dir / "predictions"
+        if not preds_dir.exists():
+            # Quizás geometry_dir ES el directorio de predictions
+            if list(geometry_dir.glob("*.npz")):
+                preds_dir = geometry_dir
+    
+    if preds_dir is None or not preds_dir.exists():
+        parser.error("Debe proporcionar --run-dir con manifest válido o --geometry-dir con predictions/*.npz")
+    
+    # Resolver output_dir
+    if args.output_dir:
+        output_dir = Path(args.output_dir)
+    elif args.run_dir:
+        output_dir = Path(args.run_dir) / "bulk_equations"
+    else:
+        output_dir = Path("fase11_einstein_v2")
+    
+    output_dir.mkdir(parents=True, exist_ok=True)
     
     print("=" * 70)
     print("FASE XI v2 - DESCUBRIMIENTO GENUINO DE ECUACIONES GRAVITATORIAS")
@@ -496,6 +536,25 @@ def main():
     summary_path.write_text(json.dumps(all_results, indent=2, default=str))
     
     print(f"\n  Resultados: {summary_path}")
+    
+    # === ACTUALIZAR RUN_MANIFEST (IO v2) ===
+    if args.run_dir and HAS_CUERDAS_IO:
+        try:
+            update_run_manifest(
+                Path(args.run_dir),
+                {
+                    "bulk_equations_dir": str(output_dir.relative_to(Path(args.run_dir)) 
+                                              if output_dir.is_relative_to(Path(args.run_dir)) 
+                                              else output_dir),
+                    "bulk_equations_summary": str(summary_path.relative_to(Path(args.run_dir))
+                                                  if summary_path.is_relative_to(Path(args.run_dir))
+                                                  else summary_path),
+                }
+            )
+            print(f"  Manifest actualizado: {Path(args.run_dir) / 'run_manifest.json'}")
+        except Exception as e:
+            print(f"  [WARN] No se pudo actualizar run_manifest.json: {e}")
+    
     print("=" * 70)
     
     if n_einstein == n_total:

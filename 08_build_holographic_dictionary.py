@@ -38,6 +38,13 @@ import h5py
 import numpy as np
 from pysr import PySRRegressor
 
+# Import local IO module for run manifest support
+try:
+    from cuerdas_io import resolve_geometry_emergent_dir, update_run_manifest
+    HAS_CUERDAS_IO = True
+except ImportError:
+    HAS_CUERDAS_IO = False
+
 
 def parse_args():
     parser = argparse.ArgumentParser(
@@ -46,13 +53,19 @@ def parse_args():
     parser.add_argument(
         "--data-dir",
         type=str,
-        required=True,
+        default=None,
         help="Directorio con los .h5 de geometría (p.ej. fase11_output_v2/geometry)",
+    )
+    parser.add_argument(
+        "--run-dir",
+        type=str,
+        default=None,
+        help="Directorio raíz con run_manifest.json (IO v2). Resuelve geometry_emergent automáticamente.",
     )
     parser.add_argument(
         "--output-summary",
         type=str,
-        default="holographic_dictionary_v3_summary.json",
+        default=None,
         help="Fichero JSON de salida con el diccionario resumido",
     )
     parser.add_argument(
@@ -176,7 +189,31 @@ def discover_mass_dimension_relation(Deltas, m2L2, d, seed=42):
 
 def main():
     args = parse_args()
-    geometry_dir = Path(args.data_dir)
+    
+    # === RESOLVER RUTAS ===
+    geometry_dir = None
+    
+    # Prioridad 1: --run-dir con cuerdas_io
+    if args.run_dir and HAS_CUERDAS_IO:
+        run_dir = Path(args.run_dir)
+        geometry_dir = resolve_geometry_emergent_dir(run_dir=run_dir)
+    
+    # Prioridad 2: --data-dir explícito
+    if geometry_dir is None and args.data_dir:
+        geometry_dir = Path(args.data_dir)
+    
+    if geometry_dir is None:
+        raise ValueError("Debe proporcionar --run-dir o --data-dir")
+    
+    # Resolver output
+    if args.output_summary:
+        output_file = Path(args.output_summary)
+    elif args.run_dir:
+        out_dir = Path(args.run_dir) / "holographic_dictionary"
+        out_dir.mkdir(parents=True, exist_ok=True)
+        output_file = out_dir / "holographic_dictionary_v3_summary.json"
+    else:
+        output_file = Path("holographic_dictionary_v3_summary.json")
 
     if not geometry_dir.exists() or not geometry_dir.is_dir():
         raise FileNotFoundError(f"--data-dir no es un directorio valido: {geometry_dir}")
@@ -403,9 +440,28 @@ def main():
         ],
     }
 
-    output_path = Path(args.output_summary)
-    output_path.write_text(json.dumps(summary, indent=2))
-    print(f"\nResumen guardado en: {output_path}")
+    output_file.parent.mkdir(parents=True, exist_ok=True)
+    output_file.write_text(json.dumps(summary, indent=2))
+    print(f"\nResumen guardado en: {output_file}")
+    
+    # === ACTUALIZAR RUN_MANIFEST (IO v2) ===
+    if args.run_dir and HAS_CUERDAS_IO:
+        try:
+            run_dir = Path(args.run_dir)
+            update_run_manifest(
+                run_dir,
+                {
+                    "holographic_dictionary_dir": str(output_file.parent.relative_to(run_dir)
+                                                      if output_file.parent.is_relative_to(run_dir)
+                                                      else output_file.parent),
+                    "holographic_dictionary_summary": str(output_file.relative_to(run_dir)
+                                                         if output_file.is_relative_to(run_dir)
+                                                         else output_file),
+                }
+            )
+            print(f"Manifest actualizado")
+        except Exception as e:
+            print(f"[WARN] No se pudo actualizar manifest: {e}")
 
 
 if __name__ == "__main__":

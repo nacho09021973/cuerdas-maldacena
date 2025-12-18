@@ -63,6 +63,13 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+# Import local IO module for run manifest support
+try:
+    from cuerdas_io import write_run_manifest
+    HAS_CUERDAS_IO = True
+except ImportError:
+    HAS_CUERDAS_IO = False
+
 
 # ============================================================
 # CONFIGURACIÓN DE PESOS DE LOSS (MODIFICAR AQUÍ)
@@ -1196,6 +1203,34 @@ def run_inference_mode(args):
     summary_path = output_dir / "emergent_geometry_summary.json"
     summary_path.write_text(json.dumps(summary, indent=2, ensure_ascii=False))
     
+    # === ESCRIBIR RUN_MANIFEST (IO v2) ===
+    if HAS_CUERDAS_IO:
+        manifest_artifacts = {
+            "data_dir": str(data_dir.relative_to(output_dir) if data_dir.is_relative_to(output_dir) else data_dir),
+            "checkpoint": str(checkpoint_path.relative_to(output_dir) if checkpoint_path.is_relative_to(output_dir) else checkpoint_path),
+            "geometry_emergent_dir": "geometry_emergent",
+            "predictions_dir": "predictions",
+            "summary_json": "emergent_geometry_summary.json",
+            "systems": [
+                {
+                    "name": e["name"],
+                    "h5_output": f"geometry_emergent/{e['name']}_emergent.h5",
+                    "npz_output": f"predictions/{e['name']}_geometry.npz",
+                }
+                for e in summary_entries
+            ]
+        }
+        manifest_metadata = {
+            "script": "02_emergent_geometry_engine.py",
+            "mode": "inference",
+            "version": "V2.2",
+        }
+        try:
+            manifest_path = write_run_manifest(output_dir, manifest_artifacts, manifest_metadata)
+            print(f"  Manifest:     {manifest_path}")
+        except Exception as e:
+            print(f"  [WARN] No se pudo escribir run_manifest.json: {e}")
+    
     # === BANNER FINAL ===
     print("\n" + "=" * 70)
     print("[OK] FASE XI V2.2 - MODO INFERENCE COMPLETADO")
@@ -1593,6 +1628,38 @@ def run_train_mode(args):
     
     summary_path = output_dir / "emergent_geometry_summary.json"
     summary_path.write_text(json.dumps(summary, indent=2, default=str))
+    
+    # === ESCRIBIR RUN_MANIFEST (IO v2) ===
+    if HAS_CUERDAS_IO:
+        # Construir lista de sistemas desde summary
+        systems_list = summary.get("systems", [])
+        manifest_artifacts = {
+            "data_dir": str(data_dir.relative_to(output_dir) if data_dir.is_relative_to(output_dir) else data_dir),
+            "checkpoint": "emergent_geometry_model.pt",
+            "geometry_emergent_dir": "geometry_emergent",
+            "predictions_dir": "predictions",
+            "summary_json": "emergent_geometry_summary.json",
+            "systems": [
+                {
+                    "name": s.get("system_name", s.get("name", "unknown")),
+                    "h5_output": f"geometry_emergent/{s.get('system_name', s.get('name', 'unknown'))}_emergent.h5",
+                    "npz_output": f"predictions/{s.get('system_name', s.get('name', 'unknown'))}_geometry.npz",
+                }
+                for s in systems_list
+            ]
+        }
+        manifest_metadata = {
+            "script": "02_emergent_geometry_engine.py",
+            "mode": "train",
+            "version": "V2.2",
+            "n_epochs": args.n_epochs,
+            "seed": args.seed,
+        }
+        try:
+            manifest_path = write_run_manifest(output_dir, manifest_artifacts, manifest_metadata)
+            print(f"  Manifest:     {manifest_path}")
+        except Exception as e:
+            print(f"  [WARN] No se pudo escribir run_manifest.json: {e}")
     
     # === BANNER FINAL ===
     
