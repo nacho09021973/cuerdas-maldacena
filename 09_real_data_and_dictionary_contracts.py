@@ -46,6 +46,13 @@ from pathlib import Path
 from typing import Dict, List, Any, Tuple
 import numpy as np
 
+# Import local IO module for run manifest support
+try:
+    from cuerdas_io import load_run_manifest, update_run_manifest
+    HAS_CUERDAS_IO = True
+except ImportError:
+    HAS_CUERDAS_IO = False
+
 
 # ============================================================
 # CONTRATOS FASE XII
@@ -690,15 +697,62 @@ def main():
     parser.add_argument("--phase", type=str, required=True,
                         choices=["12", "13", "both"],
                         help="Fase a validar")
+    parser.add_argument("--run-dir", type=str, default=None,
+                        help="Directorio raíz con run_manifest.json (IO v2). Resuelve inputs automáticamente.")
     parser.add_argument("--fase12-report", type=str, default="",
                         help="Ruta al reporte de Fase XII")
     parser.add_argument("--fase13-analysis", type=str, default="",
                         help="Ruta al an¡lisis de Fase XIII")
     parser.add_argument("--fase13-atlas", type=str, default="",
                         help="Ruta al atlas de Fase XIII")
-    parser.add_argument("--output-file", type=str, default="contracts_12_13.json",
+    parser.add_argument("--output-file", type=str, default=None,
                         help="Archivo de salida")
     args = parser.parse_args()
+    
+    # === RESOLVER RUTAS DESDE --run-dir ===
+    fase12_report = fase12_report
+    fase13_analysis = fase13_analysis
+    fase13_atlas = fase13_atlas
+    output_file = output_file
+    
+    if args.run_dir and HAS_CUERDAS_IO:
+        run_dir = Path(args.run_dir)
+        manifest = load_run_manifest(run_dir)
+        artifacts = manifest.get("artifacts", {}) if manifest else {}
+        
+        # Intentar resolver fase12-report desde manifest
+        if not fase12_report:
+            # Buscar en lugares típicos
+            candidates = [
+                run_dir / artifacts.get("dictionary_report", ""),
+                run_dir / "emergent_dictionary" / "lambda_sl_dictionary_report.json",
+                run_dir / "bulk_eigenmodes" / "bulk_modes_meta.json",
+            ]
+            for c in candidates:
+                if c.exists():
+                    fase12_report = str(c)
+                    break
+        
+        # Intentar resolver fase13-analysis
+        if not fase13_analysis:
+            candidates = [
+                run_dir / artifacts.get("bulk_equations_report", ""),
+                run_dir / "bulk_equations_analysis" / "bulk_equations_report.json",
+            ]
+            for c in candidates:
+                if c.exists():
+                    fase13_analysis = str(c)
+                    break
+        
+        # Resolver output
+        if not output_file:
+            contracts_dir = run_dir / "contracts"
+            contracts_dir.mkdir(parents=True, exist_ok=True)
+            output_file = str(contracts_dir / "contracts_12_13.json")
+    
+    # Default output
+    if not output_file:
+        output_file = "contracts_12_13.json"
     
     print("=" * 70)
     print("CONTRATOS FASES XII/XIII")
@@ -707,9 +761,9 @@ def main():
     results = {}
     
     if args.phase in ["12", "both"]:
-        if args.fase12_report:
-            print(f"\n>> Validando Fase XII desde {args.fase12_report}")
-            results["fase12"] = run_contracts_fase12(Path(args.fase12_report))
+        if fase12_report:
+            print(f"\n>> Validando Fase XII desde {fase12_report}")
+            results["fase12"] = run_contracts_fase12(Path(fase12_report))
             
             summary = results["fase12"]
             print(f"\n   Contratos: {summary.get('n_passed', 0)}/{summary.get('n_contracts', 0)}")
@@ -718,11 +772,11 @@ def main():
             print("\n   âš  Se requiere --fase12-report para validar Fase XII")
     
     if args.phase in ["13", "both"]:
-        if args.fase13_analysis:
-            print(f"\n>> Validando Fase XIII desde {args.fase13_analysis}")
+        if fase13_analysis:
+            print(f"\n>> Validando Fase XIII desde {fase13_analysis}")
             results["fase13"] = run_contracts_fase13(
-                Path(args.fase13_analysis),
-                Path(args.fase13_atlas) if args.fase13_atlas else Path("")
+                Path(fase13_analysis),
+                Path(fase13_atlas) if fase13_atlas else Path("")
             )
             
             summary = results["fase13"]
@@ -732,7 +786,8 @@ def main():
             print("\n   âš  Se requiere --fase13-analysis para validar Fase XIII")
     
     # Guardar resultados
-    output_path = Path(args.output_file)
+    output_path = Path(output_file)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text(json.dumps(results, indent=2))
     
     print("\n" + "=" * 70)
@@ -742,11 +797,31 @@ def main():
     all_passed = True
     for phase, summary in results.items():
         if isinstance(summary, dict) and "all_passed" in summary:
-            status = "â" if summary["all_passed"] else "â"
+            status = "OK" if summary["all_passed"] else "FAIL"
             print(f"  {phase}: {status} ({summary['n_passed']}/{summary['n_contracts']})")
             all_passed = all_passed and summary["all_passed"]
     
     print(f"\n  Output: {output_path}")
+    
+    # === ACTUALIZAR RUN_MANIFEST (IO v2) ===
+    if args.run_dir and HAS_CUERDAS_IO:
+        try:
+            run_dir = Path(args.run_dir)
+            update_run_manifest(
+                run_dir,
+                {
+                    "contracts_dir": str(output_path.parent.relative_to(run_dir)
+                                         if output_path.parent.is_relative_to(run_dir)
+                                         else output_path.parent),
+                    "contracts_output": str(output_path.relative_to(run_dir)
+                                            if output_path.is_relative_to(run_dir)
+                                            else output_path),
+                }
+            )
+            print(f"  Manifest actualizado")
+        except Exception as e:
+            print(f"  [WARN] No se pudo actualizar manifest: {e}")
+    
     print("=" * 70)
     
     return 0 if all_passed else 1

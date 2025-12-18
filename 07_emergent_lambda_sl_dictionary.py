@@ -51,6 +51,13 @@ try:
 except ImportError:
     HAS_PYSR = False
 
+# Import local IO module for run manifest support
+try:
+    from cuerdas_io import update_run_manifest
+    HAS_CUERDAS_IO = True
+except ImportError:
+    HAS_CUERDAS_IO = False
+
 
 @dataclass
 class DiscoveryConfig:
@@ -745,10 +752,12 @@ def save_results(
 
 def main():
     parser = argparse.ArgumentParser(description="FASE XII.c v2: Diccionario Emergente (nomenclatura λ_SL)")
-    parser.add_argument("--input-file", type=str, required=True,
+    parser.add_argument("--input-file", type=str, default=None,
                         help="Archivo JSON de entrada (v2 lambda_sl, dictionary_v3, o legacy m2L2)")
-    parser.add_argument("--output-dir", type=str, required=True,
+    parser.add_argument("--output-dir", type=str, default=None,
                         help="Directorio de salida para resultados")
+    parser.add_argument("--run-dir", type=str, default=None,
+                        help="Directorio raíz con run_manifest.json (IO v2). Resuelve input/output automáticamente.")
     parser.add_argument("--ops-minimal", action="store_true",
                         help="Usar operadores mínimos (+,-,*,/,square,sqrt)")
     parser.add_argument("--seed", type=int, default=42,
@@ -764,6 +773,32 @@ def main():
     
     args = parser.parse_args()
     
+    # === RESOLVER RUTAS ===
+    input_path = None
+    output_dir = None
+    
+    # Prioridad 1: --run-dir
+    if args.run_dir:
+        run_dir = Path(args.run_dir)
+        # Buscar input en bulk_eigenmodes/
+        bulk_modes_json = run_dir / "bulk_eigenmodes" / "bulk_modes_dataset_v2.json"
+        if not bulk_modes_json.exists():
+            bulk_modes_json = run_dir / "bulk_eigenmodes" / "bulk_modes_dataset.json"
+        if bulk_modes_json.exists():
+            input_path = bulk_modes_json
+        # Output en emergent_dictionary/
+        output_dir = run_dir / "emergent_dictionary"
+    
+    # Prioridad 2: argumentos explícitos
+    if input_path is None and args.input_file:
+        input_path = Path(args.input_file)
+    
+    if output_dir is None and args.output_dir:
+        output_dir = Path(args.output_dir)
+    
+    if input_path is None or output_dir is None:
+        parser.error("Debe proporcionar --run-dir o ambos --input-file y --output-dir")
+    
     config = DiscoveryConfig(random_state=args.seed, niterations=args.iterations)
     
     print("=" * 80)
@@ -771,7 +806,6 @@ def main():
     print("Nomenclatura honesta: λ_SL (autovalores Sturm–Liouville)")
     print("=" * 80)
     
-    input_path = Path(args.input_file)
     if not input_path.exists():
         raise FileNotFoundError(f"Archivo no encontrado: {input_path}")
     
@@ -810,7 +844,6 @@ def main():
     if model is None:
         return 1
     
-    output_dir = Path(args.output_dir)
     summary = save_results(model, config, X_train, y_train, X_test, y_test,
                           test_df, metadata, output_dir, args.ops_minimal)
     
@@ -839,6 +872,27 @@ def main():
         print(f"          Esto puede indicar física más allá de AdS/CFT estándar.")
     
     print(f"\n   Resultados en: {output_dir.absolute()}")
+    
+    # === ACTUALIZAR RUN_MANIFEST (IO v2) ===
+    if args.run_dir and HAS_CUERDAS_IO:
+        try:
+            run_dir = Path(args.run_dir)
+            report_file = output_dir / "lambda_sl_dictionary_report.json"
+            update_run_manifest(
+                run_dir,
+                {
+                    "emergent_dictionary_dir": str(output_dir.relative_to(run_dir)
+                                                   if output_dir.is_relative_to(run_dir)
+                                                   else output_dir),
+                    "dictionary_report": str(report_file.relative_to(run_dir)
+                                             if report_file.is_relative_to(run_dir)
+                                             else report_file),
+                }
+            )
+            print(f"   Manifest actualizado")
+        except Exception as e:
+            print(f"   [WARN] No se pudo actualizar manifest: {e}")
+    
     print("=" * 80)
     
     return 0

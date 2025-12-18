@@ -51,6 +51,21 @@ from typing import Dict, List, Any, Optional, Tuple
 import numpy as np
 import h5py
 
+# Import local IO module for run manifest support
+try:
+    from cuerdas_io import (
+        RunContext,
+        resolve_predictions_dir as cuerdas_resolve_predictions,
+        resolve_geometry_emergent_dir as cuerdas_resolve_geometry_emergent,
+        resolve_bulk_equations_dir as cuerdas_resolve_bulk_equations,
+        resolve_data_dir as cuerdas_resolve_data,
+        resolve_dictionary_file as cuerdas_resolve_dictionary,
+        update_run_manifest,
+    )
+    HAS_CUERDAS_IO = True
+except ImportError:
+    HAS_CUERDAS_IO = False
+
 
 # ============================================================
 # HELPERS PARA RESOLUCIÓN DE RUTAS (V2.1)
@@ -795,38 +810,75 @@ def main():
     parser = argparse.ArgumentParser(
         description="Fase XI v2.1: Contratos de validación física HONESTOS (con soporte inference)"
     )
-    parser.add_argument("--data-dir", type=str, required=True,
+    parser.add_argument("--data-dir", type=str, default=None,
                         help="Directorio con H5 de boundary (manifest.json)")
-    parser.add_argument("--geometry-dir", type=str, required=True,
+    parser.add_argument("--geometry-dir", type=str, default=None,
                         help="Directorio raíz de geometría (predictions/, geometry_emergent/)")
-    parser.add_argument("--einstein-dir", type=str, required=True,
+    parser.add_argument("--einstein-dir", type=str, default=None,
                         help="Directorio de ecuaciones bulk (o raíz que contenga bulk_equations/)")
-    parser.add_argument("--dictionary-file", type=str, required=True,
+    parser.add_argument("--dictionary-file", type=str, default=None,
                         help="JSON de diccionario holográfico")
-    parser.add_argument("--output-file", type=str, default="contracts_04.json",
-                        help="Archivo de salida JSON")
+    parser.add_argument("--run-dir", type=str, default=None,
+                        help="Directorio raíz con run_manifest.json (IO v2). "
+                             "Si se proporciona, resuelve automáticamente las rutas.")
+    parser.add_argument("--output-file", type=str, default=None,
+                        help="Archivo de salida JSON (default: run-dir/geometry_contracts/...)")
     parser.add_argument("--d", type=int, default=4,
                         help="Dimensión d del boundary")
     args = parser.parse_args()
     
-    data_dir = Path(args.data_dir)
-    geometry_dir = Path(args.geometry_dir)
-    einstein_dir_input = Path(args.einstein_dir)
-    dictionary_path = Path(args.dictionary_file)
-    output_file = Path(args.output_file)
+    # === RESOLVER RUTAS (IO v2 con fallback legacy) ===
+    predictions_dir = None
+    emergent_h5_dir = None
+    einstein_dir = None
+    data_dir = None
+    dictionary_path = None
     
-    # === RESOLVER RUTAS ===
-    predictions_dir = resolve_predictions_dir(geometry_dir)
-    emergent_h5_dir = resolve_emergent_h5_dir(geometry_dir)
-    einstein_dir = resolve_bulk_equations_dir(einstein_dir_input)
+    # Prioridad 1: --run-dir con cuerdas_io
+    if args.run_dir and HAS_CUERDAS_IO:
+        run_dir = Path(args.run_dir)
+        predictions_dir = cuerdas_resolve_predictions(run_dir=run_dir)
+        emergent_h5_dir = cuerdas_resolve_geometry_emergent(run_dir=run_dir)
+        einstein_dir = cuerdas_resolve_bulk_equations(run_dir=run_dir)
+        data_dir = cuerdas_resolve_data(run_dir=run_dir, data_dir=args.data_dir)
+        dictionary_path = cuerdas_resolve_dictionary(run_dir=run_dir, dictionary_file=args.dictionary_file)
+    
+    # Prioridad 2: argumentos explícitos (legacy)
+    if predictions_dir is None and args.geometry_dir:
+        geometry_dir = Path(args.geometry_dir)
+        predictions_dir = resolve_predictions_dir(geometry_dir)
+        emergent_h5_dir = resolve_emergent_h5_dir(geometry_dir)
+    
+    if einstein_dir is None and args.einstein_dir:
+        einstein_dir = resolve_bulk_equations_dir(Path(args.einstein_dir))
+    
+    if data_dir is None and args.data_dir:
+        data_dir = Path(args.data_dir)
+    
+    if dictionary_path is None and args.dictionary_file:
+        dictionary_path = Path(args.dictionary_file)
+    
+    # Validar que tenemos las rutas mínimas necesarias
+    if predictions_dir is None:
+        parser.error("Debe proporcionar --run-dir con manifest o --geometry-dir")
+    
+    # Resolver output_file
+    if args.output_file:
+        output_file = Path(args.output_file)
+    elif args.run_dir:
+        output_dir = Path(args.run_dir) / "geometry_contracts"
+        output_dir.mkdir(parents=True, exist_ok=True)
+        output_file = output_dir / "geometry_contracts_summary.json"
+    else:
+        output_file = Path("contracts_04.json")
     
     print("=" * 90)
     print("FASE XI v2.1 — CONTRATOS DE VALIDACIÓN FÍSICA HONESTOS")
     print("=" * 90)
-    print(f"\n  data-dir:       {data_dir}")
-    print(f"  geometry-dir:   {geometry_dir}")
-    print(f"    predictions:  {predictions_dir}")
-    print(f"    emergent_h5:  {emergent_h5_dir}")
+    print(f"\n  run-dir:        {args.run_dir or '(no especificado)'}")
+    print(f"  data-dir:       {data_dir or '(no especificado)'}")
+    print(f"  predictions:    {predictions_dir}")
+    print(f"  emergent_h5:    {emergent_h5_dir}")
     print(f"  einstein-dir:   {einstein_dir}")
     print(f"  dictionary:     {dictionary_path}")
     print(f"  output:         {output_file}")
@@ -837,27 +889,41 @@ def main():
     print("=" * 90)
     
     # === CARGAR MANIFEST ===
-    manifest_path = data_dir / "manifest.json"
-    if not manifest_path.exists():
-        print(f"\n[ERROR] No existe manifest.json en {data_dir}")
-        # Intentar auto-descubrir sistemas desde predictions/
+    if data_dir is None:
+        # Sin data_dir, auto-descubrir desde predictions
+        print(f"\n[INFO] Sin data-dir, auto-descubriendo sistemas desde predictions/")
         npz_files = list(predictions_dir.glob("*_geometry.npz"))
         if npz_files:
-            print(f"[INFO] Auto-descubriendo {len(npz_files)} sistemas desde predictions/")
+            print(f"[INFO] Encontrados {len(npz_files)} sistemas")
             geometries = [{"name": f.stem.replace("_geometry", "")} for f in npz_files]
         else:
             print("[ERROR] No hay sistemas para procesar")
             return
     else:
-        manifest = json.loads(manifest_path.read_text())
-        geometries = manifest.get("geometries", [])
+        manifest_path = data_dir / "manifest.json"
+        if not manifest_path.exists():
+            print(f"\n[WARN] No existe manifest.json en {data_dir}")
+            # Intentar auto-descubrir sistemas desde predictions/
+            npz_files = list(predictions_dir.glob("*_geometry.npz"))
+            if npz_files:
+                print(f"[INFO] Auto-descubriendo {len(npz_files)} sistemas desde predictions/")
+                geometries = [{"name": f.stem.replace("_geometry", "")} for f in npz_files]
+            else:
+                print("[ERROR] No hay sistemas para procesar")
+                return
+        else:
+            manifest = json.loads(manifest_path.read_text())
+            geometries = manifest.get("geometries", [])
     
     # Cargar diccionario
-    if dictionary_path.exists():
+    if dictionary_path and dictionary_path.exists():
         dictionary_results = json.loads(dictionary_path.read_text())
     else:
         dictionary_results = {}
-        print(f"[WARN] No existe diccionario: {dictionary_path}")
+        if dictionary_path:
+            print(f"[WARN] No existe diccionario: {dictionary_path}")
+        else:
+            print("[WARN] No se especificó archivo de diccionario")
     
     all_contracts = []
     
@@ -1015,6 +1081,26 @@ def main():
     output_file.write_text(json.dumps(output_data, indent=2))
     
     print(f"\n  Resultados: {output_file}")
+    
+    # === ACTUALIZAR RUN_MANIFEST (IO v2) ===
+    if args.run_dir and HAS_CUERDAS_IO:
+        try:
+            run_dir = Path(args.run_dir)
+            update_run_manifest(
+                run_dir,
+                {
+                    "geometry_contracts_dir": str(output_file.parent.relative_to(run_dir)
+                                                  if output_file.parent.is_relative_to(run_dir)
+                                                  else output_file.parent),
+                    "geometry_contracts_summary": str(output_file.relative_to(run_dir)
+                                                      if output_file.is_relative_to(run_dir)
+                                                      else output_file),
+                }
+            )
+            print(f"  Manifest actualizado: {run_dir / 'run_manifest.json'}")
+        except Exception as e:
+            print(f"  [WARN] No se pudo actualizar run_manifest.json: {e}")
+    
     print("=" * 90)
 
 

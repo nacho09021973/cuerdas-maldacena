@@ -44,6 +44,13 @@ try:
 except ImportError:
     import bulk_scalar_solver as bss  # type: ignore
 
+# Import local IO module for run manifest support
+try:
+    from cuerdas_io import resolve_geometry_emergent_dir, update_run_manifest
+    HAS_CUERDAS_IO = True
+except ImportError:
+    HAS_CUERDAS_IO = False
+
 
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(
@@ -55,8 +62,14 @@ def parse_args() -> argparse.Namespace:
     p.add_argument(
         "--geometry-dir",
         type=str,
-        required=True,
+        default=None,
         help="Directorio con .h5 de geometría emergente (p.ej. runs/emergent_geometry/geometry_emergent)",
+    )
+    p.add_argument(
+        "--run-dir",
+        type=str,
+        default=None,
+        help="Directorio raíz con run_manifest.json (IO v2). Resuelve geometry_emergent automáticamente.",
     )
 
     # Salidas canónicas
@@ -254,9 +267,32 @@ def build_legacy_json(rows: List[Row]) -> Dict[str, Any]:
 
 def main() -> None:
     args = parse_args()
-    geom_dir = Path(args.geometry_dir)
-    out_csv = Path(args.output_csv)
-    out_meta = Path(args.output_meta)
+    
+    # === RESOLVER RUTAS ===
+    geom_dir = None
+    
+    # Prioridad 1: --run-dir con cuerdas_io
+    if args.run_dir and HAS_CUERDAS_IO:
+        run_dir = Path(args.run_dir)
+        geom_dir = resolve_geometry_emergent_dir(run_dir=run_dir)
+    
+    # Prioridad 2: --geometry-dir explícito
+    if geom_dir is None and args.geometry_dir:
+        geom_dir = Path(args.geometry_dir)
+    
+    if geom_dir is None:
+        raise ValueError("Debe proporcionar --run-dir o --geometry-dir")
+    
+    # Resolver outputs
+    if args.run_dir:
+        out_dir = Path(args.run_dir) / "bulk_eigenmodes"
+        out_dir.mkdir(parents=True, exist_ok=True)
+        out_csv = out_dir / "bulk_modes_dataset.csv"
+        out_meta = out_dir / "bulk_modes_meta.json"
+    else:
+        out_csv = Path(args.output_csv)
+        out_meta = Path(args.output_meta)
+    
     out_json = Path(args.output_json) if args.output_json else None
 
     if not geom_dir.exists() or not geom_dir.is_dir():
@@ -425,6 +461,29 @@ def main() -> None:
         print(f"  JSON:  {out_json}")
     if failed:
         print(f"  WARN: {len(failed)} sistemas fallaron (ver bulk_modes_meta.json)")
+    
+    # === ACTUALIZAR RUN_MANIFEST (IO v2) ===
+    if args.run_dir and HAS_CUERDAS_IO:
+        try:
+            run_dir = Path(args.run_dir)
+            update_run_manifest(
+                run_dir,
+                {
+                    "bulk_eigenmodes_dir": str(out_csv.parent.relative_to(run_dir)
+                                               if out_csv.parent.is_relative_to(run_dir)
+                                               else out_csv.parent),
+                    "bulk_modes_csv": str(out_csv.relative_to(run_dir)
+                                          if out_csv.is_relative_to(run_dir)
+                                          else out_csv),
+                    "bulk_modes_meta": str(out_meta.relative_to(run_dir)
+                                           if out_meta.is_relative_to(run_dir)
+                                           else out_meta),
+                }
+            )
+            print(f"  Manifest actualizado")
+        except Exception as e:
+            print(f"  [WARN] No se pudo actualizar manifest: {e}")
+    
     print("=" * 70)
 
 

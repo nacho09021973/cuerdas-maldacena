@@ -35,6 +35,13 @@ from pathlib import Path
 from typing import Dict, List, Tuple
 from collections import defaultdict
 
+# Import local IO module for run manifest support
+try:
+    from cuerdas_io import resolve_bulk_equations_dir, update_run_manifest
+    HAS_CUERDAS_IO = True
+except ImportError:
+    HAS_CUERDAS_IO = False
+
 
 def parse_equation_coefficients(eq_str: str) -> Dict[str, float]:
     """
@@ -321,11 +328,33 @@ def main():
     import argparse
     
     parser = argparse.ArgumentParser(description="Analiza ecuaciones descubiertas")
-    parser.add_argument("--input", type=str, default="sweep_2d_einstein/einstein_discovery_summary.json")
-    parser.add_argument("--output", type=str, default="equation_analysis.txt")
+    parser.add_argument("--input", type=str, default=None,
+                        help="Archivo einstein_discovery_summary.json")
+    parser.add_argument("--output", type=str, default=None,
+                        help="Archivo de salida (.txt)")
+    parser.add_argument("--run-dir", type=str, default=None,
+                        help="Directorio raíz con run_manifest.json (IO v2)")
     args = parser.parse_args()
     
-    input_path = Path(args.input)
+    # === RESOLVER RUTAS ===
+    input_path = None
+    
+    # Prioridad 1: --run-dir
+    if args.run_dir and HAS_CUERDAS_IO:
+        run_dir = Path(args.run_dir)
+        bulk_eq_dir = resolve_bulk_equations_dir(run_dir=run_dir)
+        if bulk_eq_dir:
+            candidate = bulk_eq_dir / "einstein_discovery_summary.json"
+            if candidate.exists():
+                input_path = candidate
+    
+    # Prioridad 2: --input explícito
+    if input_path is None and args.input:
+        input_path = Path(args.input)
+    
+    # Default legacy
+    if input_path is None:
+        input_path = Path("sweep_2d_einstein/einstein_discovery_summary.json")
     
     if not input_path.exists():
         print(f"Error: No existe {input_path}")
@@ -340,9 +369,20 @@ def main():
     print(report)
     
     # Guardar
-    output_path = Path(args.output)
+    # Resolver output
+    if args.output:
+        output_path = Path(args.output)
+    elif args.run_dir:
+        output_dir = Path(args.run_dir) / "bulk_equations_analysis"
+        output_dir.mkdir(parents=True, exist_ok=True)
+        output_path = output_dir / "bulk_equations_report.txt"
+    else:
+        output_path = Path("equation_analysis.txt")
+    
+    # Guardar
+    output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text(report)
-    print(f"\nâ†’ Guardado: {output_path}")
+    print(f"\n-> Guardado: {output_path}")
     
     # También guardar JSON con datos estructurados
     json_output = {
@@ -356,7 +396,26 @@ def main():
     
     json_path = output_path.with_suffix(".json")
     json_path.write_text(json.dumps(json_output, indent=2, default=str))
-    print(f"â†’ Guardado: {json_path}")
+    print(f"-> Guardado: {json_path}")
+    
+    # === ACTUALIZAR RUN_MANIFEST (IO v2) ===
+    if args.run_dir and HAS_CUERDAS_IO:
+        try:
+            run_dir = Path(args.run_dir)
+            update_run_manifest(
+                run_dir,
+                {
+                    "bulk_equations_analysis_dir": str(output_path.parent.relative_to(run_dir)
+                                                       if output_path.parent.is_relative_to(run_dir)
+                                                       else output_path.parent),
+                    "bulk_equations_report": str(json_path.relative_to(run_dir)
+                                                 if json_path.is_relative_to(run_dir)
+                                                 else json_path),
+                }
+            )
+            print(f"-> Manifest actualizado")
+        except Exception as e:
+            print(f"[WARN] No se pudo actualizar manifest: {e}")
     
     return 0
 
