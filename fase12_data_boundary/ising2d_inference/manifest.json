@@ -1,0 +1,20 @@
+{
+  "geometries": [
+    {
+      "name": "ising2d_L64_Tc",
+      "family": "ads",
+      "category": "unknown",
+      "d": 2,
+      "file": "ising2d_L64_Tc.h5",
+      "operators": []
+    }
+  ],
+  "version": "ising2d_inference_v1",
+  "config": {
+    "source": "fase12_ising2d_adapter",
+    "notes": [
+      "Dataset boundary-only para inference (Ising 2D).",
+      "Formato compatible con 02_emergent_geometry_engine.py."
+    ]
+  }
+}
