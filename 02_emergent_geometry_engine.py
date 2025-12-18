@@ -130,51 +130,65 @@ def compute_mae(y_true: np.ndarray, y_pred: np.ndarray) -> float:
 
 def extract_correlator_features(G2: np.ndarray, x: np.ndarray) -> Dict[str, float]:
     """
-    Extrae features básicos del correlador G2(x).
-    
-    Features extraídos:
-    - G2_log_slope: pendiente en escala log-log (relacionado con Δ)
-    - G2_log_curvature: curvatura en log-log (desviaciones de power-law)
-    - G2_small_x: valor en x pequeño (UV)
-    - G2_large_x: valor en x grande (IR)
+    Extrae features robustas de un correlador G2(x) sin producir NaN/Inf.
     """
-    features = {}
-    
+    features = {
+        "G2_log_slope": 0.0,
+        "G2_log_curvature": 0.0,
+        "G2_small_x": 0.0,
+        "G2_large_x": 0.0,
+    }
+
+    if G2 is None or x is None:
+        return features
+
     G2 = np.asarray(G2, dtype=float)
     x = np.asarray(x, dtype=float)
-    
-    # Valores por defecto si no hay datos suficientes
-    mask = (G2 > 0) & np.isfinite(G2) & np.isfinite(x) & (x > 0)
-    if np.sum(mask) < 5:
-        features["G2_log_slope"] = 0.0
-        features["G2_log_curvature"] = 0.0
-        features["G2_small_x"] = float(G2[0]) if len(G2) > 0 else 0.0
-        features["G2_large_x"] = float(G2[-1]) if len(G2) > 0 else 0.0
+
+    if G2.size == 0 or x.size == 0:
         return features
-    
-    x_log = np.log(x[mask] + 1e-8)
+
+    # UV/IR (robusto)
+    g0 = np.nan_to_num(G2[0], nan=0.0, posinf=0.0, neginf=0.0)
+    g1 = np.nan_to_num(G2[-1], nan=0.0, posinf=0.0, neginf=0.0)
+    features["G2_small_x"] = float(np.clip(g0, 0.0, 1e6))
+    features["G2_large_x"] = float(np.clip(g1, 0.0, 1e6))
+
+    # Log-log fit (robusto): exige x>0, G2>0 y finitud
+    mask = (G2 > 0) & np.isfinite(G2) & (x > 0) & np.isfinite(x)
+    if int(np.sum(mask)) < 3:
+        return features
+
+    x_log = np.log(x[mask])
     G2_log = np.log(G2[mask] + 1e-8)
-    
+
+    m2 = np.isfinite(x_log) & np.isfinite(G2_log)
+    if int(np.sum(m2)) < 3:
+        return features
+
+    # Pendiente
     try:
-        # Ajuste lineal en log-log: G2 ~ x^{-alpha}
-        coeffs = np.polyfit(x_log, G2_log, 1)
-        slope = coeffs[0]
-        features["G2_log_slope"] = float(np.clip(slope, -20, 20))
+        coeffs = np.polyfit(x_log[m2], G2_log[m2], 1)
+        slope = float(coeffs[0])
+        if not np.isfinite(slope):
+            slope = 0.0
+        features["G2_log_slope"] = float(np.clip(slope, -20.0, 20.0))
     except Exception:
         features["G2_log_slope"] = 0.0
-    
-    try:
-        # Curvatura efectiva: ajuste cuadrático
-        coeffs2 = np.polyfit(x_log, G2_log, 2)
-        curvature = coeffs2[0]
-        features["G2_log_curvature"] = float(np.clip(curvature, -10, 10))
-    except Exception:
-        features["G2_log_curvature"] = 0.0
-    
-    features["G2_small_x"] = float(np.clip(G2[0], 0, 1e6)) if len(G2) > 0 else 0.0
-    features["G2_large_x"] = float(np.clip(G2[-1], 0, 1e6)) if len(G2) > 0 else 0.0
-    
+
+    # Curvatura (requiere más puntos)
+    if int(np.sum(m2)) >= 4:
+        try:
+            coeffs2 = np.polyfit(x_log[m2], G2_log[m2], 2)
+            curvature = float(coeffs2[0])
+            if not np.isfinite(curvature):
+                curvature = 0.0
+            features["G2_log_curvature"] = float(np.clip(curvature, -10.0, 10.0))
+        except Exception:
+            features["G2_log_curvature"] = 0.0
+
     return features
+
 
 
 def extract_thermal_features(G2: np.ndarray, x: np.ndarray, T: float) -> Dict[str, float]:
@@ -1073,9 +1087,27 @@ def run_inference_mode(args):
         
         # Construir features
         X = build_feature_vector(boundary_data, operators)
+
+        # NaN/Inf-safe features (inference): evita que el modelo propague NaNs
+        if not np.all(np.isfinite(X)):
+            if args.verbose:
+                n_bad = int(np.sum(~np.isfinite(X)))
+                print(f"   [WARN] Features no finitas en {name}: {n_bad}/{len(X)} (se reemplazan por 0.0)")
+            X = np.nan_to_num(X, nan=0.0, posinf=0.0, neginf=0.0)
+
         
         # Normalizar features con estadísticas del checkpoint
+        # Si alguna feature fue casi constante en train (X_std tiny), proyectar a la media del checkpoint
+        std_floor = 1e-6
+        tiny_std = (X_std < std_floor)
+        if np.any(tiny_std):
+            if args.verbose:
+                idxs = np.where(tiny_std)[0].tolist()
+                print(f"   [WARN] X_std < {std_floor} en idx {idxs}; fijando X=X_mean en esas componentes")
+            X = np.where(tiny_std, X_mean, X)
+
         X_norm = (X - X_mean) / X_std
+        X_norm = np.clip(X_norm, -10.0, 10.0)
         
         # Inferencia
         preds = run_inference_single(model, X_norm, normalizer, family_map_inv, device)
