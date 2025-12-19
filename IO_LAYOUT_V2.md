@@ -12,6 +12,65 @@ El pipeline CUERDAS tiene múltiples scripts (02-09) que deben pasarse rutas ent
 
 Ahora cada run produce un `run_manifest.json` que registra dónde están los artefactos. Los scripts posteriores solo necesitan `--run-dir` para encontrar todo automáticamente.
 
+
+Sí: esto merece estar en el README (o mejor aún, en `IO_LAYOUT_V2.md`, y el README solo enlaza).
+
+Aquí tienes un bloque **listo para copiar/pegar**:
+
+````md
+## Rutas estables de ejecución: `outputs/latest` (regla anti-caos)
+
+Para evitar perder tiempo buscando dónde generó cada script sus artefactos, este repo usa un alias estable:
+
+- `outputs/latest` siempre apunta al **último run válido**.
+- Tests, contratos y scripts deben referenciar artefactos vía `outputs/latest/...`.
+
+### Regla 1 — Al crear/terminar un run, fija `outputs/latest` al run actual
+
+```bash
+# Ejemplo típico
+RUN_DIR="outputs/synth_$(date +%Y%m%d_%H%M%S)"
+mkdir -p "$RUN_DIR"
+
+# Importante: usar ruta ABSOLUTA para evitar symlinks relativos mal resueltos
+ln -sfn "$(realpath "$RUN_DIR")" outputs/latest
+````
+
+### Regla 2 — Si `latest` apunta a un run incompleto, reenganchar al último run *válido*
+
+Esto recoloca `outputs/latest` al último run que **sí** contiene el reporte de 07:
+
+```bash
+ln -sfn "$(python - <<'PY'
+from pathlib import Path
+cands = sorted(
+    Path("outputs").glob("**/emergent_dictionary/lambda_sl_dictionary_report.json"),
+    key=lambda p: p.stat().st_mtime,
+    reverse=True
+)
+if not cands:
+    raise SystemExit("No hay runs con lambda_sl_dictionary_report.json en outputs/")
+print(str(cands[0].parents[1].resolve()))
+PY
+)" outputs/latest
+```
+
+### Ejemplo: ejecutar un test sin buscar rutas
+
+```bash
+python test_07_regime_contracts.py \
+  --json-file outputs/latest/emergent_dictionary/lambda_sl_dictionary_report.json
+```
+
+```
+
+Si quieres, te propongo dónde colocarlo:
+- En `README.md`: una sección corta “Rutas estables (`outputs/latest`)” + enlace a `IO_LAYOUT_V2.md`.
+- En `IO_LAYOUT_V2.md`: el bloque completo (más apropiado).
+::contentReference[oaicite:0]{index=0}
+```
+
+
 ## Estructura de Directorios (V2)
 
 ```
