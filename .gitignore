@@ -19,3 +19,8 @@ logs/
 # Windows MOTW / NTFS artifacts (WSL)
 *:Zone.Identifier
 *Zone.Identifier
+
+__pycache__/
+*.pyc
+*.bak_*
+model.pt

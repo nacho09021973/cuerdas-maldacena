@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # 07_emergent_lambda_sl_dictionary.py
-# CUERDAS — Bloque C: Diccionario emergente λ_SL ↔ Δ
+# CUERDAS — Bloque C: Diccionario emergente λ_SL ↔ Δ (con contratos por régimen)
 #
 # OBJETIVO
 #   Aprender una relación emergente entre el espectro escalar en el bulk (λ_SL)
@@ -16,6 +16,10 @@
 #     lambda_sl_dictionary_pareto.csv
 #       - Conjunto de expresiones candidatas (frente de Pareto).
 #     lambda_sl_dictionary_report.json
+#       - Incluye:
+#           * x_mapping: {x0: "Delta", x1: "d", ...}
+#           * metrics_by_regime: evaluación por rangos de lambda_sl
+#           * contract_status: PASS/FAIL por régimen
 #       - Resumen con métricas, selección de modelos, etc.
 #
 # RELACIÓN CON OTROS SCRIPTS
@@ -27,10 +31,13 @@
 # HONESTIDAD
 #   - No se fuerza la fórmula Δ(Δ-d) ni se inyectan diccionarios conocidos.
 #   - Cualquier comparación con fórmulas teóricas se realiza posteriormente,
-#     en scripts de análisis/contratos.
+#     en scripts de análisis/contratos, y está OFF por defecto en este script.
+#   - La comparación con teoría solo se activa con --compare-theory.
+#   - Evaluación por regímenes para detectar mezcla de escalas engañosa.
 #
 # HISTÓRICO
 #   - Anteriormente conocido como: fase12c_emergent_dictionary_v2.py
+#   - v3: Añadido contratos por régimen, x_mapping, --compare-theory OFF
 
 import argparse
 import json
@@ -57,6 +64,27 @@ try:
     HAS_CUERDAS_IO = True
 except ImportError:
     HAS_CUERDAS_IO = False
+
+
+# =============================================================================
+# CONTRATOS POR RÉGIMEN: Definición de umbrales
+# =============================================================================
+
+@dataclass
+class RegimeContractConfig:
+    """Configuración de contratos por régimen de lambda_sl."""
+    # Regímenes por defecto
+    regime_lo_threshold: float = 1.0     # lambda_sl < 1
+    regime_hi_threshold: float = 10.0    # lambda_sl > 10
+    
+    # Umbrales para PASS
+    max_mre_for_pass: float = 0.5        # MRE < 50% para PASS
+    mae_must_beat_baseline: bool = True  # MAE < MAE_baseline para PASS
+    
+    # MAE_baseline = mean(|y - mean(y)|) por régimen
+    # MRE = mean(|y_pred - y| / |y|) para y != 0
+    
+    min_samples_for_regime: int = 5      # Mínimo de muestras para evaluar régimen
 
 
 @dataclass
@@ -409,15 +437,15 @@ def load_emergent_data(input_file: Path) -> Tuple[pd.DataFrame, Dict[str, Any]]:
     
     print(f"\n   ANÁLISIS DE CALIDAD DE DATOS:")
     print(f"   - Operadores totales: {len(df)}")
-    print(f"   - Sistemas: {len(metadata['systems'])}")
-    print(f"   - Métodos únicos encontrados: {metadata['methods_lambda_sl']}")
+    print(f"   - Sistemas: {len(metadata.get('systems', []))}")
+    print(f"   - Métodos únicos encontrados: {metadata.get('methods_lambda_sl', [])}")
     print(f"   - Operadores con métodos válidos (holográficos): {n_valid}")
     print(f"   - Operadores con métodos sospechosos: {n_suspicious}")
     
     if n_suspicious > 0:
         warnings.warn(
             f"   ALERTA DE CONTAMINACIÓN: Se encontraron {n_suspicious} operadores "
-            f"con métodos sospechosos: {metadata['suspicious_methods_found']}",
+            f"con métodos sospechosos: {metadata.get('suspicious_methods_found', [])}",
             UserWarning
         )
     
@@ -468,6 +496,148 @@ def prepare_training_data(
     print(f"   - Rango λ_SL: [{df_clean[config.target].min():.3f}, {df_clean[config.target].max():.3f}]")
     
     return X_train, y_train, X_test, y_test, test_df
+
+
+# =============================================================================
+# EVALUACIÓN POR REGÍMENES (NUEVO en v3)
+# =============================================================================
+
+def compute_regime_metrics(
+    y_true: np.ndarray,
+    y_pred: np.ndarray,
+    regime_name: str
+) -> Dict[str, Any]:
+    """
+    Calcula métricas para un régimen específico.
+    
+    Returns:
+        Dict con r2, mae, mae_baseline, mre, n_samples, contract_status
+    """
+    n = len(y_true)
+    if n == 0:
+        return {
+            "regime": regime_name,
+            "n_samples": 0,
+            "status": "SKIP",
+            "reason": "No hay muestras en este régimen"
+        }
+    
+    # MAE del modelo
+    mae = float(mean_absolute_error(y_true, y_pred))
+    
+    # MAE baseline = mean(|y - mean(y)|) - predictor "naive"
+    y_mean = np.mean(y_true)
+    mae_baseline = float(np.mean(np.abs(y_true - y_mean)))
+    
+    # R² (puede ser negativo si el modelo es peor que baseline)
+    r2 = float(r2_score(y_true, y_pred))
+    
+    # MRE (Mean Relative Error) - solo para y != 0
+    nonzero_mask = np.abs(y_true) > 1e-10
+    if nonzero_mask.sum() > 0:
+        rel_errors = np.abs(y_pred[nonzero_mask] - y_true[nonzero_mask]) / np.abs(y_true[nonzero_mask])
+        mre = float(np.mean(rel_errors))
+        max_re = float(np.max(rel_errors))
+    else:
+        mre = float('nan')
+        max_re = float('nan')
+    
+    return {
+        "regime": regime_name,
+        "n_samples": int(n),
+        "r2": r2,
+        "mae": mae,
+        "mae_baseline": mae_baseline,
+        "mre": mre,
+        "max_relative_error": max_re,
+        "mae_beats_baseline": mae < mae_baseline if mae_baseline > 1e-10 else False
+    }
+
+
+def evaluate_by_regime(
+    X: np.ndarray,
+    y_true: np.ndarray,
+    y_pred: np.ndarray,
+    target_col: str,
+    regime_config: RegimeContractConfig
+) -> Dict[str, Any]:
+    """
+    Evalúa el modelo por regímenes de lambda_sl.
+    
+    Args:
+        X: Features array
+        y_true: Target real (lambda_sl)
+        y_pred: Predicciones del modelo
+        target_col: Nombre de la columna target (para claridad)
+        regime_config: Configuración de umbrales
+    
+    Returns:
+        Dict con métricas por régimen y contract_status global
+    """
+    lo_thresh = regime_config.regime_lo_threshold
+    hi_thresh = regime_config.regime_hi_threshold
+    
+    # Máscaras por régimen (basadas en y_true = lambda_sl)
+    mask_lo = y_true < lo_thresh
+    mask_hi = y_true > hi_thresh
+    mask_mid = ~mask_lo & ~mask_hi
+    
+    regimes = {}
+    
+    # Evaluar cada régimen
+    for mask, name in [(mask_lo, f"lambda_sl<{lo_thresh}"),
+                       (mask_mid, f"{lo_thresh}<=lambda_sl<={hi_thresh}"),
+                       (mask_hi, f"lambda_sl>{hi_thresh}")]:
+        if mask.sum() >= regime_config.min_samples_for_regime:
+            metrics = compute_regime_metrics(y_true[mask], y_pred[mask], name)
+            
+            # Evaluar contrato PASS/FAIL
+            if metrics["n_samples"] > 0 and "mre" in metrics:
+                mre_val = metrics["mre"]
+                mre_ok = (mre_val < regime_config.max_mre_for_pass) if not np.isnan(mre_val) else False
+                mae_ok = metrics["mae_beats_baseline"] if regime_config.mae_must_beat_baseline else True
+                metrics["contract_status"] = "PASS" if (mre_ok and mae_ok) else "FAIL"
+                metrics["contract_details"] = {
+                    "mre_threshold": regime_config.max_mre_for_pass,
+                    "mre_ok": mre_ok,
+                    "mae_must_beat_baseline": regime_config.mae_must_beat_baseline,
+                    "mae_ok": mae_ok
+                }
+            regimes[name] = metrics
+        else:
+            regimes[name] = {
+                "regime": name,
+                "n_samples": int(mask.sum()),
+                "status": "SKIP",
+                "reason": f"Insuficientes muestras (<{regime_config.min_samples_for_regime})"
+            }
+    
+    # Contrato global: PASS solo si todos los regímenes evaluados pasan
+    evaluated_regimes = [r for r in regimes.values() if r.get("contract_status") in ["PASS", "FAIL"]]
+    if evaluated_regimes:
+        all_pass = all(r["contract_status"] == "PASS" for r in evaluated_regimes)
+        n_pass = sum(1 for r in evaluated_regimes if r["contract_status"] == "PASS")
+        n_fail = sum(1 for r in evaluated_regimes if r["contract_status"] == "FAIL")
+    else:
+        all_pass = None
+        n_pass = 0
+        n_fail = 0
+    
+    return {
+        "target_column": target_col,
+        "regime_thresholds": {
+            "lo": lo_thresh,
+            "hi": hi_thresh
+        },
+        "regimes": regimes,
+        "contract_summary": {
+            "all_regimes_pass": all_pass,
+            "n_regimes_pass": n_pass,
+            "n_regimes_fail": n_fail,
+            "overall_status": "PASS" if all_pass else ("FAIL" if all_pass is False else "INCONCLUSIVE")
+        },
+        "warning": None if all_pass else "R² global puede ser engañoso - revisar métricas por régimen"
+    }
 
 
 def discover_emergent_relation(
@@ -600,8 +770,8 @@ def evaluate_against_maldacena(
         max_rel_error = float(np.max(rel_errors))
         mean_rel_error = float(np.mean(rel_errors))
     else:
-        max_rel_error = np.inf
-        mean_rel_error = np.inf
+        max_rel_error = float('inf')
+        mean_rel_error = float('inf')
     
     return {
         "enabled": True,
@@ -626,7 +796,8 @@ def compare_with_theory(
     X: np.ndarray,
     y_true: np.ndarray,
     feature_names: Tuple[str, ...],
-    tolerance: float = 0.1
+    tolerance: float = 0.1,
+    enabled: bool = False
 ) -> Dict[str, Any]:
     """
     Comparación A POSTERIORI con fórmula teórica m²L² = Δ(Δ-d).
@@ -634,7 +805,18 @@ def compare_with_theory(
     NOTA: Esta comparación es DESPUÉS del descubrimiento, no antes.
     Si la ecuación descubierta coincide con Δ(Δ-d), entonces HEMOS DESCUBIERTO
     que los autovalores λ_SL tienen interpretación como masas holográficas.
+    
+    Args:
+        enabled: Si False, retorna un stub indicando que está deshabilitado.
+                 Usar --compare-theory para activar.
     """
+    if not enabled:
+        return {
+            "enabled": False,
+            "note": "Comparación con teoría deshabilitada. Usar --compare-theory para activar.",
+            "reason": "Por defecto OFF para evitar contaminación conceptual en análisis."
+        }
+    
     # Evaluar fórmula teórica
     maldacena_eval = evaluate_against_maldacena(X, y_true, feature_names, tolerance)
     
@@ -642,6 +824,7 @@ def compare_with_theory(
     eq_metrics = evaluate_equation(best_eq["equation"], X, y_true, feature_names)
     
     return {
+        "enabled": True,
         "theoretical_formula": "λ_SL ≈ Δ(Δ - d)  [si fuera masa holográfica m²L²]",
         "discovered_formula": best_eq["equation"],
         "theory_r2": maldacena_eval["r2"],
@@ -665,7 +848,9 @@ def save_results(
     test_df: pd.DataFrame,
     metadata: Dict[str, Any],
     output_dir: Path,
-    use_minimal_ops: bool
+    use_minimal_ops: bool,
+    regime_config: RegimeContractConfig,
+    compare_theory: bool
 ) -> Dict[str, Any]:
     """Guarda resultados del descubrimiento."""
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -685,17 +870,37 @@ def save_results(
         "pearson": float(test_pearson)
     }
     
-    # Comparación con teoría
-    theory_comparison = compare_with_theory(
-        {"equation": str(best_eq["equation"])},
-        X_test, y_test, config.features
+    # Evaluación por regímenes (NUEVO en v3)
+    regime_evaluation = evaluate_by_regime(
+        X_test, y_test, y_pred_test,
+        target_col=config.target,
+        regime_config=regime_config
     )
+    
+    # Comparación con teoría (solo si --compare-theory)
+    theory_comparison = compare_with_theory(
+        best_eq={"equation": str(best_eq["equation"])},
+        X=X_test,
+        y_true=y_test,
+        feature_names=config.features,
+        enabled=compare_theory
+    )
+    
+    # x_mapping: asociar x0, x1, ... a nombres de features (NUEVO en v3)
+    x_mapping = {f"x{i}": feat for i, feat in enumerate(config.features)}
     
     # Construir resumen
     summary = {
         "timestamp": datetime.now().isoformat(),
         "nomenclature_version": "v2_lambda_sl",
+        "script_version": "v3_with_regime_contracts",
         "config": asdict(config),
+        "feature_mapping": {
+            "x_mapping": x_mapping,
+            "features": list(config.features),
+            "target": config.target,
+            "note": "x0, x1, ... en las ecuaciones corresponden a features en orden"
+        },
         "input_metadata": {
             "format": metadata.get("format", "unknown"),
             "source": metadata.get("source", "unknown"),
@@ -723,11 +928,14 @@ def save_results(
             "use_minimal_ops": use_minimal_ops
         },
         "theory_comparison": theory_comparison,
+        "metrics_by_regime": regime_evaluation,
+        "contract_status": regime_evaluation["contract_summary"]["overall_status"],
         "pareto_front": [],
         "notes": [
             "Los valores λ_SL son autovalores Sturm–Liouville, NO asumidos como m²L².",
-            "La comparación con Δ(Δ-d) es A POSTERIORI, no una suposición.",
-            "Si compatible_with_maldacena=True, el descubrimiento valida la interpretación física."
+            "La comparación con Δ(Δ-d) es A POSTERIORI y está OFF por defecto (--compare-theory).",
+            "Revisar metrics_by_regime para validez real - R² global puede ser engañoso.",
+            "contract_status indica PASS/FAIL basado en MAE vs baseline y MRE por régimen."
         ]
     }
     
@@ -760,13 +968,28 @@ def save_results(
     print(f"\n   RESULTADOS GUARDADOS:")
     print(f"   - Directorio: {output_dir}")
     print(f"   - Mejor ecuación: {best_eq['equation']}")
-    print(f"   - R² en test: {test_metrics.get('r2', 'N/A'):.4f}")
+    print(f"   - R² en test (global): {test_metrics.get('r2', 'N/A'):.4f}")
+    
+    # Imprimir evaluación por regímenes
+    print(f"\n   EVALUACIÓN POR REGÍMENES:")
+    for regime_name, regime_data in regime_evaluation["regimes"].items():
+        if regime_data.get("contract_status"):
+            status = regime_data["contract_status"]
+            print(f"   - {regime_name} (n={regime_data['n_samples']}): {status}")
+            print(f"       MAE={regime_data['mae']:.4f} vs baseline={regime_data['mae_baseline']:.4f}")
+            print(f"       MRE={regime_data['mre']:.4f}, R²={regime_data['r2']:.4f}")
+        elif regime_data.get("status") == "SKIP":
+            print(f"   - {regime_name}: SKIP ({regime_data.get('reason', 'pocas muestras')})")
+    
+    print(f"\n   CONTRATO GLOBAL: {regime_evaluation['contract_summary']['overall_status']}")
+    if regime_evaluation.get("warning"):
+        print(f"   ⚠ ADVERTENCIA: {regime_evaluation['warning']}")
     
     return summary
 
 
 def main():
-    parser = argparse.ArgumentParser(description="FASE XII.c v2: Diccionario Emergente (nomenclatura λ_SL)")
+    parser = argparse.ArgumentParser(description="FASE XII.c v3: Diccionario Emergente (con contratos por régimen)")
     parser.add_argument("--input-file", type=str, default=None,
                         help="Archivo JSON de entrada (v2 lambda_sl, dictionary_v3, o legacy m2L2)")
     parser.add_argument("--output-dir", type=str, default=None,
@@ -785,6 +1008,16 @@ def main():
                         help="Descartar filas con method_is_suspicious==True antes de entrenar")
     parser.add_argument("--force-continue", action="store_true",
                         help="Continuar aunque se detecten métodos sospechosos")
+    
+    # Nuevos argumentos para contratos por régimen (v3)
+    parser.add_argument("--compare-theory", action="store_true",
+                        help="Activar comparación post-hoc con Δ(Δ-d). OFF por defecto.")
+    parser.add_argument("--regime-lo", type=float, default=1.0,
+                        help="Umbral inferior para régimen 'lo' (default: lambda_sl < 1.0)")
+    parser.add_argument("--regime-hi", type=float, default=10.0,
+                        help="Umbral superior para régimen 'hi' (default: lambda_sl > 10.0)")
+    parser.add_argument("--max-mre", type=float, default=0.5,
+                        help="MRE máximo para PASS en contratos (default: 0.5 = 50%%)")
     
     args = parser.parse_args()
     
@@ -820,9 +1053,18 @@ def main():
     
     config = DiscoveryConfig(random_state=args.seed, niterations=args.iterations)
     
+    # Configuración de contratos por régimen (v3)
+    regime_config = RegimeContractConfig(
+        regime_lo_threshold=args.regime_lo,
+        regime_hi_threshold=args.regime_hi,
+        max_mre_for_pass=args.max_mre,
+        mae_must_beat_baseline=True
+    )
+    
     print("=" * 80)
-    print("FASE XII.c v2 - DICCIONARIO HOLOGRÁFICO EMERGENTE")
+    print("FASE XII.c v3 - DICCIONARIO HOLOGRÁFICO EMERGENTE")
     print("Nomenclatura honesta: λ_SL (autovalores Sturm–Liouville)")
+    print("Con contratos por régimen y --compare-theory OFF por defecto")
     print("=" * 80)
     
     if not input_path.exists():
@@ -863,8 +1105,11 @@ def main():
     if model is None:
         return 1
     
-    summary = save_results(model, config, X_train, y_train, X_test, y_test,
-                          test_df, metadata, output_dir, args.ops_minimal)
+    summary = save_results(
+        model, config, X_train, y_train, X_test, y_test,
+        test_df, metadata, output_dir, args.ops_minimal,
+        regime_config, args.compare_theory
+    )
     
     print("\n" + "=" * 80)
     print("RESUMEN FINAL")
@@ -875,20 +1120,32 @@ def main():
     theory_comp = summary["theory_comparison"]
     
     print(f"\n   ECUACIÓN DESCUBIERTA: {best_eq}")
-    print(f"\n   MÉTRICAS EN TEST:")
+    print(f"\n   x_mapping: {summary['feature_mapping']['x_mapping']}")
+    print(f"\n   MÉTRICAS EN TEST (GLOBALES):")
     print(f"   - R²: {test_metrics.get('r2', 'N/A'):.4f}")
     print(f"   - MAE: {test_metrics.get('mae', 'N/A'):.4f}")
     print(f"   - Pearson: {test_metrics.get('pearson', 'N/A'):.4f}")
-    print(f"\n   COMPARACIÓN A POSTERIORI CON TEORÍA:")
-    print(f"   - Fórmula teórica (si fuera m²L²): λ_SL = Δ(Δ - d)")
-    print(f"   - R² teórico: {theory_comp.get('theory_r2', 'N/A'):.4f}")
-    print(f"   - Compatible con Maldacena: {theory_comp.get('compatible_with_maldacena', 'N/A')}")
     
-    if theory_comp.get('compatible_with_maldacena'):
-        print(f"\n   ✓ DESCUBRIMIENTO: Los λ_SL pueden interpretarse como m²L² holográficas!")
+    # Resultado de contratos por régimen
+    contract_status = summary.get("contract_status", "UNKNOWN")
+    print(f"\n   ESTADO DE CONTRATOS POR RÉGIMEN: {contract_status}")
+    
+    if contract_status == "FAIL":
+        print(f"   ⚠ El diccionario NO generaliza bien en todos los regímenes de λ_SL.")
+        print(f"   Revisar metrics_by_regime en el JSON para detalles.")
+    elif contract_status == "PASS":
+        print(f"   ✓ El diccionario pasa contratos en todos los regímenes evaluados.")
     else:
-        print(f"\n   ⚠ NOTA: La relación descubierta difiere de Δ(Δ-d).")
-        print(f"          Esto puede indicar física más allá de AdS/CFT estándar.")
+        print(f"   ? Estado inconcluso - revisar regímenes individuales.")
+    
+    # Comparación con teoría solo si está activada
+    if args.compare_theory:
+        print(f"\n   COMPARACIÓN A POSTERIORI CON TEORÍA (--compare-theory activado):")
+        print(f"   - Fórmula teórica: λ_SL = Δ(Δ - d)")
+        print(f"   - R² teórico: {theory_comp.get('theory_r2', 'N/A')}")
+        print(f"   - Compatible: {theory_comp.get('compatible_with_maldacena', 'N/A')}")
+    else:
+        print(f"\n   Comparación con teoría Δ(Δ-d): DESHABILITADA (usar --compare-theory)")
     
     print(f"\n   Resultados en: {output_dir.absolute()}")
     
