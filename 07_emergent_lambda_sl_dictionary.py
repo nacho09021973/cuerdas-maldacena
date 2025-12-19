@@ -372,6 +372,21 @@ def load_from_legacy_systems(data: Dict[str, Any]) -> Tuple[pd.DataFrame, Dict[s
 
 def load_emergent_data(input_file: Path) -> Tuple[pd.DataFrame, Dict[str, Any]]:
     """Carga datos emergentes del pipeline Fase XI con detección automática de formato."""
+    # CSV directo (pipeline v2: 06 produce bulk_modes_dataset.csv)
+    if str(input_file).lower().endswith('.csv'):
+        df = pd.read_csv(input_file)
+        # Compatibilidad de nombres con 06
+        if 'Delta' not in df.columns and 'Delta_UV' in df.columns:
+            df = df.rename(columns={'Delta_UV': 'Delta'})
+        if 'lambda_sl_emergent' not in df.columns and 'lambda_sl' in df.columns:
+            df = df.rename(columns={'lambda_sl': 'lambda_sl_emergent'})
+        meta = {
+            'format': 'csv_bulk_modes_dataset',
+            'source': 'bulk_eigenmodes_dataset_csv',
+            'total_operators': int(len(df)),
+        }
+        return df, meta
+
     with open(input_file, 'r') as f:
         data = json.load(f)
     
@@ -781,11 +796,15 @@ def main():
     if args.run_dir:
         run_dir = Path(args.run_dir)
         # Buscar input en bulk_eigenmodes/
+        bulk_modes_csv = run_dir / "bulk_eigenmodes" / "bulk_modes_dataset.csv"
         bulk_modes_json = run_dir / "bulk_eigenmodes" / "bulk_modes_dataset_v2.json"
         if not bulk_modes_json.exists():
             bulk_modes_json = run_dir / "bulk_eigenmodes" / "bulk_modes_dataset.json"
-        if bulk_modes_json.exists():
+        if bulk_modes_csv.exists():
+            input_path = bulk_modes_csv
+        elif bulk_modes_json.exists():
             input_path = bulk_modes_json
+
         # Output en emergent_dictionary/
         output_dir = run_dir / "emergent_dictionary"
     
