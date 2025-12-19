@@ -1,0 +1,163 @@
+
+===================================================================
+                         UBUNTU EJECUTAR
+===================================================================
+
+cd ~/retrocasual
+source .venv/bin/activate
+
+https://raw.githubusercontent.com/nacho09021973/cuerdas-maldacena/main/07_emergent_lambda_sl_dictionary.py
+https://raw.githubusercontent.com/nacho09021973/cuerdas-maldacena/main/README.md
+
+
+
+===================================================================
+                         KAN
+===================================================================
+
+import torch
+
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+model.to(device)
+
+=========================================================================
+                         UBUNTU ENTORNO
+=========================================================================
+
+import Pkg
+Pkg.add([
+  "CSV", "DataFrames", "Printf", "LinearAlgebra", "Statistics",
+  "Distributions", "Optim", "Plots", "JSON3", "LaTeXStrings"
+])
+
+
+
+==========================================================================
+                          TORINO EJECUTAR
+==========================================================================
+
+python -m pip install qiskit-ibm-runtime qiskit python-dotenv --upgrade
+
+python -m pip install matplotlib numpy ipympl
+
+pip install qiskit-experiments
+
+pip install qiskit-aer==0.17.1
+
+pip install qiskit==2.0.2
+
+pip install imageio
+
+
+
+===========================================================================
+                     Conectar: Amazon AWS con Linux
+===========================================================================
+
+cd /home/adnac/TAU/fase_vi
+cd /home/ignac/TAU/fase_vi
+
+conda activate retro_env
+
+
+ssh -i ~/clave-tht-aws.pem ubuntu@3.91.63.236
+
+conda activate tht_env_bull
+
+
+==========================================================================================
+                               EJECUTAR NUEVO SCRIPT: SEGUNDA VENTANA
+==========================================================================================
+
+Abre una NUEVA ventana de CMD en tu ordenador LOCAL. (No la que está conectada por SSH a AWS).
+Navega a la carpeta donde guardaste tu script calibrate_dmrg_ising_FINAL_v28.py (y tu clave .pem).
+
+                               exit o abrir una nueva ventana
+
+cd /home/adnac/TAU/fase_vi
+cd /home/ignac/TAU/fase_vi
+
+conda activate retro_env
+
+Usa el comando scp para copiar el script al servidor:
+
+scp -i "clave-tht-aws.pem" retrocausal_vae_experiment_v7c.py ubuntu@3.91.63.236:~/
+
+
+Ahora, vuelve a la ventana de CMD que está conectada al servidor de AWS.
+
+y en la ventana primera ejecuta: python retrocausal_vae_experiment_v7c.py
+
+
+======================================================================
+                                 Cosmología
+======================================================================
+
+cd C:\Users\adnac\THT
+cd C:\Users\ignac\THT
+
+# Navegar a tu directorio
+cd C:\Users\adnac\THT
+
+# Crear entorno virtual
+python -m venv tht-gw
+
+# Activar entorno
+.\tht-gw\Scripts\activate
+
+# Instalar paquetes esenciales (versión simplificada para Windows)
+
+pip install numpy scipy matplotlib gwpy astropy h5py requests
+pip install fitsio healpy pandas qiskit jupyterlab
+choco install miktex latexmk curl wget -y
+
+instalar dependencias básicas:
+
+conda install -c conda-forge numpy matplotlib h5py
+
+
+
+
+
+====================================================================
+                           REGISTRO AWS
+====================================================================
+
+
+#Abre PowerShell/CMD como Administrador en Windows.
+
+#Ingresa a WSL como root:
+
+wsl --user root
+
+#Restablece la contraseña:
+
+passwd adnacho
+
+====================================================================
+                        REGISTRO GIT HUB
+====================================================================
+
+Opción 1: Clonación vía SSH (la más práctica si tienes clave configurada)
+Asegúrate de tener clave SSH en tu máquina
+
+Si no tienes, genera una con:
+
+ssh-keygen -t ed25519 -C "adnacho@gmail.com"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
