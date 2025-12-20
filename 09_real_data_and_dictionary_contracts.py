@@ -643,7 +643,7 @@ def run_contracts_fase12(report_path: Path) -> Dict:
     return contracts.summary()
 
 
-def run_contracts_fase13(analysis_path: Path, atlas_path: Path) -> Dict:
+def run_contracts_fase13(analysis_path: Path, atlas_path=None) -> dict:
     """Ejecuta contratos Fase XIII desde an¡lisis y atlas."""
     
     if not analysis_path.exists():
@@ -661,7 +661,7 @@ def run_contracts_fase13(analysis_path: Path, atlas_path: Path) -> Dict:
     )
     
     # Cluster quality
-    if atlas_path.exists():
+    if atlas_path and atlas_path.is_file():
         atlas = json.loads(atlas_path.read_text())
         clusters = atlas.get("clusters", {})
         points = atlas.get("points", [])
@@ -710,11 +710,11 @@ def main():
     args = parser.parse_args()
     
     # === RESOLVER RUTAS DESDE --run-dir ===
-    fase12_report = fase12_report
-    fase13_analysis = fase13_analysis
-    fase13_atlas = fase13_atlas
-    output_file = output_file
-    
+    fase12_report = args.fase12_report or ""
+    fase13_analysis = args.fase13_analysis or ""
+    fase13_atlas = args.fase13_atlas or ""
+    output_file = args.output_file
+
     if args.run_dir and HAS_CUERDAS_IO:
         run_dir = Path(args.run_dir)
         manifest = load_run_manifest(run_dir)
@@ -776,7 +776,7 @@ def main():
             print(f"\n>> Validando Fase XIII desde {fase13_analysis}")
             results["fase13"] = run_contracts_fase13(
                 Path(fase13_analysis),
-                Path(fase13_atlas) if fase13_atlas else Path("")
+                Path(fase13_atlas) if fase13_atlas else None
             )
             
             summary = results["fase13"]
