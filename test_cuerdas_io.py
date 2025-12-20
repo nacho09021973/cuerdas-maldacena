@@ -17,9 +17,23 @@ import json
 import shutil
 import sys
 import tempfile
+import pytest
 from argparse import Namespace
 from pathlib import Path
 from typing import Dict, List, Tuple
+
+# ... tu clase Result ...
+
+# evita que pytest intente coleccionarla como clase de tests
+
+@pytest.fixture
+def results() -> "Result":
+    return Result()
+
+@pytest.fixture
+def tmp_dir(tmp_path: Path) -> Path:
+    return tmp_path
+
 
 # Añadir directorio raíz al path
 sys.path.insert(0, str(Path(__file__).parent))
@@ -41,7 +55,7 @@ from cuerdas_io import (
 )
 
 
-class TestResult:
+class Result:
     """Acumula resultados de tests."""
     
     def __init__(self):
@@ -68,7 +82,7 @@ class TestResult:
         return len(self.failed) == 0
 
 
-def test_manifest_write_read(results: TestResult, tmp_dir: Path):
+def test_manifest_write_read(results: Result, tmp_dir: Path):
     """Test: escribir y leer manifest."""
     name = "manifest_write_read"
     
@@ -93,7 +107,7 @@ def test_manifest_write_read(results: TestResult, tmp_dir: Path):
         results.fail(name, str(e))
 
 
-def test_manifest_update(results: TestResult, tmp_dir: Path):
+def test_manifest_update(results: Result, tmp_dir: Path):
     """Test: actualizar manifest existente."""
     name = "manifest_update"
     
@@ -114,7 +128,7 @@ def test_manifest_update(results: TestResult, tmp_dir: Path):
         results.fail(name, str(e))
 
 
-def test_resolve_predictions_from_manifest(results: TestResult, tmp_dir: Path):
+def test_resolve_predictions_from_manifest(results: Result, tmp_dir: Path):
     """Test: resolver predictions desde manifest."""
     name = "resolve_predictions_manifest"
     
@@ -134,7 +148,7 @@ def test_resolve_predictions_from_manifest(results: TestResult, tmp_dir: Path):
         results.fail(name, str(e))
 
 
-def test_resolve_predictions_legacy(results: TestResult, tmp_dir: Path):
+def test_resolve_predictions_legacy(results: Result, tmp_dir: Path):
     """Test: resolver predictions sin manifest (fallback legacy)."""
     name = "resolve_predictions_legacy"
     
@@ -153,7 +167,7 @@ def test_resolve_predictions_legacy(results: TestResult, tmp_dir: Path):
         results.fail(name, str(e))
 
 
-def test_resolve_geometry_emergent(results: TestResult, tmp_dir: Path):
+def test_resolve_geometry_emergent(results: Result, tmp_dir: Path):
     """Test: resolver geometry_emergent."""
     name = "resolve_geometry_emergent"
     
@@ -172,7 +186,7 @@ def test_resolve_geometry_emergent(results: TestResult, tmp_dir: Path):
         results.fail(name, str(e))
 
 
-def test_resolve_bulk_equations(results: TestResult, tmp_dir: Path):
+def test_resolve_bulk_equations(results: Result, tmp_dir: Path):
     """Test: resolver bulk_equations."""
     name = "resolve_bulk_equations"
     
@@ -191,7 +205,7 @@ def test_resolve_bulk_equations(results: TestResult, tmp_dir: Path):
         results.fail(name, str(e))
 
 
-def test_run_context_with_manifest(results: TestResult, tmp_dir: Path):
+def test_run_context_with_manifest(results: Result, tmp_dir: Path):
     """Test: RunContext con manifest."""
     name = "run_context_manifest"
     
@@ -216,7 +230,7 @@ def test_run_context_with_manifest(results: TestResult, tmp_dir: Path):
         results.fail(name, str(e))
 
 
-def test_run_context_legacy(results: TestResult, tmp_dir: Path):
+def test_run_context_legacy(results: Result, tmp_dir: Path):
     """Test: RunContext sin manifest (modo legacy)."""
     name = "run_context_legacy"
     
@@ -237,7 +251,7 @@ def test_run_context_legacy(results: TestResult, tmp_dir: Path):
         results.fail(name, str(e))
 
 
-def test_run_context_from_args(results: TestResult, tmp_dir: Path):
+def test_run_context_from_args(results: Result, tmp_dir: Path):
     """Test: RunContext.from_args()."""
     name = "run_context_from_args"
     
@@ -265,7 +279,7 @@ def test_run_context_from_args(results: TestResult, tmp_dir: Path):
         results.fail(name, str(e))
 
 
-def test_run_context_add_artifact(results: TestResult, tmp_dir: Path):
+def test_run_context_add_artifact(results: Result, tmp_dir: Path):
     """Test: añadir artefactos y escribir manifest."""
     name = "run_context_add_artifact"
     
@@ -290,7 +304,7 @@ def test_run_context_add_artifact(results: TestResult, tmp_dir: Path):
         results.fail(name, str(e))
 
 
-def test_run_context_ensure_subdirs(results: TestResult, tmp_dir: Path):
+def test_run_context_ensure_subdirs(results: Result, tmp_dir: Path):
     """Test: crear subdirectorios estándar."""
     name = "run_context_ensure_subdirs"
     
@@ -307,7 +321,7 @@ def test_run_context_ensure_subdirs(results: TestResult, tmp_dir: Path):
         results.fail(name, str(e))
 
 
-def test_priority_manifest_over_legacy(results: TestResult, tmp_dir: Path):
+def test_priority_manifest_over_legacy(results: Result, tmp_dir: Path):
     """Test: manifest tiene prioridad sobre rutas legacy."""
     name = "priority_manifest_over_legacy"
     
@@ -339,7 +353,7 @@ def main():
     print("TEST: cuerdas_io.py")
     print("=" * 60 + "\n")
     
-    results = TestResult()
+    results = Result()
     
     # Crear directorio temporal para cada test
     tests = [
