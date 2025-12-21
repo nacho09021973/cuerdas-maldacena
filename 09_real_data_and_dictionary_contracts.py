@@ -574,7 +574,18 @@ class ContractsFase13:
 
 def run_contracts_fase12(report_path: Path) -> Dict:
     """Ejecuta contratos Fase XII desde reporte."""
-    
+
+    if report_path.is_dir():
+        candidates = [
+            report_path / "holographic_dictionary" / "holographic_dictionary_v3_summary.json",
+            report_path / "holographic_dictionary" / "holographic_dictionary_summary.json",
+            report_path / "fase12_report.json",
+        ]
+        for c in candidates:
+            if c.is_file():
+                report_path = c
+                break
+            
     if not report_path.exists():
         print(f"Error: no existe {report_path}")
         return {"error": "report not found"}
