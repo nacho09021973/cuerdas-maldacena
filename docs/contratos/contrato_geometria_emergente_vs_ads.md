@@ -50,7 +50,7 @@ Esto **no es un fallo del pipeline** — es un resultado físico correcto que el
 
 ## 3. Origen físico de la discrepancia
 
-### 3.1 Ising 3D es una CFT térmica
+### 3.1 Ising 3D es una régimen térmico
 
 Los datos de Ising 3D provienen de simulaciones a temperatura finita crítica.
 En el dual holográfico, esto corresponde a un **black brane** en el bulk, no a AdS puro.
@@ -128,3 +128,13 @@ Este es un **resultado positivo**: el sistema no fuerza consistencia con teoría
 ---
 
 *Documento generado: 2025-12-21*
+
+### Anexo — Referencias exactas (corpus indexado M99)
+
+**Referencias exactas (corpus indexado M99):**
+- M99:p0105 M99:p0105:para002 bbox=[71.99981689453125, 377.4491271972656, 511.26025390625, 607.9215087890625]
+  - snippet: "3.6 Theories at Finite Temperature As discussed in section 3.2, the quantities that can be most successfully compared between gauge theory and string theory are those with some protection from super- ..."
+- M99:p0105 M99:p0105:para003 bbox=[71.9998779296875, 630.8810424804688, 511.1268005371094, 685.20166015625]
+  - snippet: "3.6.1 Construction The gravity solution describing the gauge theory at ﬁnite temperature can be obtained by starting from the general <<black three-brane solution>> (1.12) and taking the decoupling"
+- M99:p0106 M99:p0106:para002 bbox=[163.56021118164062, 132.75344848632812, 511.3330993652344, 171.79693603515625]
+  - snippet: "h = 1 −u4 0 u4 , u0 = πT. <<(3.98)>>"
