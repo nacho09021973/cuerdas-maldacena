@@ -27,3 +27,6 @@ model.pt
 
 # Papers (downloaded)
 data/papers/*.pdf
+
+# Local heavy outputs
+outputs/
