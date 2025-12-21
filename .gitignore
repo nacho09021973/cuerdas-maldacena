@@ -24,3 +24,6 @@ __pycache__/
 *.pyc
 *.bak_*
 model.pt
+
+# Papers (downloaded)
+data/papers/*.pdf
