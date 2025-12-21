@@ -1,0 +1,21 @@
+# environment.yml
+name: cuerdas-maldacena
+channels:
+  - conda-forge
+  - pytorch
+  - defaults
+dependencies:
+  - python=3.11
+  - numpy
+  - scipy
+  - pandas
+  - h5py
+  - pytorch=2.9.1
+  - cpuonly  # Elimina esta línea si usas GPU
+  - pip
+  - pip:
+    - pysr==1.5.9
+    - juliacall==0.9.26
+    # OPCIONAL: para tests/documentación
+    - pytest
+    - jupyter
