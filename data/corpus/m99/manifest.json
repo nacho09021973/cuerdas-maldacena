@@ -1,0 +1,16 @@
+{
+  "corpus_id": "m99",
+  "source": "hep-th/9905111",
+  "pdf_path_expected": "data/papers/maldacena_1999.pdf",
+  "pdf_sha256": "4155953f31246cd11122cfac5527b1c7fa2e64bf407593af9067f2cc85629fc7",
+  "generated_at": "2025-12-21T13:13:23",
+  "files": [
+    "blocks.jsonl",
+    "headings.jsonl",
+    "headings_toc_decimals.jsonl",
+    "pages.jsonl",
+    "paragraphs.jsonl",
+    "paragraphs_sections.jsonl",
+    "toc.json"
+  ]
+}
