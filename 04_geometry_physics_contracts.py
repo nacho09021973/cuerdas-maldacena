@@ -36,6 +36,7 @@
 # HISTÓRICO
 #   - Anteriormente conocido como: 04_contracts_fase_11_v2.py
 #   - V2.1: Añadido soporte para modo inference (sin bulk_truth)
+#   - V2.2: Hardening IO - robustez ante rutas None y NPZ malformados
 #
 # MODOS SOPORTADOS (V2.1):
 #   - Modo A (sandbox/train): bulk_truth disponible, A_truth/f_truth en NPZ
@@ -50,6 +51,48 @@ from typing import Dict, List, Any, Optional, Tuple
 
 import numpy as np
 import h5py
+
+
+def write_contracts_summary(
+    passed_ids: List[str],
+    failed_ids: List[str],
+    out_json: Path,
+    extra: Optional[Dict[str, Any]] = None
+) -> None:
+    """
+    Escribe un resumen mínimo (y estable) de contratos para consumo por herramientas/CI.
+
+    Esquema mínimo garantizado:
+      { "passed": [...], "failed": [...] }
+
+    Incluye además metadatos útiles (n_passed/n_failed/n_total/pass_rate) y cualquier campo extra.
+    """
+    out_json.parent.mkdir(parents=True, exist_ok=True)
+
+    passed_ids = list(passed_ids)
+    failed_ids = list(failed_ids)
+    n_passed = len(passed_ids)
+    n_failed = len(failed_ids)
+    n_total = n_passed + n_failed
+    pass_rate = None if n_total == 0 else (n_passed / n_total)
+
+    payload: Dict[str, Any] = {
+        "passed": passed_ids,
+        "failed": failed_ids,
+        "n_passed": n_passed,
+        "n_failed": n_failed,
+        "n_total": n_total,
+        "pass_rate": pass_rate,
+    }
+
+    if extra:
+        payload.update(extra)
+
+    out_json.write_text(
+        json.dumps(payload, indent=2, ensure_ascii=False),
+        encoding="utf-8"
+    )
+
 
 # Import local IO module for run manifest support
 try:
@@ -131,6 +174,48 @@ def resolve_bulk_equations_dir(einstein_dir: Path) -> Path:
         return einstein_dir
     
     return bulk_eq_subdir
+
+
+# ============================================================
+# HELPERS PARA ACCESO SEGURO A NPZ Y H5 (V2.2)
+# ============================================================
+
+def safe_npz_get(npz_file, key: str, fallback_key: Optional[str] = None):
+    """
+    Acceso seguro a NpzFile. NpzFile no tiene .get(), hay que usar 'in'.
+    
+    Args:
+        npz_file: NpzFile abierto
+        key: clave principal
+        fallback_key: clave alternativa si la principal no existe
+        
+    Returns:
+        np.ndarray o None
+    """
+    if key in npz_file.files:
+        return npz_file[key]
+    if fallback_key is not None and fallback_key in npz_file.files:
+        return npz_file[fallback_key]
+    return None
+
+
+def safe_h5_dataset(h5_group, key: str, fallback_key: Optional[str] = None):
+    """
+    Acceso seguro a dataset H5. Devuelve array o None.
+    
+    Args:
+        h5_group: grupo H5 (file o subgrupo)
+        key: clave principal
+        fallback_key: clave alternativa
+        
+    Returns:
+        np.ndarray o None
+    """
+    if key in h5_group:
+        return h5_group[key][:]
+    if fallback_key is not None and fallback_key in h5_group:
+        return h5_group[fallback_key][:]
+    return None
 
 
 # ============================================================
@@ -524,17 +609,19 @@ def verify_holographic(
 
 
 # ============================================================
-# CARGA DE DATOS CON FALLBACKS (V2.1)
+# CARGA DE DATOS CON FALLBACKS (V2.2 - HARDENED)
 # ============================================================
 
 def load_geometry_data(
     name: str,
-    data_dir: Path,
+    data_dir: Optional[Path],
     predictions_dir: Path,
-    emergent_h5_dir: Path
+    emergent_h5_dir: Optional[Path]
 ) -> Tuple[Dict[str, Any], str, List[str]]:
     """
     Carga datos de geometría con fallbacks para modo inference.
+    
+    V2.2: Robusto ante data_dir=None y emergent_h5_dir=None.
     
     Returns:
         (data_dict, mode, warnings)
@@ -548,43 +635,55 @@ def load_geometry_data(
     
     # === 1. Intentar cargar NPZ de predictions ===
     npz_path = predictions_dir / f"{name}_geometry.npz"
-    h5_emergent_path = emergent_h5_dir / f"{name}_emergent.h5"
+    
+    # V2.2: Solo construir h5_emergent_path si emergent_h5_dir no es None
+    h5_emergent_path = None
+    if emergent_h5_dir is not None:
+        h5_emergent_path = emergent_h5_dir / f"{name}_emergent.h5"
     
     npz_loaded = False
     if npz_path.exists():
         try:
             geo_data = np.load(npz_path, allow_pickle=True)
             
-            # Cargar predicciones
-            data["A_pred"] = geo_data["A_pred"] if "A_pred" in geo_data else geo_data.get("A_of_z")
-            data["f_pred"] = geo_data["f_pred"] if "f_pred" in geo_data else geo_data.get("f_of_z")
-            data["R_pred"] = geo_data.get("R_pred", geo_data.get("R_of_z"))
-            data["z_grid"] = geo_data.get("z", geo_data.get("z_grid"))
+            # V2.2: Usar safe_npz_get en lugar de .get() que no existe en NpzFile
+            data["A_pred"] = safe_npz_get(geo_data, "A_pred", "A_of_z")
+            data["f_pred"] = safe_npz_get(geo_data, "f_pred", "f_of_z")
+            data["R_pred"] = safe_npz_get(geo_data, "R_pred", "R_of_z")
+            data["z_grid"] = safe_npz_get(geo_data, "z", "z_grid")
             
             # Cargar truth si existe
-            if "A_truth" in geo_data:
+            if "A_truth" in geo_data.files:
                 data["A_truth"] = geo_data["A_truth"]
                 data["f_truth"] = geo_data["f_truth"]
-                data["R_truth"] = geo_data.get("R_truth")
-                data["family_pred"] = geo_data.get("family_pred")
-                data["family_truth"] = geo_data.get("family_truth")
+                data["R_truth"] = safe_npz_get(geo_data, "R_truth")
+                data["family_pred"] = safe_npz_get(geo_data, "family_pred")
+                data["family_truth"] = safe_npz_get(geo_data, "family_truth")
             else:
                 mode = "inference"
                 warnings.append(f"NPZ sin *_truth: modo inference")
             
             npz_loaded = True
+            geo_data.close()  # Cerrar el archivo NPZ
         except Exception as e:
             warnings.append(f"Error cargando NPZ: {e}")
     
     # === 2. Fallback a H5 emergente si NPZ no tiene lo necesario ===
     if not npz_loaded or data.get("A_pred") is None:
-        if h5_emergent_path.exists():
+        # V2.2: Solo intentar si h5_emergent_path existe
+        if h5_emergent_path is not None and h5_emergent_path.exists():
             try:
                 with h5py.File(h5_emergent_path, "r") as f:
-                    data["z_grid"] = f["z_grid"][:]
-                    data["A_pred"] = f["A_of_z"][:] if "A_of_z" in f else f.get("A_pred", np.array([]))[:]
-                    data["f_pred"] = f["f_of_z"][:] if "f_of_z" in f else f.get("f_pred", np.array([]))[:]
-                    data["R_pred"] = f["R_of_z"][:] if "R_of_z" in f else f.get("R_pred", np.zeros_like(data["A_pred"]))[:]
+                    data["z_grid"] = safe_h5_dataset(f, "z_grid")
+                    data["A_pred"] = safe_h5_dataset(f, "A_of_z", "A_pred")
+                    data["f_pred"] = safe_h5_dataset(f, "f_of_z", "f_pred")
+                    
+                    # R_pred con fallback a zeros si no existe
+                    R_val = safe_h5_dataset(f, "R_of_z", "R_pred")
+                    if R_val is not None:
+                        data["R_pred"] = R_val
+                    elif data.get("A_pred") is not None:
+                        data["R_pred"] = np.zeros_like(data["A_pred"])
                     
                     # Metadatos del H5
                     data["family_from_h5"] = str(f.attrs.get("family", f.attrs.get("family_pred", "unknown")))
@@ -594,64 +693,78 @@ def load_geometry_data(
                 warnings.append(f"Cargado desde H5 emergente (fallback)")
             except Exception as e:
                 warnings.append(f"Error cargando H5 emergente: {e}")
-        else:
+        elif h5_emergent_path is not None:
             warnings.append(f"No existe H5 emergente: {h5_emergent_path}")
+        else:
+            warnings.append("emergent_h5_dir no especificado, omitiendo fallback H5")
     
     # === 3. Cargar metadatos del boundary H5 original ===
-    boundary_h5_path = data_dir / f"{name}.h5"
-    if boundary_h5_path.exists():
-        try:
-            with h5py.File(boundary_h5_path, "r") as f:
-                data["family"] = str(f.attrs.get("family", "unknown"))
-                data["category"] = str(f.attrs.get("category", "unknown"))
-                
-                # Boundary data
-                if "boundary" in f:
-                    boundary = f["boundary"]
-                    data["T"] = float(boundary.attrs.get("temperature", 0))
-                else:
-                    data["T"] = None
-                
-                # Bulk truth (solo en sandbox)
-                if "bulk_truth" in f:
-                    bulk = f["bulk_truth"]
-                    data["z_h"] = float(bulk.attrs.get("z_h", 0))
-                    if data.get("z_grid") is None:
-                        data["z_grid"] = bulk["z_grid"][:]
-                else:
-                    data["z_h"] = None
-                    if mode != "inference":
-                        mode = "inference"
-                        warnings.append("Sin bulk_truth en H5: modo inference")
-        except Exception as e:
-            warnings.append(f"Error cargando boundary H5: {e}")
+    # V2.2: Solo intentar si data_dir no es None
+    if data_dir is not None:
+        boundary_h5_path = data_dir / f"{name}.h5"
+        if boundary_h5_path.exists():
+            try:
+                with h5py.File(boundary_h5_path, "r") as f:
+                    data["family"] = str(f.attrs.get("family", "unknown"))
+                    data["category"] = str(f.attrs.get("category", "unknown"))
+                    
+                    # Boundary data
+                    if "boundary" in f:
+                        boundary = f["boundary"]
+                        data["T"] = float(boundary.attrs.get("temperature", 0))
+                    else:
+                        data["T"] = None
+                    
+                    # Bulk truth (solo en sandbox)
+                    if "bulk_truth" in f:
+                        bulk = f["bulk_truth"]
+                        data["z_h"] = float(bulk.attrs.get("z_h", 0))
+                        if data.get("z_grid") is None:
+                            data["z_grid"] = safe_h5_dataset(bulk, "z_grid")
+                    else:
+                        data["z_h"] = None
+                        if mode != "inference":
+                            mode = "inference"
+                            warnings.append("Sin bulk_truth en H5: modo inference")
+            except Exception as e:
+                warnings.append(f"Error cargando boundary H5: {e}")
+        else:
+            # Sin H5 original, usar metadatos del emergente
+            data["family"] = data.get("family_from_h5", "unknown")
+            data["category"] = "inference"
+            data["T"] = None
+            data["z_h"] = None
+            mode = "inference"
+            warnings.append(f"No existe boundary H5: {boundary_h5_path}")
     else:
-        # Sin H5 original, usar metadatos del emergente
+        # V2.2: data_dir es None - operar en modo inference sin metadatos de boundary
         data["family"] = data.get("family_from_h5", "unknown")
         data["category"] = "inference"
         data["T"] = None
         data["z_h"] = None
         mode = "inference"
-        warnings.append(f"No existe boundary H5: {boundary_h5_path}")
+        warnings.append("data_dir no especificado: modo inference sin metadatos de boundary")
     
     return data, mode, warnings
 
 
 # ============================================================
-# PROCESAMIENTO (V2.1 - CON SOPORTE INFERENCE)
+# PROCESAMIENTO (V2.2 - HARDENED)
 # ============================================================
 
 def process_geometry(
     name: str,
-    data_dir: Path,
+    data_dir: Optional[Path],
     predictions_dir: Path,
-    emergent_h5_dir: Path,
-    einstein_dir: Path,
+    emergent_h5_dir: Optional[Path],
+    einstein_dir: Optional[Path],
     dictionary_results: Dict[str, Any],
     d: int
 ) -> PhaseXIContractV2:
     """
     Procesa una geometría y genera su contrato v2.
+    
+    V2.2: Robusto ante data_dir=None, emergent_h5_dir=None, einstein_dir=None.
     
     Soporta dos modos:
     - sandbox: con bulk_truth y *_truth (métricas R² calculadas)
@@ -764,16 +877,18 @@ def process_geometry(
             warnings.append("Modo inference: métricas R² no disponibles")
     
     # === CARGAR RESULTADOS EINSTEIN ===
-    einstein_path = einstein_dir / name / "einstein_discovery.json"
-    if einstein_path.exists():
-        try:
-            einstein_results = json.loads(einstein_path.read_text()).get("results", {})
-        except Exception as e:
-            einstein_results = {}
-            warnings.append(f"Error cargando einstein_discovery.json: {e}")
+    # V2.2: Solo intentar si einstein_dir no es None
+    einstein_results = {}
+    if einstein_dir is not None:
+        einstein_path = einstein_dir / name / "einstein_discovery.json"
+        if einstein_path.exists():
+            try:
+                einstein_results = json.loads(einstein_path.read_text()).get("results", {})
+            except Exception as e:
+                warnings.append(f"Error cargando einstein_discovery.json: {e}")
+        # No es un error si no existe, simplemente no hay datos de Einstein
     else:
-        einstein_results = {}
-        # No es un error, puede no existir
+        warnings.append("einstein_dir no especificado: omitiendo verificación Einstein")
     
     # === VERIFICAR CONTRATOS ===
     regularity = verify_regularity(A_pred, f_pred, z_grid)
@@ -803,26 +918,28 @@ def process_geometry(
 
 
 # ============================================================
-# MAIN (V2.1)
+# MAIN (V2.2 - HARDENED)
 # ============================================================
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Fase XI v2.1: Contratos de validación física HONESTOS (con soporte inference)"
+        description="Fase XI v2.2: Contratos de validación física HONESTOS (con soporte inference y hardening IO)"
     )
     parser.add_argument("--data-dir", type=str, default=None,
-                        help="Directorio con H5 de boundary (manifest.json)")
+                        help="Directorio con H5 de boundary (manifest.json). Opcional en modo inference.")
     parser.add_argument("--geometry-dir", type=str, default=None,
                         help="Directorio raíz de geometría (predictions/, geometry_emergent/)")
     parser.add_argument("--einstein-dir", type=str, default=None,
-                        help="Directorio de ecuaciones bulk (o raíz que contenga bulk_equations/)")
+                        help="Directorio de ecuaciones bulk (o raíz que contenga bulk_equations/). Opcional.")
     parser.add_argument("--dictionary-file", type=str, default=None,
-                        help="JSON de diccionario holográfico")
+                        help="JSON de diccionario holográfico. Opcional.")
     parser.add_argument("--run-dir", type=str, default=None,
                         help="Directorio raíz con run_manifest.json (IO v2). "
                              "Si se proporciona, resuelve automáticamente las rutas.")
     parser.add_argument("--output-file", type=str, default=None,
                         help="Archivo de salida JSON (default: run-dir/geometry_contracts/...)")
+    parser.add_argument("--output-json", "--contracts-summary", type=str, default=None,
+                        help="Resumen mínimo machine-readable de contratos (JSON con {passed, failed, pass_rate})")
     parser.add_argument("--d", type=int, default=4,
                         help="Dimensión d del boundary")
     args = parser.parse_args()
@@ -849,9 +966,11 @@ def main():
         predictions_dir = resolve_predictions_dir(geometry_dir)
         emergent_h5_dir = resolve_emergent_h5_dir(geometry_dir)
     
+    # V2.2: einstein_dir es opcional, solo resolver si se proporciona
     if einstein_dir is None and args.einstein_dir:
         einstein_dir = resolve_bulk_equations_dir(Path(args.einstein_dir))
     
+    # V2.2: data_dir es opcional, solo resolver si se proporciona
     if data_dir is None and args.data_dir:
         data_dir = Path(args.data_dir)
     
@@ -873,14 +992,14 @@ def main():
         output_file = Path("contracts_04.json")
     
     print("=" * 90)
-    print("FASE XI v2.1 — CONTRATOS DE VALIDACIÓN FÍSICA HONESTOS")
+    print("FASE XI v2.2 — CONTRATOS DE VALIDACIÓN FÍSICA HONESTOS (HARDENED)")
     print("=" * 90)
     print(f"\n  run-dir:        {args.run_dir or '(no especificado)'}")
-    print(f"  data-dir:       {data_dir or '(no especificado)'}")
+    print(f"  data-dir:       {data_dir or '(no especificado - modo inference)'}")
     print(f"  predictions:    {predictions_dir}")
-    print(f"  emergent_h5:    {emergent_h5_dir}")
-    print(f"  einstein-dir:   {einstein_dir}")
-    print(f"  dictionary:     {dictionary_path}")
+    print(f"  emergent_h5:    {emergent_h5_dir or '(no especificado)'}")
+    print(f"  einstein-dir:   {einstein_dir or '(no especificado - omitiendo Einstein)'}")
+    print(f"  dictionary:     {dictionary_path or '(no especificado)'}")
     print(f"  output:         {output_file}")
     print("\nFILOSOFÍA:")
     print("   Contratos GENÉRICOS: todas las geometrías deben pasar")
@@ -889,6 +1008,9 @@ def main():
     print("=" * 90)
     
     # === CARGAR MANIFEST ===
+    geometries = []
+    
+    # V2.2: data_dir puede ser None, en cuyo caso auto-descubrimos
     if data_dir is None:
         # Sin data_dir, auto-descubrir desde predictions
         print(f"\n[INFO] Sin data-dir, auto-descubriendo sistemas desde predictions/")
@@ -897,8 +1019,13 @@ def main():
             print(f"[INFO] Encontrados {len(npz_files)} sistemas")
             geometries = [{"name": f.stem.replace("_geometry", "")} for f in npz_files]
         else:
-            print("[ERROR] No hay sistemas para procesar")
-            return
+            print("[WARN] No hay archivos NPZ en predictions/, intentando H5...")
+            # Fallback: buscar H5 emergentes
+            if emergent_h5_dir is not None:
+                h5_files = list(emergent_h5_dir.glob("*_emergent.h5"))
+                if h5_files:
+                    print(f"[INFO] Encontrados {len(h5_files)} sistemas desde H5")
+                    geometries = [{"name": f.stem.replace("_emergent", "")} for f in h5_files]
     else:
         manifest_path = data_dir / "manifest.json"
         if not manifest_path.exists():
@@ -908,12 +1035,29 @@ def main():
             if npz_files:
                 print(f"[INFO] Auto-descubriendo {len(npz_files)} sistemas desde predictions/")
                 geometries = [{"name": f.stem.replace("_geometry", "")} for f in npz_files]
-            else:
-                print("[ERROR] No hay sistemas para procesar")
-                return
         else:
             manifest = json.loads(manifest_path.read_text())
             geometries = manifest.get("geometries", [])
+    
+    # === VALIDAR QUE HAY GEOMETRÍAS ===
+    all_contracts = []
+    
+    if not geometries:
+        print("[ERROR] No hay sistemas para procesar")
+        # V2.2: Aún así, escribir el JSON de salida si se solicitó
+        if args.output_json:
+            out_json = Path(args.output_json)
+            write_contracts_summary(
+                passed_ids=[],
+                failed_ids=["_no_systems_found"],
+                out_json=out_json,
+                extra={
+                    "version": "2.2",
+                    "error": "No hay sistemas para procesar",
+                }
+            )
+            print(f"  Resumen contratos (CI): {out_json}")
+        return
     
     # Cargar diccionario
     if dictionary_path and dictionary_path.exists():
@@ -924,8 +1068,6 @@ def main():
             print(f"[WARN] No existe diccionario: {dictionary_path}")
         else:
             print("[WARN] No se especificó archivo de diccionario")
-    
-    all_contracts = []
     
     for geo_info in geometries:
         name = geo_info["name"] if isinstance(geo_info, dict) else geo_info
@@ -966,7 +1108,7 @@ def main():
     # ============================================================
     
     print("\n" + "=" * 100)
-    print("RESUMEN DE CONTRATOS FASE XI v2.1")
+    print("RESUMEN DE CONTRATOS FASE XI v2.2")
     print("=" * 100)
     
     # Tabla
@@ -1024,14 +1166,14 @@ def main():
     if n_total == 0:
         print("⚠ NO HAY GEOMETRÍAS PARA EVALUAR")
     elif phase_passed:
-        print("✓ FASE XI v2.1 COMPLETADA — VALIDACIÓN HONESTA EXITOSA")
+        print("✓ FASE XI v2.2 COMPLETADA — VALIDACIÓN HONESTA EXITOSA")
         print("=" * 90)
         print(f"\n  El sistema CUERDAS ha logrado:")
         print(f"     Todas las geometrías pasan contratos genéricos")
         if n_inference > 0:
             print(f"     {n_inference} geometrías procesadas en modo inference")
     else:
-        print("✗ FASE XI v2.1 REQUIERE REFINAMIENTO")
+        print("✗ FASE XI v2.2 REQUIERE REFINAMIENTO")
         print("=" * 90)
         if n_with_errors > 0:
             print(f"\n  {n_with_errors} geometrías con errores")
@@ -1064,7 +1206,7 @@ def main():
         return {k: serialize_value(v) for k, v in c_dict.items()}
     
     output_data = {
-        "version": "2.1",
+        "version": "2.2",
         "n_total": n_total,
         "n_with_errors": n_with_errors,
         "n_inference_mode": n_inference,
@@ -1081,7 +1223,42 @@ def main():
     output_file.write_text(json.dumps(output_data, indent=2))
     
     print(f"\n  Resultados: {output_file}")
-    
+
+
+    # === RESUMEN MACHINE-READABLE (para CI / negative-control) ===
+    if args.output_json:
+        passed_ids: List[str] = []
+        failed_ids: List[str] = []
+
+        for c in all_contracts:
+            geo = getattr(c, "name", "unknown")
+
+            # Si hubo errores fatales en el contrato, marcar como fail explícito
+            if getattr(c, "errors", None):
+                failed_ids.append(f"{geo}/fatal_error")
+                continue
+
+            # Contratos genéricos (siempre cuentan)
+            (passed_ids if c.regularity.passed else failed_ids).append(f"{geo}/regularity")
+            (passed_ids if c.causality.passed else failed_ids).append(f"{geo}/causality")
+
+            # Contratos AdS-específicos (solo si family='ads')
+            if c.is_ads_family:
+                (passed_ids if c.ads_einstein.passed else failed_ids).append(f"{geo}/ads_einstein")
+                (passed_ids if c.ads_asymptotic.passed else failed_ids).append(f"{geo}/ads_asymptotic")
+
+        out_json = Path(args.output_json)
+        write_contracts_summary(
+            passed_ids=passed_ids,
+            failed_ids=failed_ids,
+            out_json=out_json,
+            extra={
+                "version": "2.2",
+                "source_summary": str(output_file),
+            }
+        )
+        print(f"  Resumen contratos (CI): {out_json}")
+
     # === ACTUALIZAR RUN_MANIFEST (IO v2) ===
     if args.run_dir and HAS_CUERDAS_IO:
         try:
