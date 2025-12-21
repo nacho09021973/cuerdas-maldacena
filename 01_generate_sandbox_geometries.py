@@ -43,6 +43,9 @@
 #
 # HISTÓRICO
 #   - Anteriormente conocido como: 00_generate_fase_11_v3.py
+#
+# FIX 2025-12-21: Guardrail de d movido ANTES de generar boundary_data y bulk_truth
+#   para asegurar consistencia entre nombre del archivo y datos generados.
 
 import argparse
 import json
@@ -308,7 +311,7 @@ def get_phase11_geometries() -> List[Tuple[HiddenGeometry, str]]:
             z_dyn=1.5,
             deformation=0.15,
             L=1.0,
-            metadata={"description": "Lifshitz deformado, zâ‰ˆ1.5"}
+            metadata={"description": "Lifshitz deformado, z≈1.5"}
         ),
         "test",
     ))
@@ -392,7 +395,7 @@ def generate_operators_for_geometry(
     ops: List[Dict] = []
 
     for i, Delta in enumerate(deltas):
-        # Relación masa-dimensión AdS_{d+1}: m²L² = (-d)
+        # Relación masa-dimensión AdS_{d+1}: m²L² = Δ(Δ-d)
         m2L2 = float(Delta * (Delta - geo.d))
         ops.append(
             {
@@ -414,8 +417,8 @@ def correlator_2pt_thermal(
 ) -> np.ndarray:
     """
     <O(x)O(0)> a temperatura T:
-        T = 0: G2 ~ 1/|x|^{2Î”}
-        T > 0: G2 ~ (Ï€T / sinh(Ï€T x))^{2Î”}
+        T = 0: G2 ~ 1/|x|^{2Δ}
+        T > 0: G2 ~ (πT / sinh(πT x))^{2Δ}
     """
     x = np.asarray(x)
     x_safe = np.maximum(np.abs(x), 1e-8)
@@ -436,7 +439,7 @@ def generate_boundary_data(
     rng: np.random.Generator,
 ) -> Dict[str, np.ndarray]:
     """
-    Genera datos del boundary (LO NICO visible al learner).
+    Genera datos del boundary (LO ÚNICO visible al learner).
 
     Devuelve un dict con:
         - x_grid
@@ -475,7 +478,7 @@ def generate_boundary_data(
         G2 = correlator_2pt_thermal(x_grid, Delta, d, T)
         data[f"G2_{name}"] = G2.astype(np.float32)
 
-    # Respuesta lineal toy G_R(Ï‰, k)
+    # Respuesta lineal toy G_R(ω, k)
     omega_grid = np.linspace(0.1, 10.0, 50)
     k_grid = np.linspace(0.0, 5.0, 30)
 
@@ -540,12 +543,12 @@ def generate_lifshitz_from_emd(
     sol = solver.solve(phi_h=phi_h, r_uv=r_uv)
 
     if sol is None or getattr(sol, "success", True) is False:
-        raise ValueError(f"EMD solver failed for d={d}, z={z_dyn}, Î¸={theta}")
+        raise ValueError(f"EMD solver failed for d={d}, z={z_dyn}, θ={theta}")
 
     r_grid = np.asarray(sol.t)
     f_r = np.asarray(sol.y[0])
 
-    # z = 1/r (boundary en zâ†’0)
+    # z = 1/r (boundary en z→0)
     z_grid = 1.0 / r_grid
     order = np.argsort(z_grid)
     z_grid = z_grid[order]
@@ -568,7 +571,7 @@ def generate_bulk_truth(
     Genera la "verdad" del bulk para validación.
     El learner NO tiene acceso a esto durante el entrenamiento.
 
-    Si use_emd=True y HAS_EMD=True y family âˆˆ {lifshitz,hyperscaling},
+    Si use_emd=True y HAS_EMD=True y family ∈ {lifshitz,hyperscaling},
     se usa EMDLifshitzSolver como backend. En caso de fallo, hay fallback
     silencioso (con warning) al modo toy analítico.
     """
@@ -634,7 +637,7 @@ def make_geometry_instance(
     # --- CONTROL EINSTEIN PURO (sin jitter) -----------------------------
     # Para las geometrías AdS puras conocidas (ads5_pure, ads4_pure)
     # queremos al menos una instancia EXACTAMENTE igual al prototipo:
-    #   - z_h = None  â†’ T = 0
+    #   - z_h = None  → T = 0
     #   - family = "ads"
     #   - R(z) constante = -D(D-1)/L² (ver HiddenGeometry.ricci_scalar)
     if (
@@ -648,7 +651,7 @@ def make_geometry_instance(
         params["name"] = f"{base.name}_{category}_{idx:03d}"
         return HiddenGeometry(**params)
 
-    # --- CDIGO ORIGINAL DE JITTER -------------------------------------
+    # --- CÓDIGO ORIGINAL DE JITTER -------------------------------------
     params = asdict(base)
 
     # Nombre único: base_category_idx
@@ -791,7 +794,7 @@ def main():
     n_unknown_total = sum(1 for _, cat in geometries if cat == "unknown")
 
     print("=" * 70)
-    print("FASE XI v3  EMERGENCIA AUTNOMA DE GEOMETRÍA")
+    print("FASE XI v3 — EMERGENCIA AUTÓNOMA DE GEOMETRÍA")
     print("=" * 70)
     print(f"Output:       {output_dir}")
     print(f"Prototipos:   {len(base_geometries)}")
@@ -828,16 +831,15 @@ def main():
         operators = generate_operators_for_geometry(geo, args.n_operators, rng)
         deltas_str = ", ".join(f"{op['Delta']:.2f}" for op in operators)
         zh_display = geo.z_h if geo.z_h is not None else 0.0
-        print(f"   d={geo.d}, z_h={zh_display:.3f}, Î¸={geo.theta:.2f}, z_dyn={geo.z_dyn:.2f}")
-        print(f"   Î”: [{deltas_str}]")
+        print(f"   d={geo.d}, z_h={zh_display:.3f}, θ={geo.theta:.2f}, z_dyn={geo.z_dyn:.2f}")
+        print(f"   Δ: [{deltas_str}]")
 
-        # boundary (VISIBLE para el learner)
-        boundary_data = generate_boundary_data(geo, operators, args.n_samples, rng)
-
-        # bulk (solo para validación/contratos)
-        bulk_truth = generate_bulk_truth(geo, z_grid, use_emd=args.use_emd_lifshitz)
-
-        # Guardrail IO v1: si el nombre codifica "_d<k>_", debe coincidir con geo.d
+        # ============================================================
+        # FIX 2025-12-21: Guardrail IO v1 ANTES de generar datos
+        # ============================================================
+        # Si el nombre codifica "_d<k>_", debe coincidir con geo.d
+        # IMPORTANTE: esto debe ejecutarse ANTES de generar boundary_data
+        # y bulk_truth para que ambos usen el valor correcto de d.
         m_d = re.search(r"_d(\d+)_", geo.name)
         if m_d is not None:
             d_name = int(m_d.group(1))
@@ -846,6 +848,12 @@ def main():
                     f"[IO_CONTRACT][AUTO-FIX] d mismatch: {geo.name}: geo.d={geo.d} -> {d_name} (from name)"
                 )
                 geo.d = d_name
+
+        # boundary (VISIBLE para el learner)
+        boundary_data = generate_boundary_data(geo, operators, args.n_samples, rng)
+
+        # bulk (solo para validación/contratos)
+        bulk_truth = generate_bulk_truth(geo, z_grid, use_emd=args.use_emd_lifshitz)
 
         # guardar en HDF5
         output_path = output_dir / f"{geo.name}.h5"
@@ -915,12 +923,12 @@ def main():
         )
 
     print("\n" + "=" * 70)
-    print(" GENERACIN FASE XI v3 COMPLETADA")
+    print("✓ GENERACIÓN FASE XI v3 COMPLETADA")
     print(f"  Manifest: {manifest_path}")
     print(f"  Total:    {len(geometries)} universos")
     print("=" * 70)
     print("\nPróximo paso: 01_emergent_geometry_v2.py")
-    print("El learner solo verá datos del boundary  debe descubrir la geometría.")
+    print("El learner solo verá datos del boundary — debe descubrir la geometría.")
 
 
 if __name__ == "__main__":

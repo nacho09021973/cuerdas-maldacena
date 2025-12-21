@@ -6,24 +6,29 @@
 #   Recorrer las geometrías emergentes y construir un dataset honesto de modos bulk:
 #     - Llamar a bulk_scalar_solver.py para cada sistema.
 #     - Recopilar pares (Delta_UV, lambda_sl) con metadatos (familia, d, ...).
+#     - Opcionalmente: Extraer Delta desde correladores de frontera.
 #
 # ENTRADAS
 #   - runs/**/geometry_emergent/*.h5
 #   - Módulo bulk_scalar_solver.py (o bulk_scalar_solver_v2 si existe)
+#   - Módulo boundary_delta_extractor.py (opcional, para extracción de Delta)
 #
 # SALIDAS (IO_CONTRACTS_V1)
 #   runs/bulk_eigenmodes/
 #     bulk_modes_dataset.csv
-#     bulk_modes_meta.json
+#     bulk_modes_meta.json (incluye mapping mode_id → operator para auditoría)
 #   (Opcional / compat)
-#     --output-json: JSON agregador (por-sistema / por-family-d), útil para stubs Fase XII.
+#     --output-json: JSON agregador (por-sistema / por-family-d)
 #
 # HONESTIDAD
 #   - No se aplica ninguna fórmula teórica Delta(Delta-d).
 #   - lambda_sl son autovalores Sturm–Liouville, NO masas holográficas por defecto.
+#   - Delta extraído de correladores G2(x) ~ x^(-2Δ) es una MEDICIÓN, no teoría.
+#   - El mapping mode_id → operator se documenta en meta para auditoría.
 #
 # HISTÓRICO
 #   - Anteriormente conocido como: make_fase11_bulk_for_fase12c_v2.py
+#   - v2: Añadido soporte para boundary_delta_extractor con --delta-uv-source
 
 from __future__ import annotations
 
@@ -42,7 +47,23 @@ import numpy as np
 try:
     import bulk_scalar_solver_v2 as bss  # type: ignore
 except ImportError:
-    import bulk_scalar_solver as bss  # type: ignore
+    try:
+        import bulk_scalar_solver as bss  # type: ignore
+    except ImportError:
+        bss = None
+        print("[WARN] bulk_scalar_solver no disponible.")
+
+# Importar extractor de Delta desde correladores de frontera
+try:
+    from boundary_delta_extractor import (
+        extract_deltas_from_hdf5, 
+        get_delta_for_eigenmode, 
+        get_extraction_metadata,
+        DeltaExtraction
+    )
+    HAS_BOUNDARY_EXTRACTOR = True
+except ImportError:
+    HAS_BOUNDARY_EXTRACTOR = False
 
 # Import local IO module for run manifest support
 try:
@@ -123,6 +144,19 @@ def parse_args() -> argparse.Namespace:
         default="f_emergent",
         help="Ruta al dataset f(z) dentro del HDF5 (default: f_emergent)",
     )
+    
+    # Control de extracción de Delta - NUEVO con flag explícito
+    p.add_argument(
+        "--delta-uv-source",
+        type=str,
+        choices=["solver", "boundary", "both"],
+        default="solver",
+        help=(
+            "Fuente de Delta_UV: 'solver' (default, desde uv_exponents del solver), "
+            "'boundary' (desde correladores G2 en boundary/), "
+            "'both' (prioriza boundary, fallback a solver)"
+        ),
+    )
 
     return p.parse_args()
 
@@ -182,6 +216,7 @@ class Row:
     Delta_UV: Optional[float]
     quality_flag: str
     is_ground_state: bool
+    delta_source: str  # "boundary_correlator", "solver_uv", "none"
 
 
 def write_csv(rows: List[Row], out_csv: Path) -> None:
@@ -197,6 +232,7 @@ def write_csv(rows: List[Row], out_csv: Path) -> None:
         "Delta_UV",
         "quality_flag",
         "is_ground_state",
+        "delta_source",
     ]
     with open(out_csv, "w", newline="", encoding="utf-8") as f:
         w = csv.DictWriter(f, fieldnames=fieldnames)
@@ -214,6 +250,7 @@ def write_csv(rows: List[Row], out_csv: Path) -> None:
                     "Delta_UV": "" if r.Delta_UV is None else f"{r.Delta_UV:.16g}",
                     "quality_flag": r.quality_flag,
                     "is_ground_state": int(r.is_ground_state),
+                    "delta_source": r.delta_source,
                 }
             )
 
@@ -259,14 +296,25 @@ def build_legacy_json(rows: List[Row]) -> Dict[str, Any]:
         "by_family_d": by_family_d,
         "notes": [
             "Compat JSON: agregado por sistema/family-d.",
-            "lambda_sl son autovalores Sturm–Liouville, NO masas holográficas por defecto.",
-            "Delta_bulk_uv es el exponente UV estimado numéricamente cuando es fiable.",
+            "lambda_sl son autovalores Sturm–Liouville (NO masas holográficas por defecto).",
+            "Delta_bulk_uv es el exponente UV estimado (de boundary o solver).",
         ],
     }
 
 
 def main() -> None:
     args = parse_args()
+    
+    # Resolver fuente de Delta
+    use_boundary = args.delta_uv_source in ("boundary", "both")
+    use_solver_delta = args.delta_uv_source in ("solver", "both")
+    boundary_priority = args.delta_uv_source == "both"  # priorizar boundary si ambos
+    
+    # Validar disponibilidad
+    if use_boundary and not HAS_BOUNDARY_EXTRACTOR:
+        print("[ERROR] --delta-uv-source boundary/both requiere boundary_delta_extractor.py")
+        print("        Copiar el módulo al directorio del proyecto.")
+        return
     
     # === RESOLVER RUTAS ===
     geom_dir = None
@@ -312,11 +360,24 @@ def main() -> None:
     print(f"Salida META: {out_meta}")
     if out_json:
         print(f"Salida JSON (compat): {out_json}")
+    print(f"Fuente Delta_UV: {args.delta_uv_source}")
+    if use_boundary:
+        print(f"  boundary_delta_extractor: {'disponible' if HAS_BOUNDARY_EXTRACTOR else 'NO disponible'}")
     print("=" * 70)
 
     rows: List[Row] = []
     failed: List[Dict[str, Any]] = []
     compat_used_keys: Set[str] = set()
+    
+    # Estadísticas de fuentes de Delta
+    stats = {
+        "boundary_extractions": 0,
+        "solver_extractions": 0,
+        "no_delta": 0,
+    }
+    
+    # Metadata de boundary extractions (para auditoría)
+    boundary_metadata_by_system: Dict[str, Any] = {}
 
     for h5_path in h5_files:
         meta = read_required_attrs(h5_path)
@@ -326,54 +387,85 @@ def main() -> None:
         z_dyn = meta["z_dyn"]
         theta = meta["theta"]
 
-        # Resolver datasets: usar el argumento, con fallbacks típicos
-        try:
-            z_ds = pick_existing_dataset(h5_path, [args.z_dataset, "z_grid", "bulk_truth/z_grid"])
-            A_ds = pick_existing_dataset(h5_path, [args.A_dataset, "A_emergent", "A_of_z", "bulk_truth/A_truth"])
-            f_ds = pick_existing_dataset(h5_path, [args.f_dataset, "f_emergent", "f_of_z", "bulk_truth/f_truth"])
-        except Exception as e:
-            failed.append({"system_name": system_name, "file": str(h5_path), "stage": "dataset_resolve", "error": str(e)})
-            print(f"\n>> {system_name}: [FAIL] no se pudieron resolver datasets: {e}")
-            continue
-
         print(f"\n>> Procesando: {system_name} (family={family}, d={d})")
-        print(f"   datasets: z={z_ds}, A={A_ds}, f={f_ds}")
 
-        try:
-            spec = bss.solve_geometry(
-                h5_path=h5_path,
-                n_eigs=args.n_eigs,
-                z_dataset=z_ds,
-                A_dataset=A_ds,
-                f_dataset=f_ds,
-            )
-        except Exception as e:
-            failed.append({"system_name": system_name, "file": str(h5_path), "stage": "solver", "error": str(e)})
-            print(f"   [WARN] Fallo solver en {system_name}: {e}")
+        # === PASO 1: Extraer Delta desde correladores de frontera (si corresponde) ===
+        boundary_deltas: Dict[str, DeltaExtraction] = {}
+        if use_boundary and HAS_BOUNDARY_EXTRACTOR:
+            try:
+                boundary_deltas = extract_deltas_from_hdf5(h5_path)
+                if boundary_deltas:
+                    ops = ", ".join(f"{k}(Δ={v.Delta:.4f})" for k, v in 
+                                    sorted(boundary_deltas.items(), key=lambda x: x[1].Delta))
+                    print(f"   Deltas de boundary: {ops}")
+                    # Guardar metadata para auditoría
+                    boundary_metadata_by_system[system_name] = get_extraction_metadata(boundary_deltas)
+            except Exception as e:
+                print(f"   [WARN] Fallo extracción boundary: {e}")
+
+        # === PASO 2: Llamar al solver ===
+        spec = None
+        lambda_list = []
+        Delta_uv_list_solver = []
+        
+        if bss is not None:
+            # Resolver datasets para el solver
+            try:
+                z_ds = pick_existing_dataset(h5_path, [args.z_dataset, "z_grid", "bulk_truth/z_grid"])
+                A_ds = pick_existing_dataset(h5_path, [args.A_dataset, "A_emergent", "A_of_z", "bulk_truth/A_truth"])
+                f_ds = pick_existing_dataset(h5_path, [args.f_dataset, "f_emergent", "f_of_z", "bulk_truth/f_truth"])
+                print(f"   datasets: z={z_ds}, A={A_ds}, f={f_ds}")
+            except Exception as e:
+                failed.append({"system_name": system_name, "file": str(h5_path), "stage": "dataset_resolve", "error": str(e)})
+                print(f"   [WARN] no se pudieron resolver datasets: {e}")
+                if not boundary_deltas:
+                    continue
+                # Si hay boundary deltas pero no solver, continuar sin lambda_sl
+                # (esto no debería pasar normalmente)
+
+            try:
+                spec = bss.solve_geometry(
+                    h5_path=h5_path,
+                    n_eigs=args.n_eigs,
+                    z_dataset=z_ds,
+                    A_dataset=A_ds,
+                    f_dataset=f_ds,
+                )
+                
+                # Compatibilidad: lambda_sl (nuevo) o m2L2* (legacy)
+                if "lambda_sl" in spec:
+                    lambda_list = spec["lambda_sl"]
+                    used_key = "lambda_sl"
+                elif "m2L2" in spec:
+                    lambda_list = spec["m2L2"]
+                    used_key = "m2L2"
+                elif "m2L2_legacy" in spec:
+                    lambda_list = spec["m2L2_legacy"]
+                    used_key = "m2L2_legacy"
+                else:
+                    lambda_list = []
+                    used_key = "none"
+                
+                if used_key != "none":
+                    compat_used_keys.add(used_key)
+                
+                Delta_uv_list_solver = spec.get("uv_exponents", [])
+                
+            except Exception as e:
+                failed.append({"system_name": system_name, "file": str(h5_path), "stage": "solver", "error": str(e)})
+                print(f"   [WARN] Fallo solver: {e}")
+
+        # === PASO 3: Construir filas del CSV ===
+        n_modes = len(lambda_list) if lambda_list else 0
+        
+        if n_modes == 0:
+            print(f"   [WARN] Sin modos lambda_sl; se omite sistema.")
             continue
-
-        # Compatibilidad: lambda_sl (nuevo) o m2L2* (legacy)
-        if "lambda_sl" in spec:
-            lambda_list = spec["lambda_sl"]
-            used_key = "lambda_sl"
-        elif "m2L2" in spec:
-            lambda_list = spec["m2L2"]
-            used_key = "m2L2"
-        elif "m2L2_legacy" in spec:
-            lambda_list = spec["m2L2_legacy"]
-            used_key = "m2L2_legacy"
-        else:
-            failed.append({"system_name": system_name, "file": str(h5_path), "stage": "parse_spec", "error": "missing lambda_sl/m2L2"})
-            print(f"   [WARN] Espectro sin 'lambda_sl' ni 'm2L2(_legacy)' en {system_name}")
-            continue
-
-        compat_used_keys.add(used_key)
-        Delta_uv_list = spec.get("uv_exponents", [])
 
         n_added = 0
-        for mode_id, lam in enumerate(lambda_list):
-            if lam is None:
-                continue
+        for mode_id in range(n_modes):
+            # Obtener lambda_sl
+            lam = lambda_list[mode_id]
             try:
                 lam_f = float(lam)
             except Exception:
@@ -381,22 +473,37 @@ def main() -> None:
             if not np.isfinite(lam_f) or lam_f <= 0:
                 continue
 
+            # === Determinar Delta_UV según --delta-uv-source ===
             Delta_uv: Optional[float] = None
             quality = "ok"
-            if mode_id < len(Delta_uv_list):
-                dv = Delta_uv_list[mode_id]
-                if dv is None or (isinstance(dv, float) and not np.isfinite(dv)):
-                    Delta_uv = None
-                    quality = "uv_unreliable"
-                else:
+            delta_source = "none"
+            
+            # Opción 1: boundary (o both con prioridad boundary)
+            if use_boundary and boundary_deltas:
+                bnd_delta, bnd_quality = get_delta_for_eigenmode(boundary_deltas, mode_id)
+                if bnd_delta is not None:
+                    Delta_uv = bnd_delta
+                    quality = bnd_quality
+                    delta_source = "boundary_correlator"
+                    stats["boundary_extractions"] += 1
+            
+            # Opción 2: solver (o fallback si boundary no dio resultado)
+            if Delta_uv is None and use_solver_delta and mode_id < len(Delta_uv_list_solver):
+                dv = Delta_uv_list_solver[mode_id]
+                if dv is not None and isinstance(dv, (int, float)) and np.isfinite(float(dv)):
                     try:
                         Delta_uv = float(dv)
+                        quality = "ok"
+                        delta_source = "solver_uv"
+                        stats["solver_extractions"] += 1
                     except Exception:
-                        Delta_uv = None
-                        quality = "uv_unreliable"
-            else:
-                Delta_uv = None
+                        pass
+            
+            # Sin Delta disponible
+            if Delta_uv is None:
                 quality = "uv_missing"
+                delta_source = "none"
+                stats["no_delta"] += 1
 
             rows.append(
                 Row(
@@ -410,23 +517,24 @@ def main() -> None:
                     Delta_UV=Delta_uv,
                     quality_flag=quality,
                     is_ground_state=(mode_id == 0),
+                    delta_source=delta_source,
                 )
             )
             n_added += 1
 
         if n_added == 0:
-            print("   [WARN] Sin modos con lambda_sl>0; se omite sistema.")
+            print("   [WARN] Sin modos válidos; se omite sistema.")
         else:
-            # Mostrar primer modo no-nulo
+            # Mostrar primer modo
             ex = next((r for r in rows if r.system_name == system_name), None)
             if ex is not None:
                 dv = "(vacío)" if ex.Delta_UV is None else f"{ex.Delta_UV:.6f}"
-                print(f"   OK: {n_added} filas. Ejemplo: lambda_sl={ex.lambda_sl:.6f}, Delta_UV={dv}")
+                print(f"   OK: {n_added} filas. Ejemplo: λ_sl={ex.lambda_sl:.6f}, Δ={dv} (src={ex.delta_source})")
 
     # Escribir CSV + META
     write_csv(rows, out_csv)
 
-    meta = {
+    meta_out = {
         "timestamp": datetime.now().isoformat(),
         "nomenclature_version": "v2_lambda_sl",
         "geometry_dir": str(geom_dir),
@@ -435,32 +543,47 @@ def main() -> None:
         "n_rows": len(rows),
         "n_eigs": int(args.n_eigs),
         "datasets_requested": {"z": args.z_dataset, "A": args.A_dataset, "f": args.f_dataset},
-        "solver_module": getattr(bss, "__name__", "bulk_scalar_solver"),
+        "solver_module": getattr(bss, "__name__", "bulk_scalar_solver") if bss else "none",
         "compat_used_keys": sorted(list(compat_used_keys)),
-        "all_v2_clean": compat_used_keys == {"lambda_sl"},
+        "all_v2_clean": compat_used_keys == {"lambda_sl"} or len(compat_used_keys) == 0,
         "failed_systems": failed,
+        "delta_extraction": {
+            "delta_uv_source": args.delta_uv_source,
+            "boundary_extractor_available": HAS_BOUNDARY_EXTRACTOR,
+            "stats": stats,
+        },
+        # AUDITORÍA: mapping mode_id → operator para sistemas con boundary extraction
+        "boundary_extraction_metadata": boundary_metadata_by_system,
         "notes": [
             "CSV canónico para 07: system_name,family,d,mode_id,lambda_sl,Delta_UV (+ opcionales).",
             "lambda_sl son autovalores Sturm–Liouville (NO masas por defecto).",
-            "quality_flag marca fiabilidad de Delta_UV (uv_unreliable/uv_missing).",
+            "delta_source indica origen: boundary_correlator, solver_uv, o none.",
+            "boundary_extraction_metadata contiene el mapping mode_id → operator para auditoría.",
         ],
     }
 
     out_meta.parent.mkdir(parents=True, exist_ok=True)
-    out_meta.write_text(json.dumps(meta, indent=2, ensure_ascii=False))
+    out_meta.write_text(json.dumps(meta_out, indent=2, ensure_ascii=False))
 
     if out_json is not None:
         out_json.parent.mkdir(parents=True, exist_ok=True)
         out_json.write_text(json.dumps(build_legacy_json(rows), indent=2, ensure_ascii=False))
 
+    # === RESUMEN ===
     print("\n" + "=" * 70)
     print("[OK] Dataset bulk-eigenmodes generado")
     print(f"  CSV :  {out_csv}")
     print(f"  META:  {out_meta}")
     if out_json:
         print(f"  JSON:  {out_json}")
+    print(f"\n  ESTADÍSTICAS DE DELTA (fuente: {args.delta_uv_source}):")
+    print(f"    - Desde boundary correlators: {stats['boundary_extractions']}")
+    print(f"    - Desde solver UV:            {stats['solver_extractions']}")
+    print(f"    - Sin Delta disponible:       {stats['no_delta']}")
+    if boundary_metadata_by_system:
+        print(f"\n  AUDITORÍA: mapping mode_id → operator guardado en bulk_modes_meta.json")
     if failed:
-        print(f"  WARN: {len(failed)} sistemas fallaron (ver bulk_modes_meta.json)")
+        print(f"\n  WARN: {len(failed)} sistemas fallaron (ver bulk_modes_meta.json)")
     
     # === ACTUALIZAR RUN_MANIFEST (IO v2) ===
     if args.run_dir and HAS_CUERDAS_IO:
