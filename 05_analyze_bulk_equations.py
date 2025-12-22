@@ -35,6 +35,15 @@ from pathlib import Path
 from typing import Dict, List, Tuple
 from collections import defaultdict
 
+try:
+    from run_context import RunContext, add_experiment_args
+except ImportError:
+    import sys
+    sys.path.insert(0, str(Path(__file__).parent))
+    from run_context import RunContext, add_experiment_args
+
+SCRIPT_NAME = "05_analyze_bulk_equations.py"
+
 # Import local IO module for run manifest support
 try:
     from cuerdas_io import resolve_bulk_equations_dir, update_run_manifest
@@ -328,6 +337,7 @@ def main():
     import argparse
     
     parser = argparse.ArgumentParser(description="Analiza ecuaciones descubiertas")
+    add_experiment_args(parser)
     parser.add_argument("--input", type=str, default=None,
                         help="Archivo einstein_discovery_summary.json")
     parser.add_argument("--output", type=str, default=None,
@@ -335,6 +345,9 @@ def main():
     parser.add_argument("--run-dir", type=str, default=None,
                         help="Directorio raíz con run_manifest.json (IO v2)")
     args = parser.parse_args()
+    
+    ctx = RunContext.from_args(args, script_name=SCRIPT_NAME)
+    output_dir = ctx.stage_dir()
     
     # === RESOLVER RUTAS ===
     input_path = None
@@ -417,6 +430,11 @@ def main():
         except Exception as e:
             print(f"[WARN] No se pudo actualizar manifest: {e}")
     
+    
+    # === V3: Registrar outputs ===
+    ctx.register_outputs({"report_txt": "bulk_equations_report.txt", "report_json": "bulk_equations_report.json"})
+    ctx.create_aliases()
+    ctx.save_manifest()
     return 0
 
 

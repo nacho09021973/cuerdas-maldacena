@@ -46,6 +46,15 @@ import numpy as np
 from scipy.ndimage import gaussian_filter1d
 
 try:
+    from run_context import RunContext, add_experiment_args
+except ImportError:
+    import sys
+    sys.path.insert(0, str(Path(__file__).parent))
+    from run_context import RunContext, add_experiment_args
+
+SCRIPT_NAME = "03_discover_bulk_equations.py"
+
+try:
     from pysr import PySRRegressor
     HAS_PYSR = True
 except ImportError:
@@ -54,7 +63,7 @@ except ImportError:
 
 # Import local IO module for run manifest support
 try:
-    from cuerdas_io import RunContext, resolve_predictions_dir, update_run_manifest
+    from cuerdas_io import resolve_predictions_dir, update_run_manifest
     HAS_CUERDAS_IO = True
 except ImportError:
     HAS_CUERDAS_IO = False
@@ -395,6 +404,7 @@ def main():
     parser = argparse.ArgumentParser(
         description="Fase XI v2: Descubrimiento genuino de ecuaciones gravitatorias"
     )
+    add_experiment_args(parser)
     parser.add_argument("--geometry-dir", type=str, default=None,
                         help="Directorio con geometry_emergent/ (legacy)")
     parser.add_argument("--run-dir", type=str, default=None,
@@ -406,6 +416,9 @@ def main():
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--d", type=int, default=4)
     args = parser.parse_args()
+    
+    ctx = RunContext.from_args(args, script_name=SCRIPT_NAME)
+    output_dir = ctx.stage_dir()
     
     # === RESOLVER RUTAS ===
     preds_dir = None
@@ -566,6 +579,12 @@ def main():
     
     print("\nProximo paso: 08_build_holographic_dictionary.py")
 
+
+    
+    # === V3: Registrar outputs ===
+    ctx.register_outputs({"equations_pareto": "equations_pareto.json", "einstein_summary": "einstein_discovery_summary.json"})
+    ctx.create_aliases()
+    ctx.save_manifest()
 
 if __name__ == "__main__":
     main()

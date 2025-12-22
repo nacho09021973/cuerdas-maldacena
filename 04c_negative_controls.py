@@ -35,10 +35,146 @@ import sys
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Tuple, Optional
-import hashlib
 
 import numpy as np
 import h5py
+# --- imports nuevos (arriba) ---
+import json
+import shlex
+from typing import Optional, Any
+
+try:
+    from run_context import RunContext, add_experiment_args
+except ImportError:
+    import sys
+    sys.path.insert(0, str(Path(__file__).parent))
+    from run_context import RunContext, add_experiment_args
+
+SCRIPT_NAME = "04c_negative_controls.py"
+
+def _subst(x: str, ctx: Dict[str, str]) -> str:
+    for k, v in ctx.items():
+        x = x.replace("{" + k + "}", v)
+    return x
+
+def _try_load_contracts(summary_path: Path) -> Dict[str, Any]:
+    """
+    Espera un JSON tipo:
+      {"passed": ["C1", ...], "failed": ["C2", ...]}
+    Si tu script de contratos no lo emite aún, este es el estándar que conviene fijar.
+    """
+    obj = json.loads(summary_path.read_text(encoding="utf-8"))
+
+    # caso estándar
+    if isinstance(obj, dict) and "passed" in obj and "failed" in obj:
+        passed = obj.get("passed", []) or []
+        failed = obj.get("failed", []) or []
+        return {"passed": list(passed), "failed": list(failed)}
+
+    # fallback genérico (por si tienes otra estructura)
+    if isinstance(obj, dict) and "contracts" in obj and isinstance(obj["contracts"], list):
+        passed, failed = [], []
+        for c in obj["contracts"]:
+            status = str(c.get("status", "")).upper()
+            cid = c.get("id", c.get("name", "UNKNOWN"))
+            if status in ("PASS", "PASSED", "OK", "SUCCESS"):
+                passed.append(cid)
+            elif status in ("FAIL", "FAILED", "ERROR", "ALERT"):
+                failed.append(cid)
+        return {"passed": passed, "failed": failed}
+
+    return {"passed": [], "failed": []}
+
+def run_pipeline_on_negative_control(
+    h5_path: Path,
+    pipeline_scripts_dir: Path,
+    pipeline_config: Optional[Path] = None,
+    run_out_dir: Optional[Path] = None
+) -> Dict[str, Any]:
+    """
+    Ejecuta el pipeline real definido en un JSON de configuración.
+    Captura stdout/stderr en logs por etapa y recopila contratos.
+    """
+    results: Dict[str, Any] = {
+        "stages_run": [],
+        "stages_failed": [],
+        "contracts_passed": [],
+        "contracts_failed": []
+    }
+
+    if pipeline_config is None:
+        logger.warning("Pipeline no ejecutado: falta --pipeline_config (JSON con stages).")
+        return results
+
+    pipeline_config = Path(pipeline_config)
+    cfg = json.loads(pipeline_config.read_text(encoding="utf-8"))
+
+    stages = cfg.get("stages", [])
+    if not stages:
+        logger.warning("Pipeline no ejecutado: 'stages' vacío en pipeline_config.")
+        return results
+
+    run_out_dir = Path(run_out_dir or (h5_path.parent / "pipeline_outputs"))
+    run_out_dir.mkdir(parents=True, exist_ok=True)
+
+    prev_out = ""
+    for stage in stages:
+        name = stage.get("name", "stage")
+        cmd = stage.get("cmd", None)
+        if not cmd:
+            logger.error(f"Stage '{name}' sin 'cmd'.")
+            results["stages_failed"].append(name)
+            continue
+
+        stage_out = run_out_dir / name
+        stage_out.mkdir(parents=True, exist_ok=True)
+
+        ctx = {
+            "python": sys.executable,
+            "h5_path": str(h5_path),
+            "pipeline_dir": str(pipeline_scripts_dir),
+            "output_dir": str(run_out_dir),
+            "stage_out": str(stage_out),
+            "prev_out": prev_out or str(stage_out)  # si es el primero, se pisa luego
+        }
+
+        # cmd puede venir como lista o como string
+        if isinstance(cmd, str):
+            argv = shlex.split(_subst(cmd, ctx))
+        else:
+            argv = [_subst(str(a), ctx) for a in cmd]
+
+        log_path = stage_out / "stage.log"
+        logger.info(f"[PIPELINE] Ejecutando stage '{name}'")
+        logger.info(f"[PIPELINE] Cmd: {' '.join(argv)}")
+        logger.info(f"[PIPELINE] Log: {log_path}")
+
+        with open(log_path, "w", encoding="utf-8") as lf:
+            p = subprocess.run(
+                argv,
+                cwd=str(pipeline_scripts_dir),
+                stdout=lf,
+                stderr=subprocess.STDOUT
+            )
+
+        if p.returncode == 0:
+            results["stages_run"].append(name)
+            prev_out = str(stage_out)
+        else:
+            results["stages_failed"].append(name)
+
+    # Intento de carga de contratos desde rutas candidatas
+    candidates = cfg.get("contract_summary_candidates", [])
+    ctx2 = {"output_dir": str(run_out_dir)}
+    for cand in candidates:
+        cand_path = Path(_subst(str(cand), ctx2))
+        if cand_path.exists():
+            parsed = _try_load_contracts(cand_path)
+            results["contracts_passed"] = parsed["passed"]
+            results["contracts_failed"] = parsed["failed"]
+            break
+
+    return results
 
 # Configurar logging
 logging.basicConfig(
@@ -366,9 +502,16 @@ def generate_negative_control_report(
 ) -> Path:
     """
     Genera reporte markdown documentando el control negativo.
+
+    Nota: 'pass_rate' puede ser None si no se ejecutaron contratos; el formateo
+    debe ser robusto para evitar excepciones.
     """
     report_path = output_dir / f"negative_control_report_{run_id}.md"
-    
+
+    # Formateo robusto de pass_rate (puede ser None)
+    pass_rate_val = contract_check.get("pass_rate", None)
+    pass_rate_str = "N/A" if pass_rate_val is None else f"{pass_rate_val:.2%}"
+
     report = f"""# REPORTE DE CONTROL NEGATIVO
 
 **Run ID:** {run_id}
@@ -416,7 +559,7 @@ def generate_negative_control_report(
 | Contratos evaluados | {contract_check.get('n_total', 'N/A')} |
 | Contratos pasados | {contract_check.get('n_passed', 'N/A')} |
 | Contratos fallidos | {contract_check.get('n_failed', 'N/A')} |
-| **Pass rate** | **{contract_check.get('pass_rate', 'N/A'):.2%}** |
+| **Pass rate** | **{pass_rate_str}** |
 
 ### Contratos pasados (deberían ser pocos)
 {_format_list(results.get('contracts_passed', ['(ninguno)']))}
@@ -448,13 +591,14 @@ def generate_negative_control_report(
 *Generado automáticamente por 04c_negative_controls.py*
 *Proyecto CUERDAS-Maldacena*
 """
-    
+
     with open(report_path, 'w', encoding='utf-8') as f:
         f.write(report)
-    
+
     logger.info(f"Reporte generado: {report_path}")
-    
+
     return report_path
+
 
 
 def _format_list(items: List[str]) -> str:
@@ -484,6 +628,7 @@ Ejemplos:
   python 04c_negative_controls.py --generate_only
 """
     )
+    add_experiment_args(parser)
     
     parser.add_argument(
         '--output_dir', 
@@ -533,8 +678,17 @@ Ejemplos:
         default=Path('.'),
         help='Directorio con scripts del pipeline'
     )
-    
+    parser.add_argument(
+    "--pipeline_config",
+    type=Path,
+    default=None,
+    help="JSON con stages del pipeline (subprocess) para el control negativo"
+    )
+
     args = parser.parse_args()
+    
+    ctx = RunContext.from_args(args, script_name=SCRIPT_NAME)
+    output_dir = ctx.stage_dir()
     
     # Run ID único
     run_id = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -567,8 +721,13 @@ Ejemplos:
     
     # 3. Ejecutar pipeline
     logger.info("\n[PASO 3] Ejecutando pipeline sobre control negativo...")
-    results = run_pipeline_on_negative_control(h5_path, args.pipeline_dir)
-    
+    results = run_pipeline_on_negative_control(
+        h5_path,
+        args.pipeline_dir,
+        pipeline_config=args.pipeline_config,
+        run_out_dir=Path(args.output_dir) / "pipeline_outputs"
+    )
+
     # 4. Verificar fallos esperados
     logger.info("\n[PASO 4] Verificando contratos...")
     contract_check = check_contracts_failure(results)
@@ -588,6 +747,11 @@ Ejemplos:
     logger.info(f"Reporte: {report_path}")
     logger.info("="*60)
     
+    
+    # === V3: Registrar outputs ===
+    ctx.register_outputs({"negative_control_summary": "negative_control_summary.json"})
+    ctx.create_aliases()
+    ctx.save_manifest()
     # Exit code según resultado
     if contract_check.get('status') == 'SUCCESS':
         sys.exit(0)

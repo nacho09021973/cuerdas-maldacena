@@ -52,6 +52,15 @@ from typing import Dict, List, Any, Optional, Tuple
 import numpy as np
 import h5py
 
+try:
+    from run_context import RunContext, add_experiment_args
+except ImportError:
+    import sys
+    sys.path.insert(0, str(Path(__file__).parent))
+    from run_context import RunContext, add_experiment_args
+
+SCRIPT_NAME = "04_geometry_physics_contracts.py"
+
 
 def write_contracts_summary(
     passed_ids: List[str],
@@ -97,7 +106,6 @@ def write_contracts_summary(
 # Import local IO module for run manifest support
 try:
     from cuerdas_io import (
-        RunContext,
         resolve_predictions_dir as cuerdas_resolve_predictions,
         resolve_geometry_emergent_dir as cuerdas_resolve_geometry_emergent,
         resolve_bulk_equations_dir as cuerdas_resolve_bulk_equations,
@@ -711,7 +719,14 @@ def load_geometry_data(
                     # Boundary data
                     if "boundary" in f:
                         boundary = f["boundary"]
-                        data["T"] = float(boundary.attrs.get("temperature", 0))
+                        # temperature puede venir como attr o como dataset boundary/temperature
+                        if "temperature" in boundary.attrs:
+                            data["T"] = float(boundary.attrs.get("temperature"))
+                        elif "temperature" in boundary and hasattr(boundary["temperature"], "shape"):
+                            v = boundary["temperature"][()]
+                            data["T"] = float((v.reshape(-1)[0]) if hasattr(v, "reshape") else v)
+                        else:
+                            data["T"] = None
                     else:
                         data["T"] = None
                     
@@ -925,6 +940,7 @@ def main():
     parser = argparse.ArgumentParser(
         description="Fase XI v2.2: Contratos de validación física HONESTOS (con soporte inference y hardening IO)"
     )
+    add_experiment_args(parser)
     parser.add_argument("--data-dir", type=str, default=None,
                         help="Directorio con H5 de boundary (manifest.json). Opcional en modo inference.")
     parser.add_argument("--geometry-dir", type=str, default=None,
@@ -943,6 +959,9 @@ def main():
     parser.add_argument("--d", type=int, default=4,
                         help="Dimensión d del boundary")
     args = parser.parse_args()
+    
+    ctx = RunContext.from_args(args, script_name=SCRIPT_NAME)
+    output_dir = ctx.stage_dir()
     
     # === RESOLVER RUTAS (IO v2 con fallback legacy) ===
     predictions_dir = None
@@ -1052,7 +1071,7 @@ def main():
                 failed_ids=["_no_systems_found"],
                 out_json=out_json,
                 extra={
-                    "version": "2.2",
+                    "version": "2.2.1",
                     "error": "No hay sistemas para procesar",
                 }
             )
@@ -1205,8 +1224,19 @@ def main():
     def clean_contract(c_dict):
         return {k: serialize_value(v) for k, v in c_dict.items()}
     
+    def serialize_contract(c: PhaseXIContractV2) -> dict:
+        """Serializa contrato incluyendo propiedades calculadas (V2.2.1)."""
+        d = clean_contract(asdict(c))
+        # Añadir propiedades @property que asdict() no serializa
+        d["contract_score"] = serialize_value(c.contract_score)
+        d["generic_passed"] = serialize_value(c.generic_passed)
+        d["ads_specific_passed"] = serialize_value(c.ads_specific_passed)
+        d["overall_passed"] = serialize_value(c.overall_passed)
+        d["is_ads_family"] = serialize_value(c.is_ads_family)
+        return d
+    
     output_data = {
-        "version": "2.2",
+        "version": "2.2.1",
         "n_total": n_total,
         "n_with_errors": n_with_errors,
         "n_inference_mode": n_inference,
@@ -1216,7 +1246,7 @@ def main():
         "n_overall_passed": int(n_overall),
         "avg_score": float(avg_score) if not np.isnan(avg_score) else None,
         "phase_passed": bool(phase_passed),
-        "contracts": [clean_contract(asdict(c)) for c in all_contracts]
+        "contracts": [serialize_contract(c) for c in all_contracts]
     }
     
     output_file.parent.mkdir(parents=True, exist_ok=True)
@@ -1253,7 +1283,7 @@ def main():
             failed_ids=failed_ids,
             out_json=out_json,
             extra={
-                "version": "2.2",
+                "version": "2.2.1",
                 "source_summary": str(output_file),
             }
         )
@@ -1280,6 +1310,12 @@ def main():
     
     print("=" * 90)
 
+
+    
+    # === V3: Registrar outputs ===
+    ctx.register_outputs({"geometry_contracts_summary": "geometry_contracts_summary.json"})
+    ctx.create_aliases()
+    ctx.save_manifest()
 
 if __name__ == "__main__":
     main()

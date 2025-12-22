@@ -63,6 +63,15 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+try:
+    from run_context import RunContext, add_experiment_args
+except ImportError:
+    import sys
+    sys.path.insert(0, str(Path(__file__).parent))
+    from run_context import RunContext, add_experiment_args
+
+SCRIPT_NAME = "02_emergent_geometry_engine.py"
+
 # Import local IO module for run manifest support
 try:
     from cuerdas_io import write_run_manifest
@@ -1680,9 +1689,10 @@ def main():
     parser = argparse.ArgumentParser(
         description="CUERDAS - Geometría emergente V2.2 (con modo inference)"
     )
+    add_experiment_args(parser)
     parser.add_argument("--data-dir", type=str, required=True,
                         help="Directorio con datos HDF5 de geometrías")
-    parser.add_argument("--output-dir", type=str, required=True,
+    parser.add_argument("--output-dir", type=str, required=False,
                         help="Directorio de salida para modelo y predicciones")
     parser.add_argument("--n-epochs", type=int, default=2000,
                         help="Número de épocas de entrenamiento (solo mode=train)")
@@ -1720,12 +1730,23 @@ def main():
     
     args = parser.parse_args()
     
+    ctx = RunContext.from_args(args, script_name=SCRIPT_NAME)
+    output_dir = ctx.stage_dir()
+    if args.output_dir is None:
+        args.output_dir = str(output_dir)
+    
     # Despachar según modo
     if args.mode == "train":
         run_train_mode(args)
     else:
         run_inference_mode(args)
 
+
+    
+    # === V3: Registrar outputs ===
+    ctx.register_outputs({"predictions": "predictions/*.h5", "geometry_emergent": "geometry_emergent/*.h5", "model": "model_checkpoint.pt"})
+    ctx.create_aliases()
+    ctx.save_manifest()
 
 if __name__ == "__main__":
     main()

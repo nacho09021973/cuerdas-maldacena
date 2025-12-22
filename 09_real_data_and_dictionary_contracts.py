@@ -19,6 +19,15 @@ from dataclasses import dataclass, field, asdict
 from enum import Enum
 import numpy as np
 
+try:
+    from run_context import RunContext, add_experiment_args
+except ImportError:
+    import sys
+    sys.path.insert(0, str(Path(__file__).parent))
+    from run_context import RunContext, add_experiment_args
+
+SCRIPT_NAME = "09_real_data_and_dictionary_contracts.py"
+
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s | %(levelname)s | %(message)s',
@@ -122,6 +131,7 @@ def evaluate_holographic_signals(artifacts: Dict[str, Any]) -> List[HolographicS
         name="family_ads_like",
         description="La familia geométrica clasificada es AdS o AdS-like"
     )
+    add_experiment_args(parser)
     
     geometry = artifacts.get("geometry", {})
     if geometry:
@@ -885,6 +895,9 @@ def main():
     
     args = parser.parse_args()
     
+    ctx = RunContext.from_args(args, script_name=SCRIPT_NAME)
+    output_dir = ctx.stage_dir()
+    
     # Resolver rutas
     fase12_report = args.fase12_report or ""
     fase13_analysis = args.fase13_analysis or ""
@@ -987,6 +1000,11 @@ def main():
         print("\n⚠ Exit 1: --require-negative-control activo y status=ALERT")
         return 1
     
+    
+    # === V3: Registrar outputs ===
+    ctx.register_outputs({"contracts": "contracts_12_13.json"})
+    ctx.create_aliases()
+    ctx.save_manifest()
     return 0 if all_passed else 1
 
 

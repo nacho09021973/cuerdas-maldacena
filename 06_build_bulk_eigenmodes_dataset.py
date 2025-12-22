@@ -43,6 +43,15 @@ from typing import Any, Dict, List, Optional, Sequence, Set, Tuple
 import h5py
 import numpy as np
 
+try:
+    from run_context import RunContext, add_experiment_args
+except ImportError:
+    import sys
+    sys.path.insert(0, str(Path(__file__).parent))
+    from run_context import RunContext, add_experiment_args
+
+SCRIPT_NAME = "06_build_bulk_eigenmodes_dataset.py"
+
 # Importar el solver v2 con nomenclatura honesta
 try:
     import bulk_scalar_solver_v2 as bss  # type: ignore
@@ -80,6 +89,7 @@ def parse_args() -> argparse.Namespace:
             "Nomenclatura honesta: lambda_sl (autovalores Sturm–Liouville)."
         )
     )
+    add_experiment_args(p)
     p.add_argument(
         "--geometry-dir",
         type=str,

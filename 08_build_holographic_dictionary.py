@@ -38,6 +38,15 @@ import h5py
 import numpy as np
 from pysr import PySRRegressor
 
+try:
+    from run_context import RunContext, add_experiment_args
+except ImportError:
+    import sys
+    sys.path.insert(0, str(Path(__file__).parent))
+    from run_context import RunContext, add_experiment_args
+
+SCRIPT_NAME = "08_build_holographic_dictionary.py"
+
 # Import local IO module for run manifest support
 try:
     from cuerdas_io import resolve_geometry_emergent_dir, update_run_manifest
@@ -50,6 +59,7 @@ def parse_args():
     parser = argparse.ArgumentParser(
         description="Fase XI: construir diccionario holografico agrupando por (family, d)"
     )
+    add_experiment_args(parser)
     parser.add_argument(
         "--data-dir",
         type=str,
@@ -189,6 +199,9 @@ def discover_mass_dimension_relation(Deltas, m2L2, d, seed=42):
 
 def main():
     args = parse_args()
+    
+    ctx = RunContext.from_args(args, script_name=SCRIPT_NAME)
+    output_dir = ctx.stage_dir()
     
     # === RESOLVER RUTAS ===
     geometry_dir = None
@@ -463,6 +476,12 @@ def main():
         except Exception as e:
             print(f"[WARN] No se pudo actualizar manifest: {e}")
 
+
+    
+    # === V3: Registrar outputs ===
+    ctx.register_outputs({"holographic_summary": "holographic_dictionary_v3_summary.json"})
+    ctx.create_aliases()
+    ctx.save_manifest()
 
 if __name__ == "__main__":
     main()

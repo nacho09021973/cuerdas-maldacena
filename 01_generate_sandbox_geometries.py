@@ -58,6 +58,15 @@ import h5py
 import numpy as np
 from scipy.special import gamma as gamma_func
 
+try:
+    from run_context import RunContext, add_experiment_args
+except ImportError:
+    import sys
+    sys.path.insert(0, str(Path(__file__).parent))
+    from run_context import RunContext, add_experiment_args
+
+SCRIPT_NAME = "01_generate_sandbox_geometries.py"
+
 # Backend opcional: soluciones EMD reales para Lifshitz / hyperscaling
 try:
     from ecuaciones_emd import EMDLifshitzSolver  # type: ignore
@@ -708,6 +717,7 @@ def main():
     parser = argparse.ArgumentParser(
         description="Fase XI v3: Generación de datos para emergencia geométrica (escalable)"
     )
+    add_experiment_args(parser)
     parser.add_argument("--output-dir", type=str, default="fase11_data")
     parser.add_argument("--n-samples", type=int, default=100)
     parser.add_argument("--n-operators", type=int, default=3)
@@ -750,10 +760,11 @@ def main():
     )
 
     args = parser.parse_args()
+    
+    ctx = RunContext.from_args(args, script_name=SCRIPT_NAME)
+    output_dir = ctx.stage_dir()
 
     rng = np.random.default_rng(args.seed)
-    output_dir = Path(args.output_dir)
-    output_dir.mkdir(parents=True, exist_ok=True)
 
     # malla en z común a todos los universos
     z_grid = np.linspace(0.01, args.z_max, args.n_z)
@@ -930,6 +941,12 @@ def main():
     print("\nPróximo paso: 01_emergent_geometry_v2.py")
     print("El learner solo verá datos del boundary — debe descubrir la geometría.")
 
+
+    
+    # === V3: Registrar outputs ===
+    ctx.register_outputs({"manifest": "manifest.json", "boundary": "boundary/*.h5", "bulk_truth": "bulk_truth/*.h5"})
+    ctx.create_aliases()
+    ctx.save_manifest()
 
 if __name__ == "__main__":
     main()

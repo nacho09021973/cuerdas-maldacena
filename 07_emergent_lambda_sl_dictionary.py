@@ -53,6 +53,15 @@ from sklearn.metrics import r2_score, mean_absolute_error
 from scipy.stats import pearsonr
 
 try:
+    from run_context import RunContext, add_experiment_args
+except ImportError:
+    import sys
+    sys.path.insert(0, str(Path(__file__).parent))
+    from run_context import RunContext, add_experiment_args
+
+SCRIPT_NAME = "07_emergent_lambda_sl_dictionary.py"
+
+try:
     from pysr import PySRRegressor
     HAS_PYSR = True
 except ImportError:
@@ -990,6 +999,7 @@ def save_results(
 
 def main():
     parser = argparse.ArgumentParser(description="FASE XII.c v3: Diccionario Emergente (con contratos por régimen)")
+    add_experiment_args(parser)
     parser.add_argument("--input-file", type=str, default=None,
                         help="Archivo JSON de entrada (v2 lambda_sl, dictionary_v3, o legacy m2L2)")
     parser.add_argument("--output-dir", type=str, default=None,
@@ -1020,6 +1030,9 @@ def main():
                         help="MRE máximo para PASS en contratos (default: 0.5 = 50%%)")
     
     args = parser.parse_args()
+    
+    ctx = RunContext.from_args(args, script_name=SCRIPT_NAME)
+    output_dir = ctx.stage_dir()
     
     # === RESOLVER RUTAS ===
     input_path = None
@@ -1171,6 +1184,11 @@ def main():
     
     print("=" * 80)
     
+    
+    # === V3: Registrar outputs ===
+    ctx.register_outputs({"dictionary_report": "lambda_sl_dictionary_report.json", "pareto_csv": "lambda_sl_dictionary_pareto.csv"})
+    ctx.create_aliases()
+    ctx.save_manifest()
     return 0
 
 

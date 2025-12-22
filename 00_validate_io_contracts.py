@@ -32,6 +32,15 @@ import h5py
 import numpy as np
 import pandas as pd
 
+try:
+    from run_context import RunContext, add_experiment_args
+except ImportError:
+    import sys
+    sys.path.insert(0, str(Path(__file__).parent))
+    from run_context import RunContext, add_experiment_args
+
+SCRIPT_NAME = "00_validate_io_contracts.py"
+
 
 # =============================================================================
 # Data classes para el reporte
@@ -850,6 +859,7 @@ Ejemplos:
   python 00_validate_io_contracts.py --runs-dir runs/ --strict
         """
     )
+    add_experiment_args(parser)
     parser.add_argument(
         "--runs-dir",
         type=str,
@@ -875,6 +885,9 @@ Ejemplos:
     
     args = parser.parse_args()
     
+    ctx = RunContext.from_args(args, script_name=SCRIPT_NAME)
+    output_dir = ctx.stage_dir()
+    
     report = run_validation(args.runs_dir, verbose=not args.quiet)
     
     # Guardar reporte si se especifica
@@ -892,6 +905,11 @@ Ejemplos:
         if not args.quiet:
             print(f"Reporte guardado en: {args.output}")
     
+    
+    # === V3: Registrar outputs ===
+    ctx.register_outputs({"validation_report": "validation_report.json"})
+    ctx.create_aliases()
+    ctx.save_manifest()
     # Exit code
     if args.strict and report.failed > 0:
         sys.exit(1)
