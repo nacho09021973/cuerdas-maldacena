@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+from __future__ import annotations
+
 # 02_emergent_geometry_engine.py
 # CUERDAS — Bloque A: Geometría emergente (motor de reconstrucción) V 2.2
 #
