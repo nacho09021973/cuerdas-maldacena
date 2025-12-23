@@ -1689,9 +1689,9 @@ def main():
     parser = argparse.ArgumentParser(
         description="CUERDAS - Geometría emergente V2.2 (con modo inference)"
     )
-    parser.add_argument("--data-dir", type=str, required=True,
+    parser.add_argument("--data-dir", type=str, default=None,
                         help="Directorio con datos HDF5 de geometrías")
-    parser.add_argument("--output-dir", type=str, required=True,
+    parser.add_argument("--output-dir", type=str, default=None,
                         help="Directorio de salida para modelo y predicciones")
     parser.add_argument("--n-epochs", type=int, default=2000,
                         help="Número de épocas de entrenamiento (solo mode=train)")

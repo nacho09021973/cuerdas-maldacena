@@ -715,7 +715,7 @@ def main():
     parser = argparse.ArgumentParser(
         description="Fase XI v3: Generación de datos para emergencia geométrica (escalable)"
     )
-    parser.add_argument("--output-dir", type=str, default="fase11_data")
+    parser.add_argument("--output-dir", type=str, default=None)
     parser.add_argument("--n-samples", type=int, default=100)
     parser.add_argument("--n-operators", type=int, default=3)
     parser.add_argument("--seed", type=int, default=42)
@@ -759,6 +759,8 @@ def main():
 
     args = parse_stage_args(parser)
     ctx = StageContext.from_args(args, stage_number="01", stage_slug="generate_sandbox_geometries")
+    if args.output_dir is None:
+        args.output_dir = str(ctx.stage_dir)
 
     status = STATUS_OK
     exit_code = EXIT_OK
@@ -776,7 +778,7 @@ def main():
         from scipy.special import gamma as gamma_func  # type: ignore
 
         rng = np.random.default_rng(args.seed)
-        output_dir = ctx.stage_dir
+        output_dir = Path(args.output_dir)
         output_dir.mkdir(parents=True, exist_ok=True)
 
         # malla en z común a todos los universos
