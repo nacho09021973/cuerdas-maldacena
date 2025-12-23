@@ -54,14 +54,23 @@
 
 import argparse
 import json
+import sys
 from pathlib import Path
 from typing import Dict, List, Any, Tuple, Optional
 
-import h5py
 import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from tools.stage_utils import (
+    EXIT_ERROR,
+    EXIT_OK,
+    STATUS_ERROR,
+    STATUS_OK,
+    StageContext,
+    add_standard_arguments,
+    parse_stage_args,
+)
 
 # Import local IO module for run manifest support
 try:
@@ -1717,25 +1726,65 @@ def main():
         help="Ruta al checkpoint del modelo entrenado en sandbox "
              "(solo obligatorio en mode='inference')"
     )
-    parser.add_argument(
-        "--experiment",
-        type=str,
-        default=None,
-        help="Nombre del experimento (aceptado para compatibilidad con run_pipeline).",
-    )
-    parser.add_argument(
-        "--quick-test",
-        action="store_true",
-        help="Modo rápido (compatibilidad con orquestador). No altera lógica científica.",
-    )
+   add_standard_arguments(parser)
+
+    args = parse_stage_args(parser)
+    ctx = StageContext.from_args(args, stage_number="02", stage_slug="emergent_geometry_engine")
+
+   if args.data_dir is None:
+        args.data_dir = str(ctx.run_root / "01_generate_sandbox_geometries")
+    if args.output_dir is None:
+        args.output_dir = str(ctx.stage_dir)
+        
+    status = STATUS_OK
+    exit_code = EXIT_OK
+    error_message: Optional[str] = None
+    artifacts: List[Path] = []
     
-    args, _ = parser.parse_known_args()
+    try:
+        ctx.record_artifact(ctx.stage_dir)
+    except Exception:
+        pass
     
-    # Despachar según modo
-    if args.mode == "train":
-        run_train_mode(args)
-    else:
-        run_inference_mode(args)
+    try:
+        global h5py  # type: ignore
+        import h5py  # type: ignore
+
+        # Despachar según modo
+        if args.mode == "train":
+            result = run_train_mode(args)
+        else:
+            result = run_inference_mode(args)
+        if isinstance(result, dict):
+            for key in ["model_path", "preds_dir", "summary_path", "output_dir", "geometry_dir", "checkpoint"]:
+                val = result.get(key)
+                if val:
+                    artifacts.append(Path(val))
+        ctx.record_artifact(ctx.stage_dir)
+        for art in artifacts:
+            try:
+                ctx.record_artifact(Path(art))
+            except Exception:
+                pass
+        ctx.write_manifest(
+            outputs={
+                "geometry_engine_dir": str(Path(args.output_dir).resolve().relative_to(ctx.run_root))
+            },
+            metadata={"command": " ".join(sys.argv), "mode": args.mode},
+        )
+    except Exception as exc:  # pragma: no cover - infra guardrail
+        status = STATUS_ERROR
+        exit_code = EXIT_ERROR
+        error_message = str(exc)
+        raise
+    finally:
+        summary_path = ctx.stage_dir / "stage_summary.json"
+        try:
+            ctx.record_artifact(summary_path)
+        except Exception:
+            pass
+        ctx.write_summary(status=status, exit_code=exit_code, error_message=error_message)
+    sys.exit(exit_code)
 
 
 if __name__ == "__main__":

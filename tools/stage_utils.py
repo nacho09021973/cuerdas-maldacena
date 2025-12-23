@@ -84,11 +84,12 @@ class StageContext:
     # -------------------- artifact + manifest helpers --------------------
     def record_artifact(self, path: Path) -> None:
         path = path.resolve()
-        if not str(path).startswith(str(self.run_root.resolve())):
+        base = self.run_root.resolve()
+        if not str(path).startswith(str(base)):
             raise ValueError(
-                f"Artifact outside run root: {path} (run_root={self.run_root})"
+                f"Artifact outside run root: {path} (run_root={base})"
             )
-        rel = path.relative_to(self.run_root)
+        rel = path.relative_to(base)
         self.artifacts_written.append(str(rel))
 
     def write_manifest(
@@ -160,7 +161,29 @@ def ensure_no_writes_outside_run(run_root: Path, candidates: Iterable[Path]) -> 
     for path in candidates:
         resolved = path.resolve()
         if not str(resolved).startswith(str(root)):
-            raise ValueError(
-                f"Detected write outside run root: {resolved} (run_root={root})"
-            )
+                raise ValueError(
+                    f"Detected write outside run root: {resolved} (run_root={root})"
+                )
 
+
+def add_standard_arguments(parser) -> None:
+    """Inject standard CLI arguments used by orchestrator."""
+    parser.add_argument(
+        "--experiment",
+        type=str,
+        default=None,
+        help="Nombre del experimento (organiza outputs en runs/<experiment>/).",
+    )
+    parser.add_argument(
+        "--quick-test",
+        action="store_true",
+        help="Modo rápido (compatibilidad con orquestador). No altera lógica científica.",
+    )
+
+
+def parse_stage_args(parser):
+    """Wrapper around parse_known_args to tolerate extra flags."""
+    args, unknown = parser.parse_known_args()
+    if unknown:
+        print(f"[stage] Ignorando argumentos no reconocidos: {unknown}")
+    return args
