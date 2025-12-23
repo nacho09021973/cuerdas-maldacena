@@ -9,14 +9,12 @@
 #     - Agregar metadatos de geometría y clasificación (ads, lifshitz, hvlf, ...).
 #
 # ENTRADAS
-#   - runs/emergent_geometry/emergent_geometry_summary.json
-#   - (opcional) otros resúmenes del bloque A/B según implementación.
+#   - runs/<experiment>/02_emergent_geometry_engine/geometry_emergent/*.h5
 #
-# SALIDAS
-#   runs/holographic_dictionary/
-#     holographic_dictionary_summary.json
-#       - Estructura by_system[(family, d, ...)] con lista de operadores,
-#         Δ, categorías, etc.
+# SALIDAS (V3)
+#   runs/<experiment>/08_build_holographic_dictionary/
+#     holographic_dictionary_v3_summary.json
+#     stage_summary.json
 #
 # OPCIONAL: CHECKS DE m²L²
 #   - Con flags explícitas, puede calcular m²L² = Δ(Δ-d) como diagnóstico.
@@ -26,19 +24,34 @@
 #   - Proporciona el "atlas" interno que se cruza con:
 #       * 09_real_data_and_dictionary_contracts.py
 #
-# HISTÓRICO
-#   - Anteriormente conocido como: 03_holographic_dictionary_v3.py
+# MIGRADO A V3: 2024-12-23
 
 import argparse
 import json
+import sys
 from collections import defaultdict
 from pathlib import Path
 
 import h5py
 import numpy as np
-from pysr import PySRRegressor
 
-# Import local IO module for run manifest support
+try:
+    from pysr import PySRRegressor
+    HAS_PYSR = True
+except ImportError:
+    HAS_PYSR = False
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# V3 INFRASTRUCTURE
+# ═══════════════════════════════════════════════════════════════════════════════
+try:
+    from tools.stage_utils import StageContext, add_standard_arguments, infer_experiment
+    HAS_STAGE_UTILS = True
+except ImportError:
+    HAS_STAGE_UTILS = False
+    print("[WARN] tools.stage_utils not available, running in legacy mode")
+
+# Legacy imports (fallback)
 try:
     from cuerdas_io import resolve_geometry_emergent_dir, update_run_manifest
     HAS_CUERDAS_IO = True
@@ -50,24 +63,31 @@ def parse_args():
     parser = argparse.ArgumentParser(
         description="Fase XI: construir diccionario holografico agrupando por (family, d)"
     )
+    
+    # ═══════════════════════════════════════════════════════════════════════════
+    # V3: Argumentos estándar
+    # ═══════════════════════════════════════════════════════════════════════════
+    if HAS_STAGE_UTILS:
+        add_standard_arguments(parser)
+    else:
+        parser.add_argument("--experiment", type=str, default=None)
+        parser.add_argument("--run-dir", type=str, default=None)
+    
+    # Argumentos legacy (compatibilidad)
     parser.add_argument(
         "--data-dir",
         type=str,
         default=None,
-        help="Directorio con los .h5 de geometría (p.ej. fase11_output_v2/geometry)",
-    )
-    parser.add_argument(
-        "--run-dir",
-        type=str,
-        default=None,
-        help="Directorio raíz con run_manifest.json (IO v2). Resuelve geometry_emergent automáticamente.",
+        help="Directorio con los .h5 de geometría (legacy)",
     )
     parser.add_argument(
         "--output-summary",
         type=str,
         default=None,
-        help="Fichero JSON de salida con el diccionario resumido",
+        help="Fichero JSON de salida con el diccionario resumido (legacy)",
     )
+    
+    # Argumentos específicos del script
     parser.add_argument(
         "--mass-source",
         type=str,
@@ -133,6 +153,9 @@ def discover_mass_dimension_relation(Deltas, m2L2, d, seed=42):
         - status
         - holographic_r2 (ajuste si forzamos m²L² = Delta(Delta-d))
     """
+    if not HAS_PYSR:
+        return {"status": "pysr_not_available"}
+    
     results = {}
     Deltas = np.array(Deltas).reshape(-1, 1)
     m2L2 = np.array(m2L2).reshape(-1, 1)
@@ -187,39 +210,74 @@ def discover_mass_dimension_relation(Deltas, m2L2, d, seed=42):
     return results
 
 
-def main():
+def main() -> int:
     args = parse_args()
     
-    # === RESOLVER RUTAS ===
+    # ═══════════════════════════════════════════════════════════════════════════
+    # V3: Crear StageContext
+    # ═══════════════════════════════════════════════════════════════════════════
+    ctx = None
+    if HAS_STAGE_UTILS:
+        if not getattr(args, 'experiment', None):
+            args.experiment = infer_experiment(args)
+        
+        ctx = StageContext.from_args(
+            args,
+            stage_number="08",
+            stage_slug="build_holographic_dictionary"
+        )
+        print(f"[V3] Experiment: {ctx.experiment}")
+        print(f"[V3] Stage dir: {ctx.stage_dir}")
+    
+    # ═══════════════════════════════════════════════════════════════════════════
+    # RESOLVER INPUT (geometry_dir)
+    # ═══════════════════════════════════════════════════════════════════════════
     geometry_dir = None
     
-    # Prioridad 1: --run-dir con cuerdas_io
-    if args.run_dir and HAS_CUERDAS_IO:
-        run_dir = Path(args.run_dir)
+    # Prioridad 1: --data-dir explícito
+    if args.data_dir:
+        geometry_dir = Path(args.data_dir).resolve()
+    
+    # Prioridad 2: V3 - buscar en stage 02
+    if geometry_dir is None and ctx:
+        candidate = ctx.run_root / "02_emergent_geometry_engine" / "geometry_emergent"
+        if candidate.exists():
+            geometry_dir = candidate
+            print(f"[V3] Geometry dir desde stage 02: {geometry_dir}")
+    
+    # Prioridad 3: --run-dir legacy con cuerdas_io
+    if geometry_dir is None and args.run_dir and HAS_CUERDAS_IO:
+        run_dir = Path(args.run_dir).resolve()
         geometry_dir = resolve_geometry_emergent_dir(run_dir=run_dir)
     
-    # Prioridad 2: --data-dir explícito
-    if geometry_dir is None and args.data_dir:
-        geometry_dir = Path(args.data_dir)
-    
     if geometry_dir is None:
-        raise ValueError("Debe proporcionar --run-dir o --data-dir")
+        print("[ERROR] Debe proporcionar --experiment, --run-dir o --data-dir")
+        if ctx:
+            ctx.write_summary(status="INCOMPLETE", counts={"error": "no_geometry_dir"})
+        return 2
     
-    # Resolver output
-    if args.output_summary:
-        output_file = Path(args.output_summary)
+    if not geometry_dir.exists() or not geometry_dir.is_dir():
+        print(f"[ERROR] --data-dir no es un directorio válido: {geometry_dir}")
+        if ctx:
+            ctx.write_summary(status="INCOMPLETE", counts={"error": "geometry_dir_not_found"})
+        return 2
+    
+    # ═══════════════════════════════════════════════════════════════════════════
+    # RESOLVER OUTPUT
+    # ═══════════════════════════════════════════════════════════════════════════
+    if ctx:
+        output_file = ctx.stage_dir / "holographic_dictionary_v3_summary.json"
+    elif args.output_summary:
+        output_file = Path(args.output_summary).resolve()
     elif args.run_dir:
-        out_dir = Path(args.run_dir) / "holographic_dictionary"
+        out_dir = Path(args.run_dir).resolve() / "holographic_dictionary"
         out_dir.mkdir(parents=True, exist_ok=True)
         output_file = out_dir / "holographic_dictionary_v3_summary.json"
     else:
-        output_file = Path("holographic_dictionary_v3_summary.json")
-
-    if not geometry_dir.exists() or not geometry_dir.is_dir():
-        raise FileNotFoundError(f"--data-dir no es un directorio valido: {geometry_dir}")
+        output_file = Path("holographic_dictionary_v3_summary.json").resolve()
 
     print("=" * 70)
-    print("FASE XI - DICCIONARIO HOLOGRAFICO v3.1 (FIX EMERGENT, sin manifest)")
+    print("FASE XI - DICCIONARIO HOLOGRAFICO v3.1 (FIX EMERGENT)")
     print("=" * 70)
     print(f"Mass source: {args.mass_source.upper()}")
     if args.mass_source == "hdf5":
@@ -231,7 +289,6 @@ def main():
         print("   -> NO se calcula m²L² en esta fase (solo atlas de Δ)")
     print("=" * 70)
 
-    # Agrupar por (family, d)
     data_by_family_d = defaultdict(
         lambda: {
             "family": None,
@@ -249,12 +306,17 @@ def main():
     h5_files = sorted(geometry_dir.glob("*.h5"))
     if not h5_files:
         print(f"[WARN] No se encontraron .h5 en {geometry_dir}")
+        if ctx:
+            ctx.write_summary(status="INCOMPLETE", counts={"error": "no_h5_files"})
+        return 2
 
     for h5_path in h5_files:
         name = h5_path.stem
 
         with h5py.File(h5_path, "r") as f:
             family = f.attrs.get("family", "unknown")
+            if isinstance(family, bytes):
+                family = family.decode("utf-8")
             try:
                 d = int(f.attrs.get("d", 4))
             except Exception:
@@ -330,6 +392,8 @@ def main():
                 # MODO EMERGENTE: SOLO Δ
                 # ---------------------------
                 operators_attr = f.attrs.get("operators", "[]")
+                if isinstance(operators_attr, bytes):
+                    operators_attr = operators_attr.decode("utf-8")
                 try:
                     operators = json.loads(operators_attr)
                 except Exception:
@@ -361,7 +425,6 @@ def main():
                             "name": op_name,
                             "Delta": Delta,
                             "Delta_fit_r2": result.get("fit_r2"),
-                            # m2L2 no se guarda en modo emergent
                         }
                     )
 
@@ -444,10 +507,29 @@ def main():
     output_file.write_text(json.dumps(summary, indent=2))
     print(f"\nResumen guardado en: {output_file}")
     
-    # === ACTUALIZAR RUN_MANIFEST (IO v2) ===
-    if args.run_dir and HAS_CUERDAS_IO:
+    # ═══════════════════════════════════════════════════════════════════════════
+    # V3: Registrar artefactos y escribir summary
+    # ═══════════════════════════════════════════════════════════════════════════
+    if ctx:
+        ctx.record_artifact("holographic_dictionary_summary", output_file)
+        ctx.record_artifact("geometry_dir_input", geometry_dir)
+        
+        ctx.write_summary(
+            status="OK" if len(by_system) > 0 else "WARNING",
+            counts={
+                "h5_files_scanned": len(h5_files),
+                "systems_with_m2L2": len(by_system),
+                "geometries_processed": len(geometry_results),
+                "discoveries_made": len([d for d in discovery_results.values() if d.get("status") == "ok"]),
+            }
+        )
+        ctx.write_manifest()
+        print(f"[V3] stage_summary.json escrito")
+    
+    # Legacy: actualizar run_manifest
+    elif args.run_dir and HAS_CUERDAS_IO:
         try:
-            run_dir = Path(args.run_dir)
+            run_dir = Path(args.run_dir).resolve()
             update_run_manifest(
                 run_dir,
                 {
@@ -459,10 +541,12 @@ def main():
                                                          else output_file),
                 }
             )
-            print(f"Manifest actualizado")
+            print(f"Manifest actualizado (legacy)")
         except Exception as e:
             print(f"[WARN] No se pudo actualizar manifest: {e}")
 
+    return 0
+
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())
