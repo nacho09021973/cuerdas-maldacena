@@ -423,6 +423,8 @@ def main():
 
     if args.run_dir is None:
         args.run_dir = str(ctx.run_root)
+    if args.output_dir is None:
+        args.output_dir = str(ctx.stage_dir)
 
     status = STATUS_OK
     exit_code = EXIT_OK
