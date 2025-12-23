@@ -427,12 +427,13 @@ class RunContext:
             dictionary_file: Archivo de diccionario (legacy)
             output_dir: Directorio de salida (puede ser igual a run_dir)
         """
-        self._run_dir = Path(run_dir) if run_dir else None
-        self._data_dir = Path(data_dir) if data_dir else None
-        self._geometry_dir = Path(geometry_dir) if geometry_dir else None
-        self._einstein_dir = Path(einstein_dir) if einstein_dir else None
-        self._dictionary_file = Path(dictionary_file) if dictionary_file else None
-        self._output_dir = Path(output_dir) if output_dir else self._run_dir
+       # FIX: Resolver siempre a absoluto para evitar mismatch con relative_to()
+        self._run_dir = Path(run_dir).resolve() if run_dir else None
+        self._data_dir = Path(data_dir).resolve() if data_dir else None
+        self._geometry_dir = Path(geometry_dir).resolve() if geometry_dir else None
+        self._einstein_dir = Path(einstein_dir).resolve() if einstein_dir else None
+        self._dictionary_file = Path(dictionary_file).resolve() if dictionary_file else None
+        self._output_dir = Path(output_dir).resolve() if output_dir else self._run_dir
         
         # Cargar manifest si existe
         self._manifest = None
@@ -689,3 +690,27 @@ if __name__ == "__main__":
     import shutil
     shutil.rmtree(test_dir)
     print(f"\n✓ Test completado. Directorio temporal eliminado.")
+
+# ============================================================
+# HELPER: SAFE RELATIVE PATH
+# ============================================================
+
+def safe_relpath(child: Path, parent: Path) -> str:
+    """
+    Calcula ruta relativa de forma segura, manejando mismatch abs/rel.
+    
+    Si child es subpath de parent, devuelve la ruta relativa.
+    Si no, devuelve la ruta absoluta de child con un warning.
+    """
+    child_abs = Path(child).resolve()
+    parent_abs = Path(parent).resolve()
+    
+    try:
+        return str(child_abs.relative_to(parent_abs))
+    except ValueError:
+        import warnings
+        warnings.warn(
+            f"Path {child_abs} is not under {parent_abs}; using absolute path",
+            UserWarning
+        )
+        return str(child_abs)
