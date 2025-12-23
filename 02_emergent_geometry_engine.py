@@ -1726,16 +1726,16 @@ def main():
         help="Ruta al checkpoint del modelo entrenado en sandbox "
              "(solo obligatorio en mode='inference')"
     )
-    add_standard_arguments(parser)
-    
+   add_standard_arguments(parser)
+
     args = parse_stage_args(parser)
     ctx = StageContext.from_args(args, stage_number="02", stage_slug="emergent_geometry_engine")
 
-    if args.data_dir is None:
+   if args.data_dir is None:
         args.data_dir = str(ctx.run_root / "01_generate_sandbox_geometries")
     if args.output_dir is None:
         args.output_dir = str(ctx.stage_dir)
-    
+        
     status = STATUS_OK
     exit_code = EXIT_OK
     error_message: Optional[str] = None

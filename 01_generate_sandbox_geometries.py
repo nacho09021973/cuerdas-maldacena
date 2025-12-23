@@ -756,9 +756,7 @@ def main():
         ),
     )
     add_standard_arguments(parser)
-
     args = parse_stage_args(parser)
-
     ctx = StageContext.from_args(args, stage_number="01", stage_slug="generate_sandbox_geometries")
 
     status = STATUS_OK
