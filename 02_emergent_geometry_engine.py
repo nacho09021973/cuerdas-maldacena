@@ -1717,8 +1717,19 @@ def main():
         help="Ruta al checkpoint del modelo entrenado en sandbox "
              "(solo obligatorio en mode='inference')"
     )
+    parser.add_argument(
+        "--experiment",
+        type=str,
+        default=None,
+        help="Nombre del experimento (aceptado para compatibilidad con run_pipeline).",
+    )
+    parser.add_argument(
+        "--quick-test",
+        action="store_true",
+        help="Modo rápido (compatibilidad con orquestador). No altera lógica científica.",
+    )
     
-    args = parser.parse_args()
+    args, _ = parser.parse_known_args()
     
     # Despachar según modo
     if args.mode == "train":
