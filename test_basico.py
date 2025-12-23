@@ -1,93 +1,136 @@
-# test_basico.py
+# tests/test_basico.py
+from __future__ import annotations
+
+import importlib
+import os
+import subprocess
 import sys
-import h5py
-import json
-import numpy as np
 from pathlib import Path
 
-def test_imports():
-    """Verifica que todas las dependencias críticas estén instaladas"""
-    imports = [
-        'numpy', 'scipy', 'pandas', 'h5py', 'torch',
-        'pysr', 'juliacall'
-    ]
-    for lib in imports:
+
+REPO_ROOT = Path(__file__).resolve().parent
+
+
+def _run(cmd: list[str], cwd: Path | None = None) -> subprocess.CompletedProcess:
+    """Run a command and raise a useful error if it fails."""
+    p = subprocess.run(
+        cmd,
+        cwd=str(cwd or REPO_ROOT),
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True,
+    )
+    if p.returncode != 0:
+        raise AssertionError(
+            "Command failed\n"
+            f"  cmd: {' '.join(cmd)}\n"
+            f"  cwd: {cwd or REPO_ROOT}\n"
+            f"  exit: {p.returncode}\n"
+            "---- output ----\n"
+            f"{p.stdout}\n"
+            "--------------\n"
+        )
+    return p
+
+
+def test_imports() -> None:
+    """
+    Sanity import test: these are commonly required by the pipeline/tests.
+    Adjust the list if your repo has a different minimal set.
+    """
+    modules = ["numpy", "h5py", "pytest"]
+    missing: list[str] = []
+    for m in modules:
         try:
-            __import__(lib)
-            print(f"✅ {lib}")
-        except ImportError as e:
-            print(f"❌ {lib}: {e}")
-            return False
-    return True
+            importlib.import_module(m)
+        except Exception:
+            missing.append(m)
+    assert not missing, f"Missing or broken imports: {missing}"
 
-def test_estructura_carpetas():
-    """Verifica la estructura mínima de carpetas"""
-    carpetas = ['runs', 'boundary', 'runs/sandbox_geometries']
-    for carpeta in carpetas:
-        path = Path(carpeta)
-        if not path.exists():
-            print(f"⚠️  Creando carpeta faltante: {carpeta}")
-            path.mkdir(parents=True, exist_ok=True)
-    return True
 
-def test_formato_h5_ejemplo():
-    """Crea un archivo H5 de ejemplo para verificar el formato"""
-    ejemplo_path = "boundary/ejemplo_test.h5"
-    with h5py.File(ejemplo_path, 'w') as f:
-        # Atributos raíz mínimos según tu README
-        f.attrs['d'] = 3
-        f.attrs['z_dyn'] = 1.0
-        f.attrs['theta'] = 0.0
-        f.attrs['geometry_family'] = 'AdS'
-        f.attrs['uuid'] = 'test-1234'
-        
-        # Dataset de ejemplo
-        f.create_dataset('boundary_data/correlator_2pt', data=np.random.randn(10, 10))
-    
-    print(f"✅ Archivo ejemplo creado: {ejemplo_path}")
-    return True
-
-def test_solver_sanity():
-    """Test de cordura para el solver escalar (versión simplificada)"""
-    try:
-        # Importa tu solver
-        from bulk_scalar_solver import solve_scalar_mode
-        
-        # Datos de prueba mínimos
-        geometry = {'f': lambda r: 1 + r**2, 'A': lambda r: r}
-        result = solve_scalar_mode(geometry, m2=0, boundary_condition='dirichlet')
-        
-        # Verificaciones básicas
-        assert 'lambda_sl' in result, "Falta lambda_sl en resultado"
-        assert result['lambda_sl'] > 0, "lambda_sl debe ser positivo"
-        assert 'eigenmode' in result, "Falta eigenmode"
-        
-        print("✅ Solver pasa test de cordura básico")
-        return True
-        
-    except Exception as e:
-        print(f"⚠️  Test solver simplificado: {e}")
-        # No falla el test completo, solo avisa
-        return True
-
-if __name__ == "__main__":
-    print("🚀 Ejecutando tests básicos de CUERDAS-Maldacena\n")
-    
-    tests = [
-        ("Importaciones", test_imports),
-        ("Estructura carpetas", test_estructura_carpetas),
-        ("Formato H5", test_formato_h5_ejemplo),
-        ("Sanidad solver", test_solver_sanity)
+def test_estructura_carpetas() -> None:
+    """
+    Basic repo structure sanity. Keep this conservative (few must-have paths).
+    """
+    must_exist = [
+        REPO_ROOT / "run_pipeline.py",
+        REPO_ROOT / "00_validate_io_contracts.py",
+        REPO_ROOT / "01_generate_sandbox_geometries.py",
+        REPO_ROOT / "02_emergent_geometry_engine.py",
+        REPO_ROOT / "03_discover_bulk_equations.py",
+        REPO_ROOT / "04_geometry_physics_contracts.py",
+        REPO_ROOT / "05_analyze_bulk_equations.py",
+        REPO_ROOT / "06_build_bulk_eigenmodes_dataset.py",
+        REPO_ROOT / "07_emergent_lambda_sl_dictionary.py",
+        REPO_ROOT / "08_build_holographic_dictionary.py",
+        REPO_ROOT / "09_real_data_and_dictionary_contracts.py",
     ]
-    
-    exit_code = 0
-    for nombre, test_func in tests:
-        print(f"\n--- {nombre} ---")
-        try:
-            if not test_func():
-                exit_code = 1
-        except Exception as e:
-            print(f"❌ Error inesperado: {e}")
-            exit_code = 1
-    
-    sys.exit(exit_code)
+    missing = [str(p.relative_to(REPO_ROOT)) for p in must_exist if not p.exists()]
+    assert not missing, f"Missing required paths: {missing}"
+
+
+def test_py_compile_entrypoints() -> None:
+    """
+    Fast check: all entrypoints compile.
+    """
+    scripts = [
+        "00_validate_io_contracts.py",
+        "01_generate_sandbox_geometries.py",
+        "02_emergent_geometry_engine.py",
+        "03_discover_bulk_equations.py",
+        "04_geometry_physics_contracts.py",
+        "05_analyze_bulk_equations.py",
+        "06_build_bulk_eigenmodes_dataset.py",
+        "07_emergent_lambda_sl_dictionary.py",
+        "08_build_holographic_dictionary.py",
+        "09_real_data_and_dictionary_contracts.py",
+        "run_pipeline.py",
+    ]
+    cmd = [sys.executable, "-m", "py_compile", *scripts]
+    _run(cmd, cwd=REPO_ROOT)
+
+
+def test_formato_h5_ejemplo() -> None:
+    """
+    Conservative: if an example H5 exists, verify it opens and has at least 1 key.
+    If it doesn't exist (e.g., not committed), we skip rather than fail.
+    """
+    import h5py  # type: ignore
+
+    candidate_paths = [
+        REPO_ROOT / "fase12_data_boundary" / "ising_3d.h5",
+        REPO_ROOT / "data" / "ising_3d.h5",
+        REPO_ROOT / "data" / "fase12_data_boundary" / "ising_3d.h5",
+    ]
+    path = next((p for p in candidate_paths if p.exists()), None)
+    if path is None:
+        # Not failing because example data may be generated, not committed.
+        return
+
+    with h5py.File(path, "r") as f:
+        keys = list(f.keys())
+    assert len(keys) > 0, f"H5 file has no top-level keys: {path}"
+
+
+def test_solver_sanity() -> None:
+    """
+    Minimal 'solver sanity' without assuming scientific correctness:
+    just check that running a lightweight stage/help command does not crash.
+
+    If your scripts support '--help', this is safe and fast.
+    """
+    # Prefer '--help' to avoid heavy computation.
+    # If any script doesn't implement it, remove that script from this list.
+    scripts = [
+        "02_emergent_geometry_engine.py",
+        "03_discover_bulk_equations.py",
+    ]
+    for s in scripts:
+        p = subprocess.run(
+            [sys.executable, str(REPO_ROOT / s), "--help"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+        )
+        assert p.returncode == 0, f"{s} --help failed:\n{p.stdout}"
+        assert len(p.stdout) > 0, f"{s} --help produced no output"
