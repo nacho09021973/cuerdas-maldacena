@@ -9,16 +9,15 @@
 #     - Opcionalmente: Extraer Delta desde correladores de frontera.
 #
 # ENTRADAS
-#   - runs/**/geometry_emergent/*.h5
+#   - runs/<experiment>/02_emergent_geometry_engine/geometry_emergent/*.h5
 #   - Módulo bulk_scalar_solver.py (o bulk_scalar_solver_v2 si existe)
 #   - Módulo boundary_delta_extractor.py (opcional, para extracción de Delta)
 #
-# SALIDAS (IO_CONTRACTS_V1)
-#   runs/bulk_eigenmodes/
+# SALIDAS (V3)
+#   runs/<experiment>/06_build_bulk_eigenmodes_dataset/
 #     bulk_modes_dataset.csv
-#     bulk_modes_meta.json (incluye mapping mode_id → operator para auditoría)
-#   (Opcional / compat)
-#     --output-json: JSON agregador (por-sistema / por-family-d)
+#     bulk_modes_meta.json
+#     stage_summary.json
 #
 # HONESTIDAD
 #   - No se aplica ninguna fórmula teórica Delta(Delta-d).
@@ -26,15 +25,14 @@
 #   - Delta extraído de correladores G2(x) ~ x^(-2Δ) es una MEDICIÓN, no teoría.
 #   - El mapping mode_id → operator se documenta en meta para auditoría.
 #
-# HISTÓRICO
-#   - Anteriormente conocido como: make_fase11_bulk_for_fase12c_v2.py
-#   - v2: Añadido soporte para boundary_delta_extractor con --delta-uv-source
+# MIGRADO A V3: 2024-12-23
 
 from __future__ import annotations
 
 import argparse
 import csv
 import json
+import sys
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
@@ -42,6 +40,23 @@ from typing import Any, Dict, List, Optional, Sequence, Set, Tuple
 
 import h5py
 import numpy as np
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# V3 INFRASTRUCTURE
+# ═══════════════════════════════════════════════════════════════════════════════
+try:
+    from tools.stage_utils import StageContext, add_standard_arguments, infer_experiment
+    HAS_STAGE_UTILS = True
+except ImportError:
+    HAS_STAGE_UTILS = False
+    print("[WARN] tools.stage_utils not available, running in legacy mode")
+
+# Legacy imports (fallback)
+try:
+    from cuerdas_io import resolve_geometry_emergent_dir, update_run_manifest
+    HAS_CUERDAS_IO = True
+except ImportError:
+    HAS_CUERDAS_IO = False
 
 # Importar el solver v2 con nomenclatura honesta
 try:
@@ -65,13 +80,6 @@ try:
 except ImportError:
     HAS_BOUNDARY_EXTRACTOR = False
 
-# Import local IO module for run manifest support
-try:
-    from cuerdas_io import resolve_geometry_emergent_dir, update_run_manifest
-    HAS_CUERDAS_IO = True
-except ImportError:
-    HAS_CUERDAS_IO = False
-
 
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(
@@ -80,31 +88,36 @@ def parse_args() -> argparse.Namespace:
             "Nomenclatura honesta: lambda_sl (autovalores Sturm–Liouville)."
         )
     )
+    
+    # ═══════════════════════════════════════════════════════════════════════════
+    # V3: Argumentos estándar
+    # ═══════════════════════════════════════════════════════════════════════════
+    if HAS_STAGE_UTILS:
+        add_standard_arguments(p)
+    else:
+        p.add_argument("--experiment", type=str, default=None)
+        p.add_argument("--run-dir", type=str, default=None)
+    
+    # Legacy arguments (mantener compatibilidad)
     p.add_argument(
         "--geometry-dir",
         type=str,
         default=None,
-        help="Directorio con .h5 de geometría emergente (p.ej. runs/emergent_geometry/geometry_emergent)",
-    )
-    p.add_argument(
-        "--run-dir",
-        type=str,
-        default=None,
-        help="Directorio raíz con run_manifest.json (IO v2). Resuelve geometry_emergent automáticamente.",
+        help="Directorio con .h5 de geometría emergente (legacy)",
     )
 
-    # Salidas canónicas
+    # Salidas canónicas (legacy - en V3 se usan ctx.stage_dir)
     p.add_argument(
         "--output-csv",
         type=str,
-        default="runs/bulk_eigenmodes/bulk_modes_dataset.csv",
-        help="CSV canónico (default: runs/bulk_eigenmodes/bulk_modes_dataset.csv)",
+        default=None,
+        help="CSV canónico (legacy, default: stage_dir/bulk_modes_dataset.csv)",
     )
     p.add_argument(
         "--output-meta",
         type=str,
-        default="runs/bulk_eigenmodes/bulk_modes_meta.json",
-        help="JSON meta del dataset (default: runs/bulk_eigenmodes/bulk_modes_meta.json)",
+        default=None,
+        help="JSON meta del dataset (legacy)",
     )
 
     # Compat / usos auxiliares (Ising, etc.)
@@ -112,10 +125,7 @@ def parse_args() -> argparse.Namespace:
         "--output-json",
         type=str,
         default=None,
-        help=(
-            "(Opcional) JSON agregador por sistema/family-d (compat/aux). "
-            "Recomendado para pipelines legacy o stubs Fase XII."
-        ),
+        help="(Opcional) JSON agregador por sistema/family-d (compat/aux).",
     )
 
     p.add_argument(
@@ -145,7 +155,7 @@ def parse_args() -> argparse.Namespace:
         help="Ruta al dataset f(z) dentro del HDF5 (default: f_emergent)",
     )
     
-    # Control de extracción de Delta - NUEVO con flag explícito
+    # Control de extracción de Delta
     p.add_argument(
         "--delta-uv-source",
         type=str,
@@ -302,8 +312,25 @@ def build_legacy_json(rows: List[Row]) -> Dict[str, Any]:
     }
 
 
-def main() -> None:
+def main() -> int:
     args = parse_args()
+    
+    # ═══════════════════════════════════════════════════════════════════════════
+    # V3: Crear StageContext
+    # ═══════════════════════════════════════════════════════════════════════════
+    ctx = None
+    if HAS_STAGE_UTILS:
+        # Inferir experiment si no se proporciona
+        if not getattr(args, 'experiment', None):
+            args.experiment = infer_experiment(args)
+        
+        ctx = StageContext.from_args(
+            args,
+            stage_number="06",
+            stage_slug="build_bulk_eigenmodes_dataset"
+        )
+        print(f"[V3] Experiment: {ctx.experiment}")
+        print(f"[V3] Stage dir: {ctx.stage_dir}")
     
     # Resolver fuente de Delta
     use_boundary = args.delta_uv_source in ("boundary", "both")
@@ -314,42 +341,73 @@ def main() -> None:
     if use_boundary and not HAS_BOUNDARY_EXTRACTOR:
         print("[ERROR] --delta-uv-source boundary/both requiere boundary_delta_extractor.py")
         print("        Copiar el módulo al directorio del proyecto.")
-        return
+        if ctx:
+            ctx.write_summary(status="ERROR", counts={"error": "boundary_extractor_missing"})
+        return 2
     
-    # === RESOLVER RUTAS ===
+    # ═══════════════════════════════════════════════════════════════════════════
+    # RESOLVER INPUT (geometry_dir)
+    # ═══════════════════════════════════════════════════════════════════════════
     geom_dir = None
     
-    # Prioridad 1: --run-dir con cuerdas_io
-    if args.run_dir and HAS_CUERDAS_IO:
-        run_dir = Path(args.run_dir)
+    # Prioridad 1: --geometry-dir explícito
+    if args.geometry_dir:
+        geom_dir = Path(args.geometry_dir).resolve()
+    
+    # Prioridad 2: V3 - buscar en 02_emergent_geometry_engine/geometry_emergent
+    if geom_dir is None and ctx:
+        candidate = ctx.run_root / "02_emergent_geometry_engine" / "geometry_emergent"
+        if candidate.exists():
+            geom_dir = candidate
+            print(f"[V3] Geometry dir desde stage 02: {geom_dir}")
+    
+    # Prioridad 3: --run-dir legacy con cuerdas_io
+    if geom_dir is None and args.run_dir and HAS_CUERDAS_IO:
+        run_dir = Path(args.run_dir).resolve()
         geom_dir = resolve_geometry_emergent_dir(run_dir=run_dir)
     
-    # Prioridad 2: --geometry-dir explícito
-    if geom_dir is None and args.geometry_dir:
-        geom_dir = Path(args.geometry_dir)
-    
     if geom_dir is None:
-        raise ValueError("Debe proporcionar --run-dir o --geometry-dir")
+        print("[ERROR] Debe proporcionar --experiment, --run-dir o --geometry-dir")
+        if ctx:
+            ctx.write_summary(status="INCOMPLETE", counts={"error": "no_geometry_dir"})
+        return 2
     
-    # Resolver outputs
-    if args.run_dir:
-        out_dir = Path(args.run_dir) / "bulk_eigenmodes"
+    if not geom_dir.exists() or not geom_dir.is_dir():
+        print(f"[ERROR] --geometry-dir no es un directorio válido: {geom_dir}")
+        if ctx:
+            ctx.write_summary(status="INCOMPLETE", counts={"error": "geometry_dir_not_found"})
+        return 2
+
+    h5_files = sorted(geom_dir.glob("*.h5"))
+    if not h5_files:
+        print(f"[ERROR] No se encontraron .h5 en {geom_dir}")
+        if ctx:
+            ctx.write_summary(status="INCOMPLETE", counts={"error": "no_h5_files"})
+        return 2
+    
+    # ═══════════════════════════════════════════════════════════════════════════
+    # RESOLVER OUTPUTS
+    # ═══════════════════════════════════════════════════════════════════════════
+    if ctx:
+        out_csv = ctx.stage_dir / "bulk_modes_dataset.csv"
+        out_meta = ctx.stage_dir / "bulk_modes_meta.json"
+    elif args.output_csv:
+        out_csv = Path(args.output_csv).resolve()
+        out_meta = Path(args.output_meta).resolve() if args.output_meta else out_csv.with_name("bulk_modes_meta.json")
+    elif args.run_dir:
+        out_dir = Path(args.run_dir).resolve() / "bulk_eigenmodes"
         out_dir.mkdir(parents=True, exist_ok=True)
         out_csv = out_dir / "bulk_modes_dataset.csv"
         out_meta = out_dir / "bulk_modes_meta.json"
     else:
-        out_csv = Path(args.output_csv)
-        out_meta = Path(args.output_meta)
+        out_csv = Path("runs/bulk_eigenmodes/bulk_modes_dataset.csv").resolve()
+        out_meta = Path("runs/bulk_eigenmodes/bulk_modes_meta.json").resolve()
     
-    out_json = Path(args.output_json) if args.output_json else None
+    out_json = Path(args.output_json).resolve() if args.output_json else None
 
-    if not geom_dir.exists() or not geom_dir.is_dir():
-        raise FileNotFoundError(f"--geometry-dir no es un directorio válido: {geom_dir}")
-
-    h5_files = sorted(geom_dir.glob("*.h5"))
-    if not h5_files:
-        raise FileNotFoundError(f"No se encontraron .h5 en {geom_dir}")
-
+    # ═══════════════════════════════════════════════════════════════════════════
+    # BANNER
+    # ═══════════════════════════════════════════════════════════════════════════
     print("=" * 70)
     print("DATASET BULK EIGENMODES (CSV canónico) — CUERDAS Bloque B")
     print("Nomenclatura honesta: lambda_sl (autovalores Sturm–Liouville)")
@@ -380,7 +438,13 @@ def main() -> None:
     boundary_metadata_by_system: Dict[str, Any] = {}
 
     for h5_path in h5_files:
-        meta = read_required_attrs(h5_path)
+        try:
+            meta = read_required_attrs(h5_path)
+        except Exception as e:
+            failed.append({"file": str(h5_path), "stage": "read_attrs", "error": str(e)})
+            print(f"\n>> [WARN] Fallo leyendo attrs de {h5_path.name}: {e}")
+            continue
+            
         system_name = meta["system_name"]
         family = meta["family"]
         d = meta["d"]
@@ -390,7 +454,7 @@ def main() -> None:
         print(f"\n>> Procesando: {system_name} (family={family}, d={d})")
 
         # === PASO 1: Extraer Delta desde correladores de frontera (si corresponde) ===
-        boundary_deltas: Dict[str, DeltaExtraction] = {}
+        boundary_deltas: Dict[str, Any] = {}
         if use_boundary and HAS_BOUNDARY_EXTRACTOR:
             try:
                 boundary_deltas = extract_deltas_from_hdf5(h5_path)
@@ -420,8 +484,6 @@ def main() -> None:
                 print(f"   [WARN] no se pudieron resolver datasets: {e}")
                 if not boundary_deltas:
                     continue
-                # Si hay boundary deltas pero no solver, continuar sin lambda_sl
-                # (esto no debería pasar normalmente)
 
             try:
                 spec = bss.solve_geometry(
@@ -531,7 +593,9 @@ def main() -> None:
                 dv = "(vacío)" if ex.Delta_UV is None else f"{ex.Delta_UV:.6f}"
                 print(f"   OK: {n_added} filas. Ejemplo: λ_sl={ex.lambda_sl:.6f}, Δ={dv} (src={ex.delta_source})")
 
-    # Escribir CSV + META
+    # ═══════════════════════════════════════════════════════════════════════════
+    # ESCRIBIR OUTPUTS
+    # ═══════════════════════════════════════════════════════════════════════════
     write_csv(rows, out_csv)
 
     meta_out = {
@@ -552,7 +616,6 @@ def main() -> None:
             "boundary_extractor_available": HAS_BOUNDARY_EXTRACTOR,
             "stats": stats,
         },
-        # AUDITORÍA: mapping mode_id → operator para sistemas con boundary extraction
         "boundary_extraction_metadata": boundary_metadata_by_system,
         "notes": [
             "CSV canónico para 07: system_name,family,d,mode_id,lambda_sl,Delta_UV (+ opcionales).",
@@ -569,7 +632,9 @@ def main() -> None:
         out_json.parent.mkdir(parents=True, exist_ok=True)
         out_json.write_text(json.dumps(build_legacy_json(rows), indent=2, ensure_ascii=False))
 
-    # === RESUMEN ===
+    # ═══════════════════════════════════════════════════════════════════════════
+    # RESUMEN
+    # ═══════════════════════════════════════════════════════════════════════════
     print("\n" + "=" * 70)
     print("[OK] Dataset bulk-eigenmodes generado")
     print(f"  CSV :  {out_csv}")
@@ -585,10 +650,39 @@ def main() -> None:
     if failed:
         print(f"\n  WARN: {len(failed)} sistemas fallaron (ver bulk_modes_meta.json)")
     
-    # === ACTUALIZAR RUN_MANIFEST (IO v2) ===
-    if args.run_dir and HAS_CUERDAS_IO:
+    # ═══════════════════════════════════════════════════════════════════════════
+    # V3: Registrar artefactos y escribir summary
+    # ═══════════════════════════════════════════════════════════════════════════
+    if ctx:
+        ctx.record_artifact("bulk_modes_csv", out_csv)
+        ctx.record_artifact("bulk_modes_meta", out_meta)
+        ctx.record_artifact("geometry_dir_input", geom_dir)
+        if out_json:
+            ctx.record_artifact("bulk_modes_json_legacy", out_json)
+        
+        status = "OK" if len(rows) > 0 else "WARNING"
+        if len(failed) > len(h5_files) // 2:
+            status = "WARNING"
+        
+        ctx.write_summary(
+            status=status,
+            counts={
+                "geometries_scanned": len(h5_files),
+                "geometries_solved": len(set(r.system_name for r in rows)),
+                "rows_generated": len(rows),
+                "failed_systems": len(failed),
+                "boundary_extractions": stats["boundary_extractions"],
+                "solver_extractions": stats["solver_extractions"],
+                "no_delta": stats["no_delta"],
+            }
+        )
+        ctx.write_manifest()
+        print(f"[V3] stage_summary.json escrito")
+    
+    # Legacy: actualizar run_manifest si corresponde
+    elif args.run_dir and HAS_CUERDAS_IO:
         try:
-            run_dir = Path(args.run_dir)
+            run_dir = Path(args.run_dir).resolve()
             update_run_manifest(
                 run_dir,
                 {
@@ -603,12 +697,13 @@ def main() -> None:
                                            else out_meta),
                 }
             )
-            print(f"  Manifest actualizado")
+            print(f"  Manifest actualizado (legacy)")
         except Exception as e:
             print(f"  [WARN] No se pudo actualizar manifest: {e}")
     
     print("=" * 70)
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

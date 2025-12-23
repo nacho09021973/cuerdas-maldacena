@@ -9,33 +9,39 @@
 #     - Relación entre complejidad, error y clasificación física.
 #
 # ENTRADAS
-#   - runs/bulk_equations/equations_pareto.json
-#   - runs/geometry_contracts/geometry_contracts_summary.json
+#   - runs/<experiment>/03_discover_bulk_equations/einstein_discovery_summary.json
 #
 # SALIDAS
-#   runs/bulk_equations_analysis/
+#   runs/<experiment>/05_analyze_bulk_equations/
+#     bulk_equations_report.txt
 #     bulk_equations_report.json
-#       - Estadísticas globales y por familia.
-#       - Listado de ecuaciones representativas.
-#       - Mapas de qué ecuaciones funcionan en qué regímenes.
+#     stage_summary.json
 #
 # RELACIÓN CON OTROS SCRIPTS
-#   - Depende de:
-#       * 03_discover_bulk_equations.py
-#       * 04_geometry_physics_contracts.py
+#   - Depende de: 03_discover_bulk_equations.py
 #   - No afecta a la tubería de entrenamiento; es puramente análisis/diagnóstico.
 #
-# HISTÓRICO
-#   - Anteriormente conocido como: analyze_discovered_equations.py
+# MIGRADO A V3: 2024-12-23
 
 import json
 import re
+import sys
 import numpy as np
 from pathlib import Path
 from typing import Dict, List, Tuple
 from collections import defaultdict
 
-# Import local IO module for run manifest support
+# ═══════════════════════════════════════════════════════════════════════════════
+# V3 INFRASTRUCTURE
+# ═══════════════════════════════════════════════════════════════════════════════
+try:
+    from tools.stage_utils import StageContext, add_standard_arguments, infer_experiment
+    HAS_STAGE_UTILS = True
+except ImportError:
+    HAS_STAGE_UTILS = False
+    print("[WARN] tools.stage_utils not available, running in legacy mode")
+
+# Legacy imports (fallback)
 try:
     from cuerdas_io import resolve_bulk_equations_dir, update_run_manifest
     HAS_CUERDAS_IO = True
@@ -48,7 +54,7 @@ def parse_equation_coefficients(eq_str: str) -> Dict[str, float]:
     Extrae coeficientes numéricos de una ecuación de PySR.
     
     Ejemplo: "((-20.000029 * square(x2)) - (9.999996 * x3))"
-    â†’ {"square_x2": -20.0, "x3": -10.0}
+    → {"square_x2": -20.0, "x3": -10.0}
     """
     coefficients = {}
     
@@ -253,7 +259,7 @@ def generate_report(results: Dict, patterns: Dict) -> str:
             lines.append("-" * 50)
             
             for g in geos[:3]:  # Mostrar máximo 3
-                lines.append(f"\n  {g['name']} (z={g['z_dyn']}, Î¸={g['theta']})")
+                lines.append(f"\n  {g['name']} (z={g['z_dyn']}, θ={g['theta']})")
                 lines.append(f"  R = {g['R_equation'][:60]}...")
                 lines.append(f"  R² = {g['R_r2']:.6f}")
     
@@ -264,10 +270,10 @@ def generate_report(results: Dict, patterns: Dict) -> str:
     if patterns["universal_terms"]:
         lines.append("\nTérminos presentes en TODAS las geometrías:")
         for term in patterns["universal_terms"]:
-            lines.append(f"  âœ“ {term}")
+            lines.append(f"  ✓ {term}")
     
     # Términos específicos por familia
-    lines.append("\n\n## TRMINOS ESPECÍFICOS POR FAMILIA")
+    lines.append("\n\n## TÉRMINOS ESPECÍFICOS POR FAMILIA")
     lines.append("-" * 50)
     
     for family, terms in patterns["family_specific_terms"].items():
@@ -302,20 +308,20 @@ def generate_report(results: Dict, patterns: Dict) -> str:
         lif_struct = lifshitz_geos[0]["structure"] if lifshitz_geos else {}
         
         if ads_struct != lif_struct:
-            lines.append("\nâœ“ Las ecuaciones para Lifshitz son DIFERENTES a AdS")
+            lines.append("\n✓ Las ecuaciones para Lifshitz son DIFERENTES a AdS")
             lines.append("  Esto indica física genuinamente distinta")
     
     if hvlf_geos:
         hvlf_with_cross = [g for g in hvlf_geos if g["structure"].get("has_cross_terms")]
         if hvlf_with_cross:
-            lines.append(f"\n {len(hvlf_with_cross)} geometrías hyperscaling tienen términos cruzados")
+            lines.append(f"\n• {len(hvlf_with_cross)} geometrías hyperscaling tienen términos cruzados")
             lines.append("  Esto indica acoplamiento materia-geometría no trivial")
     
     # R² promedio
     all_r2 = [g["R_r2"] for g in results["by_geometry"].values()]
     if all_r2:
         avg_r2 = np.mean(all_r2)
-        lines.append(f"\n R² promedio: {avg_r2:.6f}")
+        lines.append(f"\n• R² promedio: {avg_r2:.6f}")
         if avg_r2 > 0.999:
             lines.append("  Las ecuaciones descubiertas son muy precisas")
     
@@ -328,69 +334,125 @@ def main():
     import argparse
     
     parser = argparse.ArgumentParser(description="Analiza ecuaciones descubiertas")
+    
+    # ═══════════════════════════════════════════════════════════════════════════
+    # V3: Argumentos estándar
+    # ═══════════════════════════════════════════════════════════════════════════
+    if HAS_STAGE_UTILS:
+        add_standard_arguments(parser)
+    else:
+        parser.add_argument("--experiment", type=str, default=None)
+        parser.add_argument("--run-dir", type=str, default=None)
+    
+    # Argumentos específicos de este script (legacy compatibility)
     parser.add_argument("--input", type=str, default=None,
-                        help="Archivo einstein_discovery_summary.json")
+                        help="Archivo einstein_discovery_summary.json (legacy)")
     parser.add_argument("--output", type=str, default=None,
-                        help="Archivo de salida (.txt)")
-    parser.add_argument("--run-dir", type=str, default=None,
-                        help="Directorio raíz con run_manifest.json (IO v2)")
+                        help="Archivo de salida .txt (legacy)")
+    
     args = parser.parse_args()
     
-    # === RESOLVER RUTAS ===
+    # ═══════════════════════════════════════════════════════════════════════════
+    # V3: Crear StageContext
+    # ═══════════════════════════════════════════════════════════════════════════
+    ctx = None
+    if HAS_STAGE_UTILS:
+        # Inferir experiment si no se proporciona
+        if not args.experiment:
+            args.experiment = infer_experiment(args)
+        
+        ctx = StageContext.from_args(
+            args,
+            stage_number="05",
+            stage_slug="analyze_bulk_equations"
+        )
+        print(f"[V3] Experiment: {ctx.experiment}")
+        print(f"[V3] Stage dir: {ctx.stage_dir}")
+    
+    # ═══════════════════════════════════════════════════════════════════════════
+    # RESOLVER INPUT
+    # ═══════════════════════════════════════════════════════════════════════════
     input_path = None
     
-    # Prioridad 1: --run-dir
-    if args.run_dir and HAS_CUERDAS_IO:
-        run_dir = Path(args.run_dir)
+    # Prioridad 1: --input explícito
+    if args.input:
+        input_path = Path(args.input).resolve()
+    
+    # Prioridad 2: V3 - buscar en 03_discover_bulk_equations
+    if input_path is None and ctx:
+        candidate = ctx.run_root / "03_discover_bulk_equations" / "einstein_discovery_summary.json"
+        if candidate.exists():
+            input_path = candidate
+            print(f"[V3] Input desde stage 03: {input_path}")
+    
+    # Prioridad 3: --run-dir legacy
+    if input_path is None and args.run_dir and HAS_CUERDAS_IO:
+        run_dir = Path(args.run_dir).resolve()
         bulk_eq_dir = resolve_bulk_equations_dir(run_dir=run_dir)
         if bulk_eq_dir:
             candidate = bulk_eq_dir / "einstein_discovery_summary.json"
             if candidate.exists():
                 input_path = candidate
     
-    # Prioridad 2: --input explícito
-    if input_path is None and args.input:
-        input_path = Path(args.input)
-    
-    # Default legacy
+    # Prioridad 4: Default legacy
     if input_path is None:
-        input_path = Path("sweep_2d_einstein/einstein_discovery_summary.json")
+        input_path = Path("sweep_2d_einstein/einstein_discovery_summary.json").resolve()
     
     if not input_path.exists():
-        print(f"Error: No existe {input_path}")
-        return 1
+        print(f"[ERROR] No existe input: {input_path}")
+        if ctx:
+            ctx.write_summary(status="INCOMPLETE", counts={"error": "input_not_found"})
+        return 2
     
     print(f"Analizando: {input_path}")
     
-    results = load_and_analyze(input_path)
-    patterns = find_universal_structure(results)
-    report = generate_report(results, patterns)
+    # ═══════════════════════════════════════════════════════════════════════════
+    # ANÁLISIS
+    # ═══════════════════════════════════════════════════════════════════════════
+    try:
+        results = load_and_analyze(input_path)
+        patterns = find_universal_structure(results)
+        report = generate_report(results, patterns)
+    except Exception as e:
+        print(f"[ERROR] Fallo en análisis: {e}")
+        if ctx:
+            ctx.write_summary(status="ERROR", counts={"error": str(e)})
+        return 3
     
     print(report)
     
-    # Guardar
-    # Resolver output
+    # ═══════════════════════════════════════════════════════════════════════════
+    # RESOLVER OUTPUT
+    # ═══════════════════════════════════════════════════════════════════════════
     if args.output:
-        output_path = Path(args.output)
+        output_path = Path(args.output).resolve()
+    elif ctx:
+        output_path = ctx.stage_dir / "bulk_equations_report.txt"
     elif args.run_dir:
-        output_dir = Path(args.run_dir) / "bulk_equations_analysis"
+        output_dir = Path(args.run_dir).resolve() / "bulk_equations_analysis"
         output_dir.mkdir(parents=True, exist_ok=True)
         output_path = output_dir / "bulk_equations_report.txt"
     else:
-        output_path = Path("equation_analysis.txt")
+        output_path = Path("equation_analysis.txt").resolve()
     
-    # Guardar
+    # Crear directorio si no existe
     output_path.parent.mkdir(parents=True, exist_ok=True)
+    
+    # Guardar reporte TXT
     output_path.write_text(report)
     print(f"\n-> Guardado: {output_path}")
     
-    # También guardar JSON con datos estructurados
+    # Guardar JSON estructurado
     json_output = {
         "by_family": {k: v for k, v in results["by_family"].items()},
         "patterns": {
             "universal_terms": list(patterns["universal_terms"]),
             "family_specific_terms": {k: list(v) for k, v in patterns["family_specific_terms"].items()},
             "coefficient_trends": patterns["coefficient_trends"]
+        },
+        "stats": {
+            "n_geometries": len(results["by_geometry"]),
+            "avg_r2": float(np.mean([g["R_r2"] for g in results["by_geometry"].values()])) if results["by_geometry"] else 0.0
         }
     }
     
@@ -398,10 +460,29 @@ def main():
     json_path.write_text(json.dumps(json_output, indent=2, default=str))
     print(f"-> Guardado: {json_path}")
     
-    # === ACTUALIZAR RUN_MANIFEST (IO v2) ===
-    if args.run_dir and HAS_CUERDAS_IO:
+    # ═══════════════════════════════════════════════════════════════════════════
+    # V3: Registrar artefactos y escribir summary
+    # ═══════════════════════════════════════════════════════════════════════════
+    if ctx:
+        ctx.record_artifact("bulk_equations_report_txt", output_path)
+        ctx.record_artifact("bulk_equations_report_json", json_path)
+        ctx.record_artifact("input_file", input_path)
+        
+        ctx.write_summary(
+            status="OK",
+            counts={
+                "geometries_analyzed": len(results["by_geometry"]),
+                "families": len(results["by_family"]),
+                "avg_r2": json_output["stats"]["avg_r2"]
+            }
+        )
+        ctx.write_manifest()
+        print(f"[V3] stage_summary.json escrito")
+    
+    # Legacy: actualizar run_manifest si corresponde
+    elif args.run_dir and HAS_CUERDAS_IO:
         try:
-            run_dir = Path(args.run_dir)
+            run_dir = Path(args.run_dir).resolve()
             update_run_manifest(
                 run_dir,
                 {
@@ -413,7 +494,7 @@ def main():
                                                  else json_path),
                 }
             )
-            print(f"-> Manifest actualizado")
+            print(f"-> Manifest actualizado (legacy)")
         except Exception as e:
             print(f"[WARN] No se pudo actualizar manifest: {e}")
     
@@ -421,4 +502,4 @@ def main():
 
 
 if __name__ == "__main__":
-    exit(main())
+    sys.exit(main())

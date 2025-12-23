@@ -9,38 +9,29 @@
 #     - PySR (u otro SR) para destilar una forma simbólica compacta.
 #
 # ENTRADAS
-#   - runs/bulk_eigenmodes/bulk_modes_dataset.csv
+#   - runs/<experiment>/06_build_bulk_eigenmodes_dataset/bulk_modes_dataset.csv
 #
-# SALIDAS
-#   runs/emergent_dictionary/
-#     lambda_sl_dictionary_pareto.csv
-#       - Conjunto de expresiones candidatas (frente de Pareto).
+# SALIDAS (V3)
+#   runs/<experiment>/07_emergent_lambda_sl_dictionary/
 #     lambda_sl_dictionary_report.json
-#       - Incluye:
-#           * x_mapping: {x0: "Delta", x1: "d", ...}
-#           * metrics_by_regime: evaluación por rangos de lambda_sl
-#           * contract_status: PASS/FAIL por régimen
-#       - Resumen con métricas, selección de modelos, etc.
+#     lambda_sl_dictionary_pareto.csv
+#     stage_summary.json
 #
 # RELACIÓN CON OTROS SCRIPTS
-#   - Consume el dataset generado por:
-#       * 06_build_bulk_eigenmodes_dataset.py
-#   - Sus resultados se usan en:
-#       * 09_real_data_and_dictionary_contracts.py
+#   - Consume el dataset generado por: 06_build_bulk_eigenmodes_dataset.py
+#   - Sus resultados se usan en: 09_real_data_and_dictionary_contracts.py
 #
 # HONESTIDAD
 #   - No se fuerza la fórmula Δ(Δ-d) ni se inyectan diccionarios conocidos.
-#   - Cualquier comparación con fórmulas teóricas se realiza posteriormente,
-#     en scripts de análisis/contratos, y está OFF por defecto en este script.
+#   - Cualquier comparación con fórmulas teóricas se realiza posteriormente.
 #   - La comparación con teoría solo se activa con --compare-theory.
 #   - Evaluación por regímenes para detectar mezcla de escalas engañosa.
 #
-# HISTÓRICO
-#   - Anteriormente conocido como: fase12c_emergent_dictionary_v2.py
-#   - v3: Añadido contratos por régimen, x_mapping, --compare-theory OFF
+# MIGRADO A V3: 2024-12-23
 
 import argparse
 import json
+import sys
 import warnings
 from pathlib import Path
 from typing import Dict, List, Tuple, Optional, Any, Set
@@ -58,7 +49,17 @@ try:
 except ImportError:
     HAS_PYSR = False
 
-# Import local IO module for run manifest support
+# ═══════════════════════════════════════════════════════════════════════════════
+# V3 INFRASTRUCTURE
+# ═══════════════════════════════════════════════════════════════════════════════
+try:
+    from tools.stage_utils import StageContext, add_standard_arguments, infer_experiment
+    HAS_STAGE_UTILS = True
+except ImportError:
+    HAS_STAGE_UTILS = False
+    print("[WARN] tools.stage_utils not available, running in legacy mode")
+
+# Legacy imports (fallback)
 try:
     from cuerdas_io import update_run_manifest
     HAS_CUERDAS_IO = True
@@ -73,17 +74,10 @@ except ImportError:
 @dataclass
 class RegimeContractConfig:
     """Configuración de contratos por régimen de lambda_sl."""
-    # Regímenes por defecto
     regime_lo_threshold: float = 1.0     # lambda_sl < 1
     regime_hi_threshold: float = 10.0    # lambda_sl > 10
-    
-    # Umbrales para PASS
     max_mre_for_pass: float = 0.5        # MRE < 50% para PASS
     mae_must_beat_baseline: bool = True  # MAE < MAE_baseline para PASS
-    
-    # MAE_baseline = mean(|y - mean(y)|) por régimen
-    # MRE = mean(|y_pred - y| / |y|) para y != 0
-    
     min_samples_for_regime: int = 5      # Mínimo de muestras para evaluar régimen
 
 
@@ -95,7 +89,7 @@ class DiscoveryConfig:
     ncyclesperiteration: int = 1000
     maxsize: int = 30
     features: Tuple[str, ...] = ("Delta", "d")
-    target: str = "lambda_sl_emergent"  # CAMBIADO: antes era m2L2_emergent
+    target: str = "lambda_sl_emergent"
     binary_operators: Tuple[str, ...] = ("+", "-", "*", "/")
     unary_operators: Tuple[str, ...] = ("square", "sqrt", "exp", "log")
     binary_ops_minimal: Tuple[str, ...] = ("+", "-", "*", "/")
@@ -134,24 +128,19 @@ VALID_HOLOGRAPHIC_METHODS: Set[str] = {
 
 def detect_input_format(data: Dict[str, Any]) -> str:
     """Detecta el formato del archivo de entrada."""
-    # Formato v2: buscar lambda_sl_*
     if "nomenclature_version" in data and "lambda_sl" in data.get("nomenclature_version", ""):
         return "v2_lambda_sl"
     
-    # Formato v3 dictionary
     if "mass_dimension" in data and "by_system" in data.get("mass_dimension", {}):
         return "dictionary_v3"
     
-    # Formato legacy con systems[]
     if "systems" in data:
-        # Detectar si es v2 o legacy basándose en las claves
         first_sys = data["systems"][0] if data["systems"] else {}
         if "lambda_sl_bulk" in first_sys:
             return "v2_lambda_sl"
         elif "m2L2_bulk" in first_sys:
             return "legacy_systems"
     
-    # by_family_d format
     if "by_family_d" in data:
         first_family = list(data["by_family_d"].values())[0] if data["by_family_d"] else {}
         if "lambda_sl_bulk" in first_family:
@@ -179,7 +168,6 @@ def load_from_v2_format(data: Dict[str, Any]) -> Tuple[pd.DataFrame, Dict[str, A
         "valid_methods_found": set()
     }
     
-    # Procesar systems[] si existe
     for system in data.get("systems", []):
         sys_name = system.get("geometry_name", "unknown")
         family = system.get("family", "unknown")
@@ -193,7 +181,6 @@ def load_from_v2_format(data: Dict[str, Any]) -> Tuple[pd.DataFrame, Dict[str, A
             warnings.warn(f"Sistema {sys_name}: Delta ({len(Delta_list)}) y lambda_sl ({len(lambda_list)}) tienen diferente longitud")
             continue
         
-        # Validar método
         method = source.lower()
         is_suspicious = any(sus in method for sus in SUSPICIOUS_METHODS)
         is_valid = any(val in method for val in VALID_HOLOGRAPHIC_METHODS)
@@ -215,7 +202,6 @@ def load_from_v2_format(data: Dict[str, Any]) -> Tuple[pd.DataFrame, Dict[str, A
         }
         metadata["systems"].append(system_metadata)
         
-        # Crear registros
         for i, (Delta, lam) in enumerate(zip(Delta_list, lambda_list)):
             record = {
                 "system": sys_name,
@@ -223,7 +209,7 @@ def load_from_v2_format(data: Dict[str, Any]) -> Tuple[pd.DataFrame, Dict[str, A
                 "d": d,
                 "source": source,
                 "operator": f"{sys_name}_mode{i}",
-                "Delta": float(Delta),
+                "Delta": float(Delta) if Delta is not None else np.nan,
                 "Delta_error": 0.0,
                 "lambda_sl_emergent": float(lam),
                 "lambda_sl_error": 0.0,
@@ -268,14 +254,12 @@ def load_from_dictionary_v3(data: Dict[str, Any]) -> Tuple[pd.DataFrame, Dict[st
         n_points = sys_data.get("n_points", 0)
         
         deltas = sys_data.get("Delta", [])
-        # Aceptar tanto m2L2_emergent (legacy) como lambda_sl_emergent (v2)
         lambda_values = sys_data.get("lambda_sl_emergent", sys_data.get("m2L2_emergent", []))
         
         if len(deltas) != len(lambda_values):
             warnings.warn(f"Sistema {sys_key}: Delta ({len(deltas)}) y lambda ({len(lambda_values)}) tienen diferente longitud")
             continue
         
-        # Determinar método basado en source
         method = source.lower()
         is_suspicious = any(sus in method for sus in SUSPICIOUS_METHODS)
         is_valid = any(val in method for val in VALID_HOLOGRAPHIC_METHODS)
@@ -297,7 +281,6 @@ def load_from_dictionary_v3(data: Dict[str, Any]) -> Tuple[pd.DataFrame, Dict[st
         }
         metadata["systems"].append(system_metadata)
         
-        # Crear registros con nomenclatura v2
         for i, (delta, lam) in enumerate(zip(deltas, lambda_values)):
             record = {
                 "system": sys_key,
@@ -307,7 +290,7 @@ def load_from_dictionary_v3(data: Dict[str, Any]) -> Tuple[pd.DataFrame, Dict[st
                 "operator": f"{sys_key}_op{i}",
                 "Delta": float(delta),
                 "Delta_error": 0.0,
-                "lambda_sl_emergent": float(lam),  # CONVERTIDO a nomenclatura v2
+                "lambda_sl_emergent": float(lam),
                 "lambda_sl_error": 0.0,
                 "lambda_source": method,
                 "method_is_suspicious": is_suspicious,
@@ -342,7 +325,6 @@ def load_from_legacy_systems(data: Dict[str, Any]) -> Tuple[pd.DataFrame, Dict[s
         d = system.get("d", 4)
         source = system.get("m2L2_method", system.get("lambda_source", "unknown"))
         
-        # Aceptar tanto m2L2_bulk (legacy) como lambda_sl_bulk (v2)
         lambda_list = system.get("lambda_sl_bulk", system.get("m2L2_bulk", []))
         Delta_list = system.get("Delta_bulk_uv", [])
         
@@ -371,7 +353,6 @@ def load_from_legacy_systems(data: Dict[str, Any]) -> Tuple[pd.DataFrame, Dict[s
         }
         metadata["systems"].append(system_metadata)
         
-        # Crear registros con nomenclatura v2
         for i, (Delta, lam) in enumerate(zip(Delta_list, lambda_list)):
             record = {
                 "system": sys_name,
@@ -379,9 +360,9 @@ def load_from_legacy_systems(data: Dict[str, Any]) -> Tuple[pd.DataFrame, Dict[s
                 "d": d,
                 "source": source,
                 "operator": f"{sys_name}_mode{i}",
-                "Delta": float(Delta),
+                "Delta": float(Delta) if Delta is not None else np.nan,
                 "Delta_error": 0.0,
-                "lambda_sl_emergent": float(lam),  # CONVERTIDO a nomenclatura v2
+                "lambda_sl_emergent": float(lam),
                 "lambda_sl_error": 0.0,
                 "lambda_source": method,
                 "method_is_suspicious": is_suspicious,
@@ -499,7 +480,7 @@ def prepare_training_data(
 
 
 # =============================================================================
-# EVALUACIÓN POR REGÍMENES (NUEVO en v3)
+# EVALUACIÓN POR REGÍMENES
 # =============================================================================
 
 def compute_regime_metrics(
@@ -507,12 +488,7 @@ def compute_regime_metrics(
     y_pred: np.ndarray,
     regime_name: str
 ) -> Dict[str, Any]:
-    """
-    Calcula métricas para un régimen específico.
-    
-    Returns:
-        Dict con r2, mae, mae_baseline, mre, n_samples, contract_status
-    """
+    """Calcula métricas para un régimen específico."""
     n = len(y_true)
     if n == 0:
         return {
@@ -522,17 +498,11 @@ def compute_regime_metrics(
             "reason": "No hay muestras en este régimen"
         }
     
-    # MAE del modelo
     mae = float(mean_absolute_error(y_true, y_pred))
-    
-    # MAE baseline = mean(|y - mean(y)|) - predictor "naive"
     y_mean = np.mean(y_true)
     mae_baseline = float(np.mean(np.abs(y_true - y_mean)))
-    
-    # R² (puede ser negativo si el modelo es peor que baseline)
     r2 = float(r2_score(y_true, y_pred))
     
-    # MRE (Mean Relative Error) - solo para y != 0
     nonzero_mask = np.abs(y_true) > 1e-10
     if nonzero_mask.sum() > 0:
         rel_errors = np.abs(y_pred[nonzero_mask] - y_true[nonzero_mask]) / np.abs(y_true[nonzero_mask])
@@ -561,37 +531,22 @@ def evaluate_by_regime(
     target_col: str,
     regime_config: RegimeContractConfig
 ) -> Dict[str, Any]:
-    """
-    Evalúa el modelo por regímenes de lambda_sl.
-    
-    Args:
-        X: Features array
-        y_true: Target real (lambda_sl)
-        y_pred: Predicciones del modelo
-        target_col: Nombre de la columna target (para claridad)
-        regime_config: Configuración de umbrales
-    
-    Returns:
-        Dict con métricas por régimen y contract_status global
-    """
+    """Evalúa el modelo por regímenes de lambda_sl."""
     lo_thresh = regime_config.regime_lo_threshold
     hi_thresh = regime_config.regime_hi_threshold
     
-    # Máscaras por régimen (basadas en y_true = lambda_sl)
     mask_lo = y_true < lo_thresh
     mask_hi = y_true > hi_thresh
     mask_mid = ~mask_lo & ~mask_hi
     
     regimes = {}
     
-    # Evaluar cada régimen
     for mask, name in [(mask_lo, f"lambda_sl<{lo_thresh}"),
                        (mask_mid, f"{lo_thresh}<=lambda_sl<={hi_thresh}"),
                        (mask_hi, f"lambda_sl>{hi_thresh}")]:
         if mask.sum() >= regime_config.min_samples_for_regime:
             metrics = compute_regime_metrics(y_true[mask], y_pred[mask], name)
             
-            # Evaluar contrato PASS/FAIL
             if metrics["n_samples"] > 0 and "mre" in metrics:
                 mre_val = metrics["mre"]
                 mre_ok = (mre_val < regime_config.max_mre_for_pass) if not np.isnan(mre_val) else False
@@ -612,7 +567,6 @@ def evaluate_by_regime(
                 "reason": f"Insuficientes muestras (<{regime_config.min_samples_for_regime})"
             }
     
-    # Contrato global: PASS solo si todos los regímenes evaluados pasan
     evaluated_regimes = [r for r in regimes.values() if r.get("contract_status") in ["PASS", "FAIL"]]
     if evaluated_regimes:
         all_pass = all(r["contract_status"] == "PASS" for r in evaluated_regimes)
@@ -625,10 +579,7 @@ def evaluate_by_regime(
     
     return {
         "target_column": target_col,
-        "regime_thresholds": {
-            "lo": lo_thresh,
-            "hi": hi_thresh
-        },
+        "regime_thresholds": {"lo": lo_thresh, "hi": hi_thresh},
         "regimes": regimes,
         "contract_summary": {
             "all_regimes_pass": all_pass,
@@ -735,22 +686,7 @@ def evaluate_against_maldacena(
     feature_names: Tuple[str, ...],
     tolerance: float = 0.1
 ) -> Dict[str, Any]:
-    """
-    Evalúa los datos contra la fórmula teórica de Maldacena m²L² = Δ(Δ-d).
-    
-    IMPORTANTE: Esta evaluación es SOLO para comparación a posteriori.
-    NO afecta al ajuste de PySR. Es una forma de validar si los autovalores
-    λ_SL descubiertos tienen interpretación como masas holográficas.
-    
-    Args:
-        X: Features (Delta, d)
-        y_true: Valores λ_SL observados
-        feature_names: Nombres de features
-        tolerance: Tolerancia para considerar "compatible" (default 0.1 = 10% en R²)
-    
-    Returns:
-        Dict con métricas de comparación
-    """
+    """Evalúa los datos contra la fórmula teórica de Maldacena m²L² = Δ(Δ-d)."""
     theoretical_predictions = []
     for row in X:
         Delta = row[0]
@@ -759,11 +695,9 @@ def evaluate_against_maldacena(
     
     theoretical_predictions = np.array(theoretical_predictions)
     
-    # Métricas de la fórmula teórica
     theory_r2 = r2_score(y_true, theoretical_predictions)
     theory_mae = mean_absolute_error(y_true, theoretical_predictions)
     
-    # Error relativo máximo
     nonzero_mask = np.abs(y_true) > 1e-10
     if nonzero_mask.sum() > 0:
         rel_errors = np.abs(theoretical_predictions[nonzero_mask] - y_true[nonzero_mask]) / np.abs(y_true[nonzero_mask])
@@ -799,17 +733,7 @@ def compare_with_theory(
     tolerance: float = 0.1,
     enabled: bool = False
 ) -> Dict[str, Any]:
-    """
-    Comparación A POSTERIORI con fórmula teórica m²L² = Δ(Δ-d).
-    
-    NOTA: Esta comparación es DESPUÉS del descubrimiento, no antes.
-    Si la ecuación descubierta coincide con Δ(Δ-d), entonces HEMOS DESCUBIERTO
-    que los autovalores λ_SL tienen interpretación como masas holográficas.
-    
-    Args:
-        enabled: Si False, retorna un stub indicando que está deshabilitado.
-                 Usar --compare-theory para activar.
-    """
+    """Comparación A POSTERIORI con fórmula teórica m²L² = Δ(Δ-d)."""
     if not enabled:
         return {
             "enabled": False,
@@ -817,10 +741,7 @@ def compare_with_theory(
             "reason": "Por defecto OFF para evitar contaminación conceptual en análisis."
         }
     
-    # Evaluar fórmula teórica
     maldacena_eval = evaluate_against_maldacena(X, y_true, feature_names, tolerance)
-    
-    # Evaluar ecuación descubierta
     eq_metrics = evaluate_equation(best_eq["equation"], X, y_true, feature_names)
     
     return {
@@ -858,7 +779,6 @@ def save_results(
     equations_df = model.equations_
     best_eq = model.get_best()
     
-    # Evaluar en test
     y_pred_test = model.predict(X_test)
     test_r2 = r2_score(y_test, y_pred_test)
     test_mae = mean_absolute_error(y_test, y_pred_test)
@@ -870,14 +790,12 @@ def save_results(
         "pearson": float(test_pearson)
     }
     
-    # Evaluación por regímenes (NUEVO en v3)
     regime_evaluation = evaluate_by_regime(
         X_test, y_test, y_pred_test,
         target_col=config.target,
         regime_config=regime_config
     )
     
-    # Comparación con teoría (solo si --compare-theory)
     theory_comparison = compare_with_theory(
         best_eq={"equation": str(best_eq["equation"])},
         X=X_test,
@@ -886,10 +804,8 @@ def save_results(
         enabled=compare_theory
     )
     
-    # x_mapping: asociar x0, x1, ... a nombres de features (NUEVO en v3)
     x_mapping = {f"x{i}": feat for i, feat in enumerate(config.features)}
     
-    # Construir resumen
     summary = {
         "timestamp": datetime.now().isoformat(),
         "nomenclature_version": "v2_lambda_sl",
@@ -939,7 +855,6 @@ def save_results(
         ]
     }
     
-    # Pareto front
     if config.save_pareto_front and equations_df is not None:
         for _, row in equations_df.iterrows():
             summary["pareto_front"].append({
@@ -948,12 +863,10 @@ def save_results(
                 "loss": float(row.get("loss", np.inf))
             })
     
-    # Guardar
     summary_file = output_dir / "lambda_sl_dictionary_report.json"
     with open(summary_file, 'w') as f:
         json.dump(summary, f, indent=2, default=str)
 
-    # Compatibilidad: mantenemos el nombre histórico si alguien lo consumía
     legacy_file = output_dir / "fase12c_discovery_summary_v2.json"
     try:
         with open(legacy_file, 'w') as f:
@@ -970,7 +883,6 @@ def save_results(
     print(f"   - Mejor ecuación: {best_eq['equation']}")
     print(f"   - R² en test (global): {test_metrics.get('r2', 'N/A'):.4f}")
     
-    # Imprimir evaluación por regímenes
     print(f"\n   EVALUACIÓN POR REGÍMENES:")
     for regime_name, regime_data in regime_evaluation["regimes"].items():
         if regime_data.get("contract_status"):
@@ -988,14 +900,25 @@ def save_results(
     return summary
 
 
-def main():
+def main() -> int:
     parser = argparse.ArgumentParser(description="FASE XII.c v3: Diccionario Emergente (con contratos por régimen)")
+    
+    # ═══════════════════════════════════════════════════════════════════════════
+    # V3: Argumentos estándar
+    # ═══════════════════════════════════════════════════════════════════════════
+    if HAS_STAGE_UTILS:
+        add_standard_arguments(parser)
+    else:
+        parser.add_argument("--experiment", type=str, default=None)
+        parser.add_argument("--run-dir", type=str, default=None)
+    
+    # Argumentos legacy (compatibilidad)
     parser.add_argument("--input-file", type=str, default=None,
-                        help="Archivo JSON de entrada (v2 lambda_sl, dictionary_v3, o legacy m2L2)")
+                        help="Archivo de entrada (v2 lambda_sl, dictionary_v3, o legacy m2L2)")
     parser.add_argument("--output-dir", type=str, default=None,
-                        help="Directorio de salida para resultados")
-    parser.add_argument("--run-dir", type=str, default=None,
-                        help="Directorio raíz con run_manifest.json (IO v2). Resuelve input/output automáticamente.")
+                        help="Directorio de salida para resultados (legacy)")
+    
+    # Argumentos específicos del script
     parser.add_argument("--ops-minimal", action="store_true",
                         help="Usar operadores mínimos (+,-,*,/,square,sqrt)")
     parser.add_argument("--seed", type=int, default=42,
@@ -1009,7 +932,7 @@ def main():
     parser.add_argument("--force-continue", action="store_true",
                         help="Continuar aunque se detecten métodos sospechosos")
     
-    # Nuevos argumentos para contratos por régimen (v3)
+    # Argumentos para contratos por régimen
     parser.add_argument("--compare-theory", action="store_true",
                         help="Activar comparación post-hoc con Δ(Δ-d). OFF por defecto.")
     parser.add_argument("--regime-lo", type=float, default=1.0,
@@ -1021,39 +944,78 @@ def main():
     
     args = parser.parse_args()
     
-    # === RESOLVER RUTAS ===
+    # ═══════════════════════════════════════════════════════════════════════════
+    # V3: Crear StageContext
+    # ═══════════════════════════════════════════════════════════════════════════
+    ctx = None
+    if HAS_STAGE_UTILS:
+        if not getattr(args, 'experiment', None):
+            args.experiment = infer_experiment(args)
+        
+        ctx = StageContext.from_args(
+            args,
+            stage_number="07",
+            stage_slug="emergent_lambda_sl_dictionary"
+        )
+        print(f"[V3] Experiment: {ctx.experiment}")
+        print(f"[V3] Stage dir: {ctx.stage_dir}")
+    
+    # ═══════════════════════════════════════════════════════════════════════════
+    # RESOLVER INPUT
+    # ═══════════════════════════════════════════════════════════════════════════
     input_path = None
-    output_dir = None
     
-    # Prioridad 1: --run-dir
-    if args.run_dir:
-        run_dir = Path(args.run_dir)
-        # Buscar input en bulk_eigenmodes/
-        bulk_modes_csv = run_dir / "bulk_eigenmodes" / "bulk_modes_dataset.csv"
-        bulk_modes_json = run_dir / "bulk_eigenmodes" / "bulk_modes_dataset_v2.json"
-        if not bulk_modes_json.exists():
-            bulk_modes_json = run_dir / "bulk_eigenmodes" / "bulk_modes_dataset.json"
-        if bulk_modes_csv.exists():
-            input_path = bulk_modes_csv
-        elif bulk_modes_json.exists():
-            input_path = bulk_modes_json
-
-        # Output en emergent_dictionary/
-        output_dir = run_dir / "emergent_dictionary"
+    # Prioridad 1: --input-file explícito
+    if args.input_file:
+        input_path = Path(args.input_file).resolve()
     
-    # Prioridad 2: argumentos explícitos
-    if input_path is None and args.input_file:
-        input_path = Path(args.input_file)
+    # Prioridad 2: V3 - buscar en stage 06
+    if input_path is None and ctx:
+        candidates = [
+            ctx.run_root / "06_build_bulk_eigenmodes_dataset" / "bulk_modes_dataset.csv",
+            ctx.run_root / "bulk_eigenmodes" / "bulk_modes_dataset.csv",  # legacy location
+        ]
+        for candidate in candidates:
+            if candidate.exists():
+                input_path = candidate
+                print(f"[V3] Input desde stage 06: {input_path}")
+                break
     
-    if output_dir is None and args.output_dir:
-        output_dir = Path(args.output_dir)
+    # Prioridad 3: --run-dir legacy
+    if input_path is None and args.run_dir:
+        run_dir = Path(args.run_dir).resolve()
+        candidates = [
+            run_dir / "bulk_eigenmodes" / "bulk_modes_dataset.csv",
+            run_dir / "bulk_eigenmodes" / "bulk_modes_dataset_v2.json",
+            run_dir / "bulk_eigenmodes" / "bulk_modes_dataset.json",
+        ]
+        for candidate in candidates:
+            if candidate.exists():
+                input_path = candidate
+                break
     
-    if input_path is None or output_dir is None:
-        parser.error("Debe proporcionar --run-dir o ambos --input-file y --output-dir")
+    if input_path is None:
+        print("[ERROR] No se encontró archivo de entrada.")
+        print("        Usar --input-file o --experiment con stage 06 completado.")
+        if ctx:
+            ctx.write_summary(status="INCOMPLETE", counts={"error": "no_input_file"})
+        return 2
+    
+    # ═══════════════════════════════════════════════════════════════════════════
+    # RESOLVER OUTPUT
+    # ═══════════════════════════════════════════════════════════════════════════
+    if ctx:
+        output_dir = ctx.stage_dir
+    elif args.output_dir:
+        output_dir = Path(args.output_dir).resolve()
+    elif args.run_dir:
+        output_dir = Path(args.run_dir).resolve() / "emergent_dictionary"
+    else:
+        print("[ERROR] No se especificó directorio de salida.")
+        return 2
     
     config = DiscoveryConfig(random_state=args.seed, niterations=args.iterations)
     
-    # Configuración de contratos por régimen (v3)
     regime_config = RegimeContractConfig(
         regime_lo_threshold=args.regime_lo,
         regime_hi_threshold=args.regime_hi,
@@ -1068,11 +1030,20 @@ def main():
     print("=" * 80)
     
     if not input_path.exists():
-        raise FileNotFoundError(f"Archivo no encontrado: {input_path}")
+        print(f"[ERROR] Archivo no encontrado: {input_path}")
+        if ctx:
+            ctx.write_summary(status="INCOMPLETE", counts={"error": "input_not_found"})
+        return 2
     
     print(f"\n   Archivo de entrada: {input_path}")
     
-    df, metadata = load_emergent_data(input_path)
+    try:
+        df, metadata = load_emergent_data(input_path)
+    except Exception as e:
+        print(f"[ERROR] Fallo cargando datos: {e}")
+        if ctx:
+            ctx.write_summary(status="ERROR", counts={"error": str(e)})
+        return 3
     
     # Filtrar métodos sospechosos si se solicitó
     if args.drop_suspicious and "method_is_suspicious" in df.columns:
@@ -1089,20 +1060,32 @@ def main():
         response = input("   ¿Continuar? (s/N): ")
         if response.lower() != 's':
             print("   Abortado por el usuario.")
+            if ctx:
+                ctx.write_summary(status="INCOMPLETE", counts={"error": "user_abort"})
             return 1
     
-    X_train, y_train, X_test, y_test, test_df = prepare_training_data(
-        df, config, test_split=config.test_split_ratio,
-        filter_suspicious=not args.no_filter_suspicious
-    )
+    try:
+        X_train, y_train, X_test, y_test, test_df = prepare_training_data(
+            df, config, test_split=config.test_split_ratio,
+            filter_suspicious=not args.no_filter_suspicious
+        )
+    except Exception as e:
+        print(f"[ERROR] Fallo preparando datos: {e}")
+        if ctx:
+            ctx.write_summary(status="ERROR", counts={"error": str(e)})
+        return 3
     
     if not HAS_PYSR:
         print("   ERROR: PySR no disponible. Instalar con: pip install pysr")
+        if ctx:
+            ctx.write_summary(status="ERROR", counts={"error": "pysr_not_available"})
         return 1
     
     model = discover_emergent_relation(X_train, y_train, config, use_minimal_ops=args.ops_minimal)
     
     if model is None:
+        if ctx:
+            ctx.write_summary(status="ERROR", counts={"error": "model_training_failed"})
         return 1
     
     summary = save_results(
@@ -1126,7 +1109,6 @@ def main():
     print(f"   - MAE: {test_metrics.get('mae', 'N/A'):.4f}")
     print(f"   - Pearson: {test_metrics.get('pearson', 'N/A'):.4f}")
     
-    # Resultado de contratos por régimen
     contract_status = summary.get("contract_status", "UNKNOWN")
     print(f"\n   ESTADO DE CONTRATOS POR RÉGIMEN: {contract_status}")
     
@@ -1138,7 +1120,6 @@ def main():
     else:
         print(f"   ? Estado inconcluso - revisar regímenes individuales.")
     
-    # Comparación con teoría solo si está activada
     if args.compare_theory:
         print(f"\n   COMPARACIÓN A POSTERIORI CON TEORÍA (--compare-theory activado):")
         print(f"   - Fórmula teórica: λ_SL = Δ(Δ - d)")
@@ -1149,10 +1130,31 @@ def main():
     
     print(f"\n   Resultados en: {output_dir.absolute()}")
     
-    # === ACTUALIZAR RUN_MANIFEST (IO v2) ===
-    if args.run_dir and HAS_CUERDAS_IO:
+    # ═══════════════════════════════════════════════════════════════════════════
+    # V3: Registrar artefactos y escribir summary
+    # ═══════════════════════════════════════════════════════════════════════════
+    if ctx:
+        report_file = output_dir / "lambda_sl_dictionary_report.json"
+        ctx.record_artifact("dictionary_report", report_file)
+        ctx.record_artifact("input_file", input_path)
+        
+        ctx.write_summary(
+            status="OK" if contract_status in ["PASS", "INCONCLUSIVE"] else "WARNING",
+            counts={
+                "total_operators": metadata.get("total_operators", 0),
+                "train_samples": int(len(X_train)),
+                "test_samples": int(len(X_test)),
+                "contract_status": contract_status,
+                "test_r2": test_metrics.get("r2", 0.0),
+            }
+        )
+        ctx.write_manifest()
+        print(f"[V3] stage_summary.json escrito")
+    
+    # Legacy: actualizar run_manifest
+    elif args.run_dir and HAS_CUERDAS_IO:
         try:
-            run_dir = Path(args.run_dir)
+            run_dir = Path(args.run_dir).resolve()
             report_file = output_dir / "lambda_sl_dictionary_report.json"
             update_run_manifest(
                 run_dir,
@@ -1165,7 +1167,7 @@ def main():
                                              else report_file),
                 }
             )
-            print(f"   Manifest actualizado")
+            print(f"   Manifest actualizado (legacy)")
         except Exception as e:
             print(f"   [WARN] No se pudo actualizar manifest: {e}")
     
@@ -1175,4 +1177,4 @@ def main():
 
 
 if __name__ == "__main__":
-    exit(main())
+    sys.exit(main())
