@@ -5,6 +5,9 @@ Utilities to standardize stage execution for CUERDAS pipeline entrypoints.
 This module is intentionally infra-only: it handles run directory layout,
 stage summaries, manifest updates, and guardrails (no-writes gate) without
 touching scientific logic.
+
+HOTFIX 2025-12-23: run_root y stage_dir ahora se resuelven a absolutos
+para evitar crash de relative_to() por mismatch abs/rel.
 """
 
 from __future__ import annotations
@@ -69,8 +72,9 @@ class StageContext:
     @classmethod
     def from_args(cls, args, stage_number: str, stage_slug: str) -> "StageContext":
         experiment = getattr(args, "experiment", None) or "default_experiment"
-        run_root = Path("runs") / experiment
-        stage_dir = run_root / f"{stage_number}_{stage_slug}"
+        # HOTFIX: resolver a absoluto para evitar mismatch con relative_to()
+        run_root = (Path("runs") / experiment).resolve()
+        stage_dir = (run_root / f"{stage_number}_{stage_slug}").resolve()
         stage_dir.mkdir(parents=True, exist_ok=True)
         return cls(
             stage_name=f"{stage_number}_{stage_slug}",
