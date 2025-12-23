@@ -39,8 +39,9 @@
 
 import argparse
 import json
+import sys
 from pathlib import Path
-from typing import Dict, Any
+from typing import Any, Dict, Optional
 
 import numpy as np
 from scipy.ndimage import gaussian_filter1d
@@ -58,6 +59,16 @@ try:
     HAS_CUERDAS_IO = True
 except ImportError:
     HAS_CUERDAS_IO = False
+
+from tools.stage_utils import (
+    EXIT_ERROR,
+    EXIT_OK,
+    STATUS_ERROR,
+    STATUS_OK,
+    StageContext,
+    add_standard_arguments,
+    parse_stage_args,
+)
 
 
 # ============================================================
@@ -405,167 +416,201 @@ def main():
     parser.add_argument("--maxsize", type=int, default=15)
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--d", type=int, default=4)
-    args = parser.parse_args()
+    add_standard_arguments(parser)
+    args = parse_stage_args(parser)
+    ctx = StageContext.from_args(args, stage_number="03", stage_slug="discover_bulk_equations")
+
+    if args.run_dir is None:
+        args.run_dir = str(ctx.run_root)
+
+    status = STATUS_OK
+    exit_code = EXIT_OK
+    error_message: Optional[str] = None
     
-    # === RESOLVER RUTAS ===
-    preds_dir = None
+    try:
+        ctx.record_artifact(ctx.stage_dir)
+    except Exception:
+        pass
     
-    # Prioridad 1: --run-dir con manifest
-    if args.run_dir and HAS_CUERDAS_IO:
-        run_dir = Path(args.run_dir)
-        preds_dir = resolve_predictions_dir(run_dir=run_dir)
-        if preds_dir is None:
-            # Fallback: buscar directamente en run_dir/predictions
-            candidate = run_dir / "predictions"
-            if candidate.exists():
-                preds_dir = candidate
-    
-    # Prioridad 2: --geometry-dir (legacy)
-    if preds_dir is None and args.geometry_dir:
-        geometry_dir = Path(args.geometry_dir)
-        preds_dir = geometry_dir / "predictions"
-        if not preds_dir.exists():
-            # Quizás geometry_dir ES el directorio de predictions
-            if list(geometry_dir.glob("*.npz")):
-                preds_dir = geometry_dir
-    
-    if preds_dir is None or not preds_dir.exists():
-        parser.error("Debe proporcionar --run-dir con manifest válido o --geometry-dir con predictions/*.npz")
-    
-    # Resolver output_dir
-    if args.output_dir:
-        output_dir = Path(args.output_dir)
-    elif args.run_dir:
-        output_dir = Path(args.run_dir) / "bulk_equations"
-    else:
-        output_dir = Path("fase11_einstein_v2")
-    
-    output_dir.mkdir(parents=True, exist_ok=True)
-    
-    print("=" * 70)
-    print("FASE XI v2 - DESCUBRIMIENTO GENUINO DE ECUACIONES GRAVITATORIAS")
-    print("=" * 70)
-    print(f"Geometrias: {preds_dir}")
-    print(f"Output:     {output_dir}")
-    print(f"d:          {args.d}")
-    print("=" * 70)
-    print("\nNOTA: Este script NO asume Einstein a priori.")
-    print("      Descubre la ecuacion y LUEGO verifica si es Einstein.")
-    print("=" * 70)
-    
-    all_results = {"geometries": []}
-    
-    npz_files = sorted(preds_dir.glob("*.npz"))
-    
-    for npz_path in npz_files:
-        name = npz_path.stem.replace("_geometry", "")
-        print(f"\n>> Procesando {name}...")
+    try:
+        # === RESOLVER RUTAS ===
+        preds_dir = None
         
-        data = np.load(npz_path, allow_pickle=True)
-        z = data["z"]
-        A = data["A_pred"]
-        f = data["f_pred"]
-        category = str(data.get("category", "unknown"))
+        # Prioridad 1: --run-dir con manifest
+        if args.run_dir and HAS_CUERDAS_IO:
+            run_dir = Path(args.run_dir)
+            preds_dir = resolve_predictions_dir(run_dir=run_dir)
+            if preds_dir is None:
+                # Fallback: buscar directamente en run_dir/predictions
+                candidate = run_dir / "predictions"
+                if candidate.exists():
+                    preds_dir = candidate
         
-        # Calcular tensores geometricos
-        print("   Calculando tensores geometricos...")
-        tensors = compute_geometric_tensors(z, A, f, args.d)
+        # Prioridad 2: --geometry-dir (legacy)
+        if preds_dir is None and args.geometry_dir:
+            geometry_dir = Path(args.geometry_dir)
+            preds_dir = geometry_dir / "predictions"
+            if not preds_dir.exists():
+                # Quizás geometry_dir ES el directorio de predictions
+                if list(geometry_dir.glob("*.npz")):
+                    preds_dir = geometry_dir
         
-        # Descubrir ecuaciones SIN asumir Einstein
-        print("   Descubriendo ecuaciones (sin asumir Einstein)...")
-        geo_output = output_dir / name
-        results = discover_geometric_relations(
-            tensors, args.d, geo_output,
-            niterations=args.niterations,
-            maxsize=args.maxsize,
-            seed=args.seed
-        )
+        if preds_dir is None or not preds_dir.exists():
+            parser.error("Debe proporcionar --run-dir con manifest válido o --geometry-dir con predictions/*.npz")
         
-        # Validar SI es Einstein (posterior)
-        print("\n   Validacion posterior (es Einstein?)...")
-        validation = validate_einstein_posterior(results, args.d)
+        # Resolver output_dir
+        if args.output_dir:
+            output_dir = Path(args.output_dir)
+        else:
+            output_dir = ctx.stage_dir
         
-        print(f"\n   Validacion:")
-        print(f"     R constante:              {'OK' if validation['R_constant'] else 'NO'}")
-        print(f"     Compatible con Einstein:  {'OK' if validation['einstein_vacuum_compatible'] else 'NO'}")
-        print(f"     A ~ log(z):               {'OK' if validation['A_is_logarithmic'] else 'NO'}")
-        print(f"     Einstein score:           {validation['einstein_score']:.2f}")
-        print(f"     Veredicto:                {validation['verdict']}")
+        output_dir.mkdir(parents=True, exist_ok=True)
+    
+        print("=" * 70)
+        print("FASE XI v2 - DESCUBRIMIENTO GENUINO DE ECUACIONES GRAVITATORIAS")
+        print("=" * 70)
+        print(f"Geometrias: {preds_dir}")
+        print(f"Output:     {output_dir}")
+        print(f"d:          {args.d}")
+        print("=" * 70)
+        print("\nNOTA: Este script NO asume Einstein a priori.")
+        print("      Descubre la ecuacion y LUEGO verifica si es Einstein.")
+        print("=" * 70)
         
-        geo_results = {
-            "name": name,
-            "category": category,
-            "results": results,
-            "validation": validation
-        }
-        all_results["geometries"].append(geo_results)
+        all_results = {"geometries": []}
+        
+        npz_files = sorted(preds_dir.glob("*.npz"))
+        
+        for npz_path in npz_files:
+            name = npz_path.stem.replace("_geometry", "")
+            print(f"\n>> Procesando {name}...")
+            
+            data = np.load(npz_path, allow_pickle=True)
+            z = data["z"]
+            A = data["A_pred"]
+            f = data["f_pred"]
+            category = str(data.get("category", "unknown"))
+            
+            # Calcular tensores geometricos
+            print("   Calculando tensores geometricos...")
+            tensors = compute_geometric_tensors(z, A, f, args.d)
+            
+            # Descubrir ecuaciones SIN asumir Einstein
+            print("   Descubriendo ecuaciones (sin asumir Einstein)...")
+            geo_output = output_dir / name
+            results = discover_geometric_relations(
+                tensors, args.d, geo_output,
+                niterations=args.niterations,
+                maxsize=args.maxsize,
+                seed=args.seed
+            )
+            
+            # Validar SI es Einstein (posterior)
+            print("\n   Validacion posterior (es Einstein?)...")
+            validation = validate_einstein_posterior(results, args.d)
+            
+            print(f"\n   Validacion:")
+            print(f"     R constante:              {'OK' if validation['R_constant'] else 'NO'}")
+            print(f"     Compatible con Einstein:  {'OK' if validation['einstein_vacuum_compatible'] else 'NO'}")
+            print(f"     A ~ log(z):               {'OK' if validation['A_is_logarithmic'] else 'NO'}")
+            print(f"     Einstein score:           {validation['einstein_score']:.2f}")
+            print(f"     Veredicto:                {validation['verdict']}")
+            
+            geo_results = {
+                "name": name,
+                "category": category,
+                "results": results,
+                "validation": validation
+            }
+            all_results["geometries"].append(geo_results)
         
         # Guardar resultados individuales
         json_path = geo_output / "einstein_discovery.json"
         json_path.parent.mkdir(exist_ok=True)
         json_path.write_text(json.dumps(geo_results, indent=2, default=str))
     
-    # Resumen global
-    print("\n" + "=" * 70)
-    print("RESUMEN GLOBAL")
-    print("=" * 70)
-    
-    verdicts = [g["validation"]["verdict"] for g in all_results["geometries"]]
-    n_einstein = sum(1 for v in verdicts if v == "LIKELY_EINSTEIN_VACUUM")
-    n_possibly = sum(1 for v in verdicts if v == "POSSIBLY_EINSTEIN_WITH_MATTER")
-    n_non = sum(1 for v in verdicts if v == "NON_EINSTEIN_OR_DEFORMED")
-    n_total = len(verdicts)
-    
-    avg_score = np.mean([g["validation"]["einstein_score"] for g in all_results["geometries"]])
-    
-    print(f"  Geometrias procesadas:           {n_total}")
-    print(f"  Likely Einstein vacuum:          {n_einstein}/{n_total}")
-    print(f"  Possibly Einstein + matter:      {n_possibly}/{n_total}")
-    print(f"  Non-Einstein or deformed:        {n_non}/{n_total}")
-    print(f"  Einstein score promedio:         {avg_score:.2f}")
-    
-    all_results["summary"] = {
-        "n_geometries": n_total,
-        "n_likely_einstein": n_einstein,
-        "n_possibly_einstein": n_possibly,
-        "n_non_einstein": n_non,
-        "average_einstein_score": float(avg_score)
-    }
-    
-    summary_path = output_dir / "einstein_discovery_summary.json"
-    summary_path.write_text(json.dumps(all_results, indent=2, default=str))
-    
-    print(f"\n  Resultados: {summary_path}")
-    
-    # === ACTUALIZAR RUN_MANIFEST (IO v2) ===
-    if args.run_dir and HAS_CUERDAS_IO:
+        # Resumen global
+        print("\n" + "=" * 70)
+        print("RESUMEN GLOBAL")
+        print("=" * 70)
+        
+        verdicts = [g["validation"]["verdict"] for g in all_results["geometries"]]
+        n_einstein = sum(1 for v in verdicts if v == "LIKELY_EINSTEIN_VACUUM")
+        n_possibly = sum(1 for v in verdicts if v == "POSSIBLY_EINSTEIN_WITH_MATTER")
+        n_non = sum(1 for v in verdicts if v == "NON_EINSTEIN_OR_DEFORMED")
+        n_total = len(verdicts)
+        
+        avg_score = np.mean([g["validation"]["einstein_score"] for g in all_results["geometries"]]) if verdicts else 0.0
+        
+        print(f"  Geometrias procesadas:           {n_total}")
+        print(f"  Likely Einstein vacuum:          {n_einstein}/{n_total}")
+        print(f"  Possibly Einstein + matter:      {n_possibly}/{n_total}")
+        print(f"  Non-Einstein or deformed:        {n_non}/{n_total}")
+        print(f"  Einstein score promedio:         {avg_score:.2f}")
+        
+        all_results["summary"] = {
+            "n_geometries": n_total,
+            "n_likely_einstein": n_einstein,
+            "n_possibly_einstein": n_possibly,
+            "n_non_einstein": n_non,
+            "average_einstein_score": float(avg_score)
+        }
+        
+        summary_path = output_dir / "einstein_discovery_summary.json"
+        summary_path.write_text(json.dumps(all_results, indent=2, default=str))
+        
+        print(f"\n  Resultados: {summary_path}")
+        
+        # === ACTUALIZAR RUN_MANIFEST (IO v2) ===
+        if args.run_dir and HAS_CUERDAS_IO:
+            try:
+                update_run_manifest(
+                    Path(args.run_dir),
+                    {
+                        "bulk_equations_dir": str(output_dir.relative_to(Path(args.run_dir)) 
+                                                  if output_dir.is_relative_to(Path(args.run_dir)) 
+                                                  else output_dir),
+                        "bulk_equations_summary": str(summary_path.relative_to(Path(args.run_dir))
+                                                      if summary_path.is_relative_to(Path(args.run_dir))
+                                                      else summary_path),
+                    }
+                )
+                print(f"  Manifest actualizado: {Path(args.run_dir) / 'run_manifest.json'}")
+            except Exception as e:
+                print(f"  [WARN] No se pudo actualizar run_manifest.json: {e}")
+        
+        print("=" * 70)
+        
+        if n_einstein == n_total:
+            print("\n[OK] ECUACIONES DE EINSTEIN REDESCUBIERTAS (todas las geometrias)")
+        elif n_einstein > 0:
+            print(f"\n[OK] Einstein redescubierto en {n_einstein}/{n_total} geometrias")
+        else:
+            print("\n[!] Ninguna geometria parece ser Einstein puro")
+        
+        print("\nProximo paso: 08_build_holographic_dictionary.py")
+
+        ctx.record_artifact(output_dir)
+        ctx.record_artifact(summary_path)
+        ctx.write_manifest(
+            outputs={"bulk_equations_dir": str(output_dir.relative_to(ctx.run_root))},
+            metadata={"command": " ".join(sys.argv)},
+        )
+    except Exception as exc:  # pragma: no cover - infra guardrail
+        status = STATUS_ERROR
+        exit_code = EXIT_ERROR
+        error_message = str(exc)
+        raise
+    finally:
+        summary_stage_path = ctx.stage_dir / "stage_summary.json"
         try:
-            update_run_manifest(
-                Path(args.run_dir),
-                {
-                    "bulk_equations_dir": str(output_dir.relative_to(Path(args.run_dir)) 
-                                              if output_dir.is_relative_to(Path(args.run_dir)) 
-                                              else output_dir),
-                    "bulk_equations_summary": str(summary_path.relative_to(Path(args.run_dir))
-                                                  if summary_path.is_relative_to(Path(args.run_dir))
-                                                  else summary_path),
-                }
-            )
-            print(f"  Manifest actualizado: {Path(args.run_dir) / 'run_manifest.json'}")
-        except Exception as e:
-            print(f"  [WARN] No se pudo actualizar run_manifest.json: {e}")
-    
-    print("=" * 70)
-    
-    if n_einstein == n_total:
-        print("\n[OK] ECUACIONES DE EINSTEIN REDESCUBIERTAS (todas las geometrias)")
-    elif n_einstein > 0:
-        print(f"\n[OK] Einstein redescubierto en {n_einstein}/{n_total} geometrias")
-    else:
-        print("\n[!] Ninguna geometria parece ser Einstein puro")
-    
-    print("\nProximo paso: 08_build_holographic_dictionary.py")
+            ctx.record_artifact(summary_stage_path)
+        except Exception:
+            pass
+        ctx.write_summary(status=status, exit_code=exit_code, error_message=error_message)
+
+    return exit_code
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

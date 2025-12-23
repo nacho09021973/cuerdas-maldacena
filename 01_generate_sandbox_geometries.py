@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from __future__ import annotations
 # 01_generate_sandbox_geometries.py
 # CUERDAS — Bloque A: Geometría emergente (generación de sandbox)
 #
@@ -50,13 +51,19 @@
 import argparse
 import json
 import re
+import sys
 from dataclasses import dataclass, asdict, field
 from pathlib import Path
 from typing import List, Dict, Tuple, Optional
-
-import h5py
-import numpy as np
-from scipy.special import gamma as gamma_func
+from tools.stage_utils import (
+    EXIT_ERROR,
+    EXIT_OK,
+    STATUS_ERROR,
+    STATUS_OK,
+    StageContext,
+    add_standard_arguments,
+    parse_stage_args,
+)
 
 # Backend opcional: soluciones EMD reales para Lifshitz / hyperscaling
 try:
@@ -748,188 +755,227 @@ def main():
             "familia='ads' (control positivo AdS puro)."
         ),
     )
+    add_standard_arguments(parser)
 
-    args = parser.parse_args()
+    args = parse_stage_args(parser)
 
-    rng = np.random.default_rng(args.seed)
-    output_dir = Path(args.output_dir)
-    output_dir.mkdir(parents=True, exist_ok=True)
+    ctx = StageContext.from_args(args, stage_number="01", stage_slug="generate_sandbox_geometries")
 
-    # malla en z común a todos los universos
-    z_grid = np.linspace(0.01, args.z_max, args.n_z)
+    status = STATUS_OK
+    exit_code = EXIT_OK
+    error_message = None
 
-    base_geometries = get_phase11_geometries()
-    
-    # Modo control positivo: solo geometrías AdS
-    if args.ads_only:
-        base_geometries = [
-            (geo, cat)
-            for (geo, cat) in base_geometries
-            if geo.family == "ads"
-        ]
-        if not base_geometries:
-            raise RuntimeError(
-                "ads-only solicitado, pero get_phase11_geometries() no contiene ninguna familia='ads'."
-            )
-        print("[MODO CONTROL POSITIVO] Filtrando sandbox a familia='ads' únicamente.")
-    
-    geometries: List[Tuple[HiddenGeometry, str]] = []
+    try:
+        ctx.record_artifact(ctx.stage_dir)
+    except Exception:
+        pass
 
-    # expandir con jitter
-    for base_geo, category in base_geometries:
-        if category == "known":
-            n_instances = args.n_known
-        elif category == "test":
-            n_instances = args.n_test
-        else:
-            n_instances = args.n_unknown
+    try:
+        import h5py  # type: ignore
+        global np, gamma_func  # type: ignore
+        import numpy as np  # type: ignore
+        from scipy.special import gamma as gamma_func  # type: ignore
 
-        for k in range(n_instances):
-            geo = make_geometry_instance(base_geo, category, k, rng)
-            geometries.append((geo, category))
+        rng = np.random.default_rng(args.seed)
+        output_dir = ctx.stage_dir
+        output_dir.mkdir(parents=True, exist_ok=True)
 
-    # resumen inicial
-    n_known_total = sum(1 for _, cat in geometries if cat == "known")
-    n_test_total = sum(1 for _, cat in geometries if cat == "test")
-    n_unknown_total = sum(1 for _, cat in geometries if cat == "unknown")
+        # malla en z común a todos los universos
+        z_grid = np.linspace(0.01, args.z_max, args.n_z)
 
-    print("=" * 70)
-    print("FASE XI v3 — EMERGENCIA AUTÓNOMA DE GEOMETRÍA")
-    print("=" * 70)
-    print(f"Output:       {output_dir}")
-    print(f"Prototipos:   {len(base_geometries)}")
-    print(f"Geometrías:   {len(geometries)} total")
-    print(f"  - known:    {n_known_total}")
-    print(f"  - test:     {n_test_total}")
-    print(f"  - unknown:  {n_unknown_total}")
-    print(f"Operadores:   {args.n_operators}")
-    print(f"z grid:       [0.01, {args.z_max}]  {args.n_z}")
-    print(f"EMD backend:  {'ON' if args.use_emd_lifshitz and HAS_EMD else 'OFF'}")
-    print("=" * 70)
-
-    manifest: Dict = {
-        "geometries": [],
-        "version": "v3",
-        "config": {
-            "n_known_per_base": args.n_known,
-            "n_test_per_base": args.n_test,
-            "n_unknown_per_base": args.n_unknown,
-            "n_samples": args.n_samples,
-            "n_operators": args.n_operators,
-            "z_max": args.z_max,
-            "n_z": args.n_z,
-            "seed": args.seed,
-            "use_emd_lifshitz": args.use_emd_lifshitz,
-        },
-    }
-
-    # loop principal
-    for idx, (geo, category) in enumerate(geometries):
-        print(f"[{idx+1:04d}/{len(geometries):04d}] {geo.name} ({geo.family}, {category})")
-
-        # operadores
-        operators = generate_operators_for_geometry(geo, args.n_operators, rng)
-        deltas_str = ", ".join(f"{op['Delta']:.2f}" for op in operators)
-        zh_display = geo.z_h if geo.z_h is not None else 0.0
-        print(f"   d={geo.d}, z_h={zh_display:.3f}, θ={geo.theta:.2f}, z_dyn={geo.z_dyn:.2f}")
-        print(f"   Δ: [{deltas_str}]")
-
-        # ============================================================
-        # FIX 2025-12-21: Guardrail IO v1 ANTES de generar datos
-        # ============================================================
-        # Si el nombre codifica "_d<k>_", debe coincidir con geo.d
-        # IMPORTANTE: esto debe ejecutarse ANTES de generar boundary_data
-        # y bulk_truth para que ambos usen el valor correcto de d.
-        m_d = re.search(r"_d(\d+)_", geo.name)
-        if m_d is not None:
-            d_name = int(m_d.group(1))
-            if int(geo.d) != d_name:
-                print(
-                    f"[IO_CONTRACT][AUTO-FIX] d mismatch: {geo.name}: geo.d={geo.d} -> {d_name} (from name)"
+        base_geometries = get_phase11_geometries()
+        
+        # Modo control positivo: solo geometrías AdS
+        if args.ads_only:
+            base_geometries = [
+                (geo, cat)
+                for (geo, cat) in base_geometries
+                if geo.family == "ads"
+            ]
+            if not base_geometries:
+                raise RuntimeError(
+                    "ads-only solicitado, pero get_phase11_geometries() no contiene ninguna familia='ads'."
                 )
-                geo.d = d_name
+            print("[MODO CONTROL POSITIVO] Filtrando sandbox a familia='ads' únicamente.")
+        
+        geometries: List[Tuple[HiddenGeometry, str]] = []
 
-        # boundary (VISIBLE para el learner)
-        boundary_data = generate_boundary_data(geo, operators, args.n_samples, rng)
+        # expandir con jitter
+        for base_geo, category in base_geometries:
+            if category == "known":
+                n_instances = args.n_known
+            elif category == "test":
+                n_instances = args.n_test
+            else:
+                n_instances = args.n_unknown
 
-        # bulk (solo para validación/contratos)
-        bulk_truth = generate_bulk_truth(geo, z_grid, use_emd=args.use_emd_lifshitz)
+            for k in range(n_instances):
+                geo = make_geometry_instance(base_geo, category, k, rng)
+                geometries.append((geo, category))
 
-        # guardar en HDF5
-        output_path = output_dir / f"{geo.name}.h5"
-        with h5py.File(output_path, "w") as f:
-            # attrs globales
-            f.attrs["name"] = geo.name
-            f.attrs["system_name"] = geo.name
-            f.attrs["family"] = geo.family
-            f.attrs["category"] = category
-            f.attrs["d"] = geo.d
-            f.attrs["z_h"] = geo.z_h if geo.z_h is not None else 0.0
-            f.attrs["theta"] = geo.theta
-            f.attrs["z_dyn"] = geo.z_dyn
-            f.attrs["deformation"] = geo.deformation
-            f.attrs["operators"] = json.dumps(operators)
+        # resumen inicial
+        n_known_total = sum(1 for _, cat in geometries if cat == "known")
+        n_test_total = sum(1 for _, cat in geometries if cat == "test")
+        n_unknown_total = sum(1 for _, cat in geometries if cat == "unknown")
 
-            # boundary
-            bgrp = f.create_group("boundary")
-            for key, val in boundary_data.items():
-                if isinstance(val, np.ndarray):
-                    bgrp.create_dataset(key, data=val)
-                else:
-                    bgrp.attrs[key] = val
-            bgrp.attrs["d"] = geo.d
-            bgrp.attrs["family"] = geo.family
+        print("=" * 70)
+        print("FASE XI v3 — EMERGENCIA AUTÓNOMA DE GEOMETRÍA")
+        print("=" * 70)
+        print(f"Output:       {output_dir}")
+        print(f"Prototipos:   {len(base_geometries)}")
+        print(f"Geometrías:   {len(geometries)} total")
+        print(f"  - known:    {n_known_total}")
+        print(f"  - test:     {n_test_total}")
+        print(f"  - unknown:  {n_unknown_total}")
+        print(f"Operadores:   {args.n_operators}")
+        print(f"z grid:       [0.01, {args.z_max}]  {args.n_z}")
+        print(f"EMD backend:  {'ON' if args.use_emd_lifshitz and HAS_EMD else 'OFF'}")
+        print("=" * 70)
 
-            # bulk_truth
-            tgrp = f.create_group("bulk_truth")
-            for key, val in bulk_truth.items():
-                if isinstance(val, np.ndarray):
-                    tgrp.create_dataset(key, data=val)
-                else:
-                    tgrp.attrs[key] = val
+        manifest: Dict = {
+            "geometries": [],
+            "version": "v3",
+            "config": {
+                "n_known_per_base": args.n_known,
+                "n_test_per_base": args.n_test,
+                "n_unknown_per_base": args.n_unknown,
+                "n_samples": args.n_samples,
+                "n_operators": args.n_operators,
+                "z_max": args.z_max,
+                "n_z": args.n_z,
+                "seed": args.seed,
+                "use_emd_lifshitz": args.use_emd_lifshitz,
+            },
+        }
 
-        # entrada en manifest
-        manifest["geometries"].append(
-            {
-                "name": geo.name,
-                "family": geo.family,
-                "category": category,
-                "d": geo.d,
-                "file": str(output_path.name),
-                "operators": [op["name"] for op in operators],
-            }
+        # loop principal
+        for idx, (geo, category) in enumerate(geometries):
+            print(f"[{idx+1:04d}/{len(geometries):04d}] {geo.name} ({geo.family}, {category})")
+
+            # operadores
+            operators = generate_operators_for_geometry(geo, args.n_operators, rng)
+            deltas_str = ", ".join(f"{op['Delta']:.2f}" for op in operators)
+            zh_display = geo.z_h if geo.z_h is not None else 0.0
+            print(f"   d={geo.d}, z_h={zh_display:.3f}, θ={geo.theta:.2f}, z_dyn={geo.z_dyn:.2f}")
+            print(f"   Δ: [{deltas_str}]")
+
+            # ============================================================
+            # FIX 2025-12-21: Guardrail IO v1 ANTES de generar datos
+            # ============================================================
+            # Si el nombre codifica "_d<k>_", debe coincidir con geo.d
+            # IMPORTANTE: esto debe ejecutarse ANTES de generar boundary_data
+            # y bulk_truth para que ambos usen el valor correcto de d.
+            m_d = re.search(r"_d(\d+)_", geo.name)
+            if m_d is not None:
+                d_name = int(m_d.group(1))
+                if int(geo.d) != d_name:
+                    print(
+                        f"[IO_CONTRACT][AUTO-FIX] d mismatch: {geo.name}: geo.d={geo.d} -> {d_name} (from name)"
+                    )
+                    geo.d = d_name
+
+            # boundary (VISIBLE para el learner)
+            boundary_data = generate_boundary_data(geo, operators, args.n_samples, rng)
+
+            # bulk (solo para validación/contratos)
+            bulk_truth = generate_bulk_truth(geo, z_grid, use_emd=args.use_emd_lifshitz)
+
+            # guardar en HDF5
+            output_path = output_dir / f"{geo.name}.h5"
+            with h5py.File(output_path, "w") as f:
+                # attrs globales
+                f.attrs["name"] = geo.name
+                f.attrs["system_name"] = geo.name
+                f.attrs["family"] = geo.family
+                f.attrs["category"] = category
+                f.attrs["d"] = geo.d
+                f.attrs["z_h"] = geo.z_h if geo.z_h is not None else 0.0
+                f.attrs["theta"] = geo.theta
+                f.attrs["z_dyn"] = geo.z_dyn
+                f.attrs["deformation"] = geo.deformation
+                f.attrs["operators"] = json.dumps(operators)
+
+                # boundary
+                bgrp = f.create_group("boundary")
+                for key, val in boundary_data.items():
+                    if isinstance(val, np.ndarray):
+                        bgrp.create_dataset(key, data=val)
+                    else:
+                        bgrp.attrs[key] = val
+                bgrp.attrs["d"] = geo.d
+                bgrp.attrs["family"] = geo.family
+
+                # bulk_truth
+                tgrp = f.create_group("bulk_truth")
+                for key, val in bulk_truth.items():
+                    if isinstance(val, np.ndarray):
+                        tgrp.create_dataset(key, data=val)
+                    else:
+                        tgrp.attrs[key] = val
+
+            # entrada en manifest
+            manifest["geometries"].append(
+                {
+                    "name": geo.name,
+                    "family": geo.family,
+                    "category": category,
+                    "d": geo.d,
+                    "file": str(output_path.name),
+                    "operators": [op["name"] for op in operators],
+                }
+            )
+
+        # escribir manifest
+        manifest_path = output_dir / "manifest.json"
+        manifest_path.write_text(json.dumps(manifest, indent=2))
+
+        # resumen final por familia
+        families: Dict[str, Dict[str, int]] = {}
+        for geo, category in geometries:
+            fam = geo.family
+            if fam not in families:
+                families[fam] = {"known": 0, "test": 0, "unknown": 0}
+            families[fam][category] = families[fam].get(category, 0) + 1
+
+        print("\n" + "=" * 70)
+        print("RESUMEN POR FAMILIA")
+        for fam, counts in sorted(families.items()):
+            print(
+                f"  {fam:15s}: "
+                f"known={counts.get('known', 0):3d}, "
+                f"test={counts.get('test', 0):3d}, "
+                f"unknown={counts.get('unknown', 0):3d}"
+            )
+
+        print("\n" + "=" * 70)
+        print("✓ GENERACIÓN FASE XI v3 COMPLETADA")
+        print(f"  Manifest: {manifest_path}")
+        print(f"  Total:    {len(geometries)} universos")
+        print("=" * 70)
+        print("\nPróximo paso: 01_emergent_geometry_v2.py")
+        print("El learner solo verá datos del boundary — debe descubrir la geometría.")
+
+        ctx.record_artifact(output_dir)
+        ctx.record_artifact(manifest_path)
+        ctx.write_manifest(
+            outputs={"sandbox_dir": str(output_dir.relative_to(ctx.run_root))},
+            metadata={"command": " ".join(sys.argv)},
         )
+    except Exception as exc:  # pragma: no cover - infra guardrail
+        status = STATUS_ERROR
+        exit_code = EXIT_ERROR
+        error_message = str(exc)
+        raise
+    finally:
+        summary_path = ctx.stage_dir / "stage_summary.json"
+        try:
+            ctx.record_artifact(summary_path)
+        except Exception:
+            pass
+        ctx.write_summary(status=status, exit_code=exit_code, error_message=error_message)
 
-    # escribir manifest
-    manifest_path = output_dir / "manifest.json"
-    manifest_path.write_text(json.dumps(manifest, indent=2))
-
-    # resumen final por familia
-    families: Dict[str, Dict[str, int]] = {}
-    for geo, category in geometries:
-        fam = geo.family
-        if fam not in families:
-            families[fam] = {"known": 0, "test": 0, "unknown": 0}
-        families[fam][category] = families[fam].get(category, 0) + 1
-
-    print("\n" + "=" * 70)
-    print("RESUMEN POR FAMILIA")
-    for fam, counts in sorted(families.items()):
-        print(
-            f"  {fam:15s}: "
-            f"known={counts.get('known', 0):3d}, "
-            f"test={counts.get('test', 0):3d}, "
-            f"unknown={counts.get('unknown', 0):3d}"
-        )
-
-    print("\n" + "=" * 70)
-    print("✓ GENERACIÓN FASE XI v3 COMPLETADA")
-    print(f"  Manifest: {manifest_path}")
-    print(f"  Total:    {len(geometries)} universos")
-    print("=" * 70)
-    print("\nPróximo paso: 01_emergent_geometry_v2.py")
-    print("El learner solo verá datos del boundary — debe descubrir la geometría.")
+    return exit_code
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())
