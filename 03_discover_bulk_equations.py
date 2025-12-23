@@ -416,7 +416,7 @@ def main():
     parser.add_argument("--maxsize", type=int, default=15)
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--d", type=int, default=4)
-    
+
     add_standard_arguments(parser)
     args = parse_stage_args(parser)
     ctx = StageContext.from_args(args, stage_number="03", stage_slug="discover_bulk_equations")
@@ -427,66 +427,46 @@ def main():
     status = STATUS_OK
     exit_code = EXIT_OK
     error_message: Optional[str] = None
-    
+
     try:
         ctx.record_artifact(ctx.stage_dir)
     except Exception:
         pass
-    
+
     try:
         # === RESOLVER RUTAS ===
         preds_dir = None
 
-       # Prioridad 1: --run-dir con manifest
-    if args.run_dir and HAS_CUERDAS_IO:
-        run_dir = Path(args.run_dir)
-        preds_dir = resolve_predictions_dir(run_dir=run_dir)
-        if preds_dir is None:
-            candidate = run_dir / "predictions"
-            if candidate.exists():
-                preds_dir = candidate
+        # Prioridad 1: --run-dir con manifest
+        if args.run_dir and HAS_CUERDAS_IO:
+            run_dir = Path(args.run_dir)
+            preds_dir = resolve_predictions_dir(run_dir=run_dir)
+            if preds_dir is None:
+                # Fallback: buscar directamente en run_dir/predictions
+                candidate = run_dir / "predictions"
+                if candidate.exists():
+                    preds_dir = candidate
 
-    # Prioridad 2: --geometry-dir (legacy)
-    if preds_dir is None and args.geometry_dir:
-        geometry_dir = Path(args.geometry_dir)
-        preds_dir = geometry_dir / "predictions"
-        if not preds_dir.exists():
-            if list(geometry_dir.glob("*.npz")):
-                preds_dir = geometry_dir
+        # Prioridad 2: --geometry-dir (legacy)
+        if preds_dir is None and args.geometry_dir:
+            geometry_dir = Path(args.geometry_dir)
+            preds_dir = geometry_dir / "predictions"
+            if not preds_dir.exists():
+                # Quizás geometry_dir ES el directorio de predictions
+                if list(geometry_dir.glob("*.npz")):
+                    preds_dir = geometry_dir
 
-    if preds_dir is None or not preds_dir.exists():
-        parser.error("Debe proporcionar --run-dir con manifest válido o --geometry-dir con predictions/*.npz")
+        if preds_dir is None or not preds_dir.exists():
+            parser.error("Debe proporcionar --run-dir con manifest válido o --geometry-dir con predictions/*.npz")
 
-    # Resolver output_dir
-    if args.output_dir:
-        output_dir = Path(args.output_dir)
-    elif args.run_dir:
-        output_dir = Path(args.run_dir) / "bulk_equations"
-    else:
-        output_dir = Path("fase11_einstein_v2")
+        # Resolver output_dir
+        if args.output_dir:
+            output_dir = Path(args.output_dir)
+        else:
+            output_dir = ctx.stage_dir
 
-    output_dir.mkdir(parents=True, exist_ok=True)
+        output_dir.mkdir(parents=True, exist_ok=True)
 
-    print("=" * 70)
-    print("FASE XI v2 - DESCUBRIMIENTO GENUINO DE ECUACIONES GRAVITATORIAS")
-    print("=" * 70)
-    print(f"Geometrias: {preds_dir}")
-    print(f"Output:     {output_dir}")
-    print(f"d:          {args.d}")
-    print("=" * 70)
-    print("\nNOTA: Este script NO asume Einstein a priori.")
-    print("      Descubre la ecuacion y LUEGO verifica si es Einstein.")
-    print("=" * 70)
-
-    all_results = {"geometries": []}
-
-    npz_files = sorted(preds_dir.glob("*.npz"))
-
-    for npz_path in npz_files:
-        name = npz_path.stem.replace("_geometry", "")
-        print(f"\n>> Procesando {name}...")
-
-        
         # Prioridad 1: --run-dir con manifest
         if args.run_dir and HAS_CUERDAS_IO:
             run_dir = Path(args.run_dir)
