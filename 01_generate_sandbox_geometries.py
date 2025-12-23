@@ -748,8 +748,19 @@ def main():
             "familia='ads' (control positivo AdS puro)."
         ),
     )
+    parser.add_argument(
+        "--experiment",
+        type=str,
+        default=None,
+        help="Nombre del experimento (aceptado para compatibilidad con run_pipeline).",
+    )
+    parser.add_argument(
+        "--quick-test",
+        action="store_true",
+        help="Modo rápido (compatibilidad con orquestador). No altera lógica científica.",
+    )
 
-    args = parser.parse_args()
+    args, _ = parser.parse_known_args()
 
     rng = np.random.default_rng(args.seed)
     output_dir = Path(args.output_dir)

@@ -405,7 +405,18 @@ def main():
     parser.add_argument("--maxsize", type=int, default=15)
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--d", type=int, default=4)
-    args = parser.parse_args()
+    parser.add_argument(
+        "--experiment",
+        type=str,
+        default=None,
+        help="Nombre del experimento (aceptado para compatibilidad con run_pipeline).",
+    )
+    parser.add_argument(
+        "--quick-test",
+        action="store_true",
+        help="Modo rápido (compatibilidad con orquestador). No altera lógica científica.",
+    )
+    args, _ = parser.parse_known_args()
     
     # === RESOLVER RUTAS ===
     preds_dir = None
