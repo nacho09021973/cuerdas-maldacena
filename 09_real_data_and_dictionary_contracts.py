@@ -9,10 +9,13 @@
 #   FPR = (señales holográficas disparadas) / (señales evaluables)
 #   
 #   Esto mide: "¿El pipeline cree que esto es holográfico cuando NO debería?"
+#
+# MIGRADO A V3: 2024-12-23
 
 import argparse
 import json
 import logging
+import sys
 from pathlib import Path
 from typing import Dict, List, Any, Optional, Tuple
 from dataclasses import dataclass, field, asdict
@@ -26,6 +29,16 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+# ═══════════════════════════════════════════════════════════════════════════════
+# V3 INFRASTRUCTURE
+# ═══════════════════════════════════════════════════════════════════════════════
+try:
+    from tools.stage_utils import StageContext, add_standard_arguments, infer_experiment
+    HAS_STAGE_UTILS = True
+except ImportError:
+    HAS_STAGE_UTILS = False
+
+# Legacy imports (fallback)
 try:
     from cuerdas_io import load_run_manifest, update_run_manifest
     HAS_CUERDAS_IO = True
@@ -304,13 +317,11 @@ def evaluate_expected_fail_contracts(artifacts: Dict[str, Any]) -> List[Expected
     """
     contracts = []
     
-    # ising3d_consistency debería fallar
     dictionary = artifacts.get("dictionary", {})
     predicted_deltas = dictionary.get("predicted_Deltas", [])
     geometry = artifacts.get("geometry", {})
     family = geometry.get("family", "").lower()
     
-    # Simular el resultado de ising3d_consistency
     passed = False
     if predicted_deltas and "ads" in family:
         delta_sigma = 0.518
@@ -396,7 +407,8 @@ def load_negative_control_artifacts(run_dir: Path) -> Dict[str, Any]:
     }
     
     # Buscar geometría
-    for gdir in [run_dir / "geometry_emergent", run_dir / "predictions", run_dir / "geometry"]:
+    for gdir in [run_dir / "geometry_emergent", run_dir / "predictions", run_dir / "geometry",
+                 run_dir / "02_emergent_geometry_engine" / "geometry_emergent"]:
         if gdir.exists() and gdir.is_dir():
             for sf in list(gdir.glob("*summary*.json")) + list(gdir.glob("*report*.json")):
                 try:
@@ -416,8 +428,10 @@ def load_negative_control_artifacts(run_dir: Path) -> Dict[str, Any]:
     # Buscar Einstein
     for epath in [
         run_dir / "bulk_equations" / "einstein_discovery_summary.json",
+        run_dir / "03_discover_bulk_equations" / "einstein_discovery_summary.json",
         run_dir / "bulk_equations" / "pareto_equations.json",
         run_dir / "bulk_equations_analysis" / "bulk_equations_report.json",
+        run_dir / "05_analyze_bulk_equations" / "bulk_equations_report.json",
     ]:
         if epath.exists():
             try:
@@ -442,7 +456,9 @@ def load_negative_control_artifacts(run_dir: Path) -> Dict[str, Any]:
     # Buscar diccionario
     for dpath in [
         run_dir / "emergent_dictionary" / "lambda_sl_dictionary_report.json",
+        run_dir / "07_emergent_lambda_sl_dictionary" / "lambda_sl_dictionary_report.json",
         run_dir / "holographic_dictionary" / "holographic_dictionary_v3_summary.json",
+        run_dir / "08_build_holographic_dictionary" / "holographic_dictionary_v3_summary.json",
         run_dir / "holographic_dictionary" / "holographic_dictionary_summary.json",
     ]:
         if dpath.exists():
@@ -602,7 +618,7 @@ def run_negative_control_check(
 
 
 # ============================================================
-# CONTRATOS FASE XII (sin cambios sustanciales)
+# CONTRATOS FASE XII
 # ============================================================
 
 class ContractsFase12:
@@ -722,7 +738,7 @@ class ContractsFase12:
 
 
 # ============================================================
-# CONTRATOS FASE XIII (sin cambios)
+# CONTRATOS FASE XIII
 # ============================================================
 
 class ContractsFase13:
@@ -790,6 +806,7 @@ def run_contracts_fase12(report_path: Path) -> Dict:
     if report_path.is_dir():
         for c in [
             report_path / "holographic_dictionary" / "holographic_dictionary_v3_summary.json",
+            report_path / "08_build_holographic_dictionary" / "holographic_dictionary_v3_summary.json",
             report_path / "holographic_dictionary" / "holographic_dictionary_summary.json",
             report_path / "fase12_report.json",
         ]:
@@ -862,12 +879,22 @@ def run_contracts_fase13(analysis_path: Path, atlas_path=None) -> dict:
 # MAIN
 # ============================================================
 
-def main():
+def main() -> int:
     parser = argparse.ArgumentParser(
         description="Contratos Fases XII/XIII + Control Negativo (FPR)"
     )
+    
+    # ═══════════════════════════════════════════════════════════════════════════
+    # V3: Argumentos estándar
+    # ═══════════════════════════════════════════════════════════════════════════
+    if HAS_STAGE_UTILS:
+        add_standard_arguments(parser)
+    else:
+        parser.add_argument("--experiment", type=str, default=None)
+        parser.add_argument("--run-dir", type=str, default=None)
+    
+    # Argumentos específicos del script
     parser.add_argument("--phase", type=str, required=True, choices=["12", "13", "both"])
-    parser.add_argument("--run-dir", type=str, default=None)
     parser.add_argument("--fase12-report", type=str, default="")
     parser.add_argument("--fase13-analysis", type=str, default="")
     parser.add_argument("--fase13-atlas", type=str, default="")
@@ -885,14 +912,51 @@ def main():
     
     args = parser.parse_args()
     
-    # Resolver rutas
+    # ═══════════════════════════════════════════════════════════════════════════
+    # V3: Crear StageContext
+    # ═══════════════════════════════════════════════════════════════════════════
+    ctx = None
+    if HAS_STAGE_UTILS:
+        if not getattr(args, 'experiment', None):
+            args.experiment = infer_experiment(args)
+        
+        ctx = StageContext.from_args(
+            args,
+            stage_number="09",
+            stage_slug="real_data_and_dictionary_contracts"
+        )
+        print(f"[V3] Experiment: {ctx.experiment}")
+        print(f"[V3] Stage dir: {ctx.stage_dir}")
+    
+    # ═══════════════════════════════════════════════════════════════════════════
+    # RESOLVER RUTAS
+    # ═══════════════════════════════════════════════════════════════════════════
     fase12_report = args.fase12_report or ""
     fase13_analysis = args.fase13_analysis or ""
     fase13_atlas = args.fase13_atlas or ""
     output_file = args.output_file
     
-    if args.run_dir and HAS_CUERDAS_IO:
-        run_dir = Path(args.run_dir)
+    # V3: Resolver desde ctx
+    if ctx:
+        run_dir = ctx.run_root
+        
+        if not fase12_report:
+            candidates = [
+                run_dir / "07_emergent_lambda_sl_dictionary" / "lambda_sl_dictionary_report.json",
+                run_dir / "emergent_dictionary" / "lambda_sl_dictionary_report.json",
+            ]
+            for c in candidates:
+                if c.exists():
+                    fase12_report = str(c)
+                    print(f"[V3] fase12_report desde stage 07: {c}")
+                    break
+        
+        if not output_file:
+            output_file = str(ctx.stage_dir / "contracts_12_13.json")
+    
+    # Legacy: Resolver desde --run-dir
+    elif args.run_dir and HAS_CUERDAS_IO:
+        run_dir = Path(args.run_dir).resolve()
         manifest = load_run_manifest(run_dir)
         artifacts = manifest.get("artifacts", {}) if manifest else {}
         
@@ -983,6 +1047,34 @@ def main():
     print(f"\n  Output: {output_path}")
     print("=" * 70)
     
+    # ═══════════════════════════════════════════════════════════════════════════
+    # V3: Registrar artefactos y escribir summary
+    # ═══════════════════════════════════════════════════════════════════════════
+    if ctx:
+        ctx.record_artifact("contracts_json", output_path)
+        if fase12_report:
+            ctx.record_artifact("fase12_report_input", Path(fase12_report))
+        if fase13_analysis:
+            ctx.record_artifact("fase13_analysis_input", Path(fase13_analysis))
+        
+        status = "OK" if all_passed else "WARNING"
+        if negative_control_alert:
+            status = "ALERT"
+        
+        ctx.write_summary(
+            status=status,
+            counts={
+                "fase12_passed": results.get("fase12", {}).get("n_passed", 0),
+                "fase12_total": results.get("fase12", {}).get("n_contracts", 0),
+                "fase13_passed": results.get("fase13", {}).get("n_passed", 0),
+                "fase13_total": results.get("fase13", {}).get("n_contracts", 0),
+                "negative_control_fpr": results.get("negative_control", {}).get("false_positive_rate"),
+                "all_passed": all_passed,
+            }
+        )
+        ctx.write_manifest()
+        print(f"[V3] stage_summary.json escrito")
+    
     if args.require_negative_control and negative_control_alert:
         print("\n⚠ Exit 1: --require-negative-control activo y status=ALERT")
         return 1
@@ -991,4 +1083,4 @@ def main():
 
 
 if __name__ == "__main__":
-    exit(main())
+    sys.exit(main())
